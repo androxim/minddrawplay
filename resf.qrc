@@ -1,0 +1,38 @@
+<RCC>
+    <qresource prefix="/sounds">
+        <file>sounds/A3_.wav</file>
+        <file>sounds/A4_.wav</file>
+        <file>sounds/C4_.wav</file>
+        <file>sounds/D3_.wav</file>
+        <file>sounds/D4_.wav</file>
+        <file>sounds/E4_.wav</file>
+        <file>sounds/F3_.wav</file>
+        <file>sounds/F4_.wav</file>
+        <file>sounds/tank_a_.wav</file>
+        <file>sounds/tank_b_.wav</file>
+        <file>sounds/tank_Blow_.wav</file>
+        <file>sounds/tank_Clow_.wav</file>
+        <file>sounds/tank_d_.wav</file>
+        <file>sounds/tank_Dlow_.wav</file>
+        <file>sounds/tank_Elow_.wav</file>
+        <file>sounds/tank_fdiez_.wav</file>
+        <file>sounds/tank_g_.wav</file>
+        <file>sounds/tank_Glow_.wav</file>
+        <file>sounds/tone_B.wav</file>
+        <file>sounds/tone_b_.wav</file>
+        <file>sounds/tone_Csh.wav</file>
+        <file>sounds/tone_csh_.wav</file>
+        <file>sounds/tone_Dsh.wav</file>
+        <file>sounds/tone_dsh_.wav</file>
+        <file>sounds/tone_Fsh.wav</file>
+        <file>sounds/tone_fsh_.wav</file>
+        <file>sounds/tone_Gsh.wav</file>
+        <file>sounds/tone_gsh_.wav</file>
+    </qresource>
+    <qresource prefix="/pics">
+        <file>pics/empty.jpg</file>
+        <file>pics/oriongmaj.jpg</file>
+        <file>pics/spacedmin.jpg</file>
+        <file>pics/zodiac0.jpg</file>
+    </qresource>
+</RCC>
