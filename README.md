@@ -41,7 +41,12 @@ Moreover, there is an option for combining drawing with music – when your atte
 is higher than some value (like 80% or adaptively computed value) – musical space is activating 
 and you hear sounds from "MindPlay" window. 
 
-broader overview in "about v__.pdf" 
+MindDrawPlay is a part-time hobby project currently tuned for MindWave EEG device. 
+However, it can be adapted for other mobile or full EEG systems. 
+There are a lot of ideas and ways for development and improvement. 
+Author is interested and opened for any potential collaborations. 
+
+broader overview with screenshots in "about.pdf" 
 
 ...
 
