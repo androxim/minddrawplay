@@ -14,6 +14,16 @@ represented by set of sounds and to use brain waves as a brush for drawing, as p
 for image filtering or changes in a graphical flow and in a simple puzzle gathering 
 and identical pictures recognition games. 
 
+Application allows user to control many different parameters, for example, in case of music – 
+duration of tones, number of tones in a moment and their distribution (how often which tones play), 
+in case of drawing – different color modes of brush and amplitude of brain signals as a brush, 
+in case of graphical space flow – how many pictures in a puzzle will change and how fast. 
+Moreover, you can observe in real time dynamics of your brain waves on plots, 
+your attention/meditation level (estimated by build-in algorithms in EEG device) changes and 
+how actions in application or your mental activity states influence brain waves. 
+Therefore, essentially, MindDrawPlay is form of an interactive art, 
+neurofeedback application and a tool for exploring brain activity patterns.
+
 There are two windows in the application, on the top of both there is a plot with real-time 
 brain signal from EEG device. 1st window is “MindPlay”, allowing translation of brain waves 
 to music by playing samples of tones from 2 tank drums and 1 hang drum with any background image (.jpg). 
