@@ -38,6 +38,8 @@ public:
     int currentsimdata;
     int currentel;
     int srfr;
+    QPixmap bkgnd;
+    QPalette palette;
     int deltafr, thetafr, alphafr, betafr, gammafr, hgammafr;
     int deltaphs, thetaphs, alphaphs, betaphs, gammaphs;
     int zdeltaamp, zthetaamp, zalphaamp, zbetaamp, zgammaamp, zhgammaamp;
@@ -52,6 +54,7 @@ public:
     void museconnected();
     void getrawdata(float ft);
     void getfreqval(float dw, float tw, float aw, float bw, float gw);
+    void setback(QPixmap pm);
 
     ~MainWindow();
 

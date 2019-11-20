@@ -21,9 +21,9 @@ paintScene::paintScene(QObject *parent) : QGraphicsScene(parent)
     randfixcolor=true;
     fxcolor="orange";
     linecoords = new QPointF[2000];
-    linesarr.resize(100);
-    linelengths = new int[500];
-    for (int i=0; i<100; i++)
+    linesarr.resize(1000);
+    linelengths = new int[1000];
+    for (int i=0; i<1000; i++)
     {
         linesarr[i] = new QPointF[1000];
         linelengths[i] = 0;
@@ -34,13 +34,14 @@ paintScene::paintScene(QObject *parent) : QGraphicsScene(parent)
     angles = new int[5000];
     pointnum = 0; currnumpoint = 0;
     curx = 600; cury=900;
-    drawrate = 20;
+    drawrate = 5;
     previousPoint.setX(curx);
     previousPoint.setY(cury-2);
     randfixcolor = false;
     sceneforfilt.addItem(&itemforfilt);
     resforfilt=QImage(QSize(1500, 800), QImage::Format_ARGB32);
     ptr = new QPainter(&resforfilt);
+    drawflow=false;
     //resforfilt.load("D:/PICS/881.jpg");
     //pm = new QPixmap(NULL);
   //  colorize = new QGraphicsColorizeEffect;
@@ -173,6 +174,29 @@ QPixmap paintScene::filterpuzzle(QPixmap pm, int att, int rc, int gc, int bc, in
     return QPixmap::fromImage(qbim1);
 }
 
+void paintScene::applyfilteronbackimg()
+{
+    colorize = new QGraphicsColorizeEffect;
+    blur = new QGraphicsBlurEffect;
+    blur->setBlurRadius((100-pw->attent)/15);
+   // colorize->setColor(QColor(pw->alpha*5,256-pw->beta*5,256-pw->gamma*6,pw->meditt*2));
+    QColor qcl = QColor(pw->theta*4,pw->beta*4,pw->gamma*4,pw->alpha*6);
+   // qcl.setHsv(pw->beta*7,pw->alpha*7,pw->theta*6);
+    colorize->setColor(qcl);//QColor(pw->theta*4,pw->beta*4,pw->gamma*4,pw->alpha*4));
+    colorize->setStrength((double)pw->attent/50);
+
+    //qbim1 = applyEffectToImage(paintf->qim, blur, 0);
+    qbim1 = applyEffectToImage(bkgndimg.toImage(), blur, 0);
+    qbim2 = applyEffectToImage(qbim1, colorize, 0);
+  // qbim2 = blurred(paintf->qim,QRect(previousPoint.x(),previousPoint.y(),previousPoint.x()+200,previousPoint.y()+200),10,false);
+
+    QPalette qp;
+    qp.setBrush(QPalette::Background, QPixmap::fromImage(qbim2).scaled(paintf->size(), Qt::IgnoreAspectRatio));
+    paintf->setPalette(qp);
+    paintf->repaint();
+
+}
+
 void paintScene::applyfilter()
 {
     if ((paintf->qimload) && (paintf->bfiltmode))
@@ -188,6 +212,7 @@ void paintScene::applyfilter()
         colorize->setColor(qcl);//QColor(pw->theta*4,pw->beta*4,pw->gamma*4,pw->alpha*4));
         colorize->setStrength((double)pw->attent/50);
 
+        //qbim1 = applyEffectToImage(paintf->qim, blur, 0);
         qbim1 = applyEffectToImage(paintf->qim, blur, 0);
         qbim2 = applyEffectToImage(qbim1, colorize, 0);
 
@@ -249,6 +274,35 @@ void paintScene::drawBackground(QPainter *p, const QRectF &rect)
 
 }
 
+void paintScene::filllines()
+{
+   int t;
+   int k;
+   int p;
+   int r;
+   int f;
+   for (int i=0; i<400; i++)
+   {
+       t=qrand()%500;
+       k=qrand()%1300;
+       p=50+qrand()%300;
+       r=qrand()%2;
+       linelengths[i]=p;
+       for (int j=0; j<p; j++)
+       {
+           if (r==0)
+               f=1;
+           else
+               f=-1;
+           linesarr[i][j].setX(k+f*j);
+           linesarr[i][j].setY(t);
+       }
+       currlinenum++;
+   }
+   randfxcl=QColor(qrand()%256,qrand()%256,qrand()%256,255-attentt*2);   
+   timeoff=false;
+}
+
 void paintScene::timerUpdate()
 {
     setcolor();
@@ -260,11 +314,14 @@ void paintScene::timerUpdate()
     }
     angle = qAtan2(linesarr[currlinedraw][currnumpoint+1].y()-linesarr[currlinedraw][currnumpoint].y(),linesarr[currlinedraw][currnumpoint+1].x()-linesarr[currlinedraw][currnumpoint].x());
     addLine(linesarr[currlinedraw][currnumpoint].x(), linesarr[currlinedraw][currnumpoint].y(), linesarr[currlinedraw][currnumpoint+1].x()+qCos(angle+M_PI/2)*t0, linesarr[currlinedraw][currnumpoint+1].y()+qSin(angle+M_PI/2)*t0, QPen(drcolor, paintf->pensize, Qt::SolidLine, Qt::RoundCap));
-    currnumpoint++;
+    currnumpoint++;    
     if (currnumpoint==linelengths[currlinedraw]-1)
     {
+       // qDebug()<<currlinedraw;
+        randfxcl=QColor(qrand()%256,qrand()%256,qrand()%256,255-attentt*2);
         currnumpoint=0;
       //  pointnum=0;
+      //   qDebug()<<currlinedraw<<currlinenum;
         if (currlinedraw==currlinenum)
         {
             tim->stop();
@@ -429,7 +486,7 @@ void paintScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
     if (drawcontours)
         t0=0;
 
-    if (randfixcolor)
+    if ((randfixcolor)) // && (!drawflow)
         randfxcl=QColor(qrand()%256,qrand()%256,qrand()%256,255-attentt*2);
 
     setcolor();

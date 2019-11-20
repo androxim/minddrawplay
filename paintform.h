@@ -13,6 +13,7 @@
 
 class paintScene;
 class plotwindow;
+class MainWindow;
 
 namespace Ui {
 class paintform;
@@ -26,14 +27,14 @@ public:
     explicit paintform(QWidget *parent = 0);
     paintScene *scene;
     plotwindow *pw;
+    MainWindow *mww;
     QPolygonF plane;
     int poltypearr[108];
     int centercoord[108][2];
     QDir fd;
     QString folderpath;
-    bool focusmode, adaptivebord;
+    bool adaptivebord, firstpuzzle, spacedflow;
     int activatedcell;
-    QVector<bool> activecell;
     double avgv;
     bool collectiveflow;
     int picsrestored;
@@ -47,6 +48,7 @@ public:
     QStringList imglist;
     QVector<QString> currimglist;
     QSet<int> pressedKeys;
+    QPalette qpr;
     QPixmap pm, pmain, prevpic, curpic, pmtemp, mainpic;
     QVector<QPixmap> pmarray;
     QVector<QPixmap> onepicarr;
@@ -54,7 +56,6 @@ public:
     QPen mypen;
     QTimer* tpicschange;
     QTimer* polyt;
-    QTimer* activecellupdate;
     Qt::AspectRatioMode rationmode;
     int timepics, picsforchange, mainindex,polycount;
     int* currentindexes;
@@ -87,14 +88,13 @@ public:
     void grabpuzzles();
     void matchpuzzle();
     void startpolyt();
+    void loadempty();
     ~paintform();
 
 
 private slots:
 
     void tpicschangeUpdate();
-    void polytUpdate();
-    void activecellUpdate();
 
     void on_pushButton_clicked();
 
@@ -181,9 +181,11 @@ private slots:
 
     void on_pushButton_10_clicked();
 
-    void on_checkBox_18_clicked();
-
     void on_checkBox_19_clicked();
+
+    void on_checkBox_20_clicked();
+
+    void on_checkBox_21_clicked();
 
 private:
     Ui::paintform *ui;

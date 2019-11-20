@@ -25,7 +25,7 @@
 
 // TO DO:
 
-// add randomwaves mode
+// improve randomwaves mode
 // uploading any sounds for tones
 
 const complex<double> I(0.0,1.0);
@@ -264,7 +264,6 @@ plotwindow::plotwindow(QWidget *parent) :
     folderpath="D:/PICS";
     fd.setPath(folderpath+"/");
     imglist = fd.entryList(QStringList() << "*.jpg" << "*.JPG",QDir::Files);
-
 }
 
 plotwindow::~plotwindow()
@@ -803,6 +802,7 @@ void plotwindow::doplot()
     ui->checkBox_5->setGeometry(1210,900,125,25);
 
     ui->radioButton->setGeometry(1330,846,95,20);
+    ui->pushButton_25->setGeometry(1450,830,80,20);
     ui->checkBox_11->setGeometry(1430,850,110,20);
     ui->checkBox_12->setGeometry(1430,870,130,20);
     ui->comboBox->setGeometry(1430,890,90,20);
@@ -1021,16 +1021,19 @@ void plotwindow::update_meditation(int t)
 void plotwindow::radiobut1()
 {
     on_radioButton_clicked();
+    ui->radioButton->setChecked(true);
 }
 
 void plotwindow::radiobut2()
 {
     on_radioButton_2_clicked();
+    ui->radioButton_2->setChecked(true);
 }
 
 void plotwindow::radiobut3()
 {
     on_radioButton_3_clicked();
+    ui->radioButton_3->setChecked(true);
 }
 
 void plotwindow::enablenumparts(bool fl)
@@ -1791,7 +1794,10 @@ void plotwindow::analysemeandata()
         pss->paintf->updatefreqarrs(delta,theta,alpha,beta,gamma,hgamma);
 
     if ((pssstart) && (bfiltmode) && (!pss->paintf->gamemode) && (!pss->paintf->flowmode))
-        pss->applyfilter();
+        if (!pss->drawflow)
+            pss->applyfilter();
+        else
+            pss->applyfilteronbackimg();
 
     if ((pssstart) && (bfiltmode) && (pss->paintf->gamemode))
     {
@@ -1819,7 +1825,7 @@ void plotwindow::analysemeandata()
         cleanbuttons(); tonenumbers=0;
         tones="";
 
-        gettones();
+        gettones();                   // sequential version
 
         if ((antirepeat) && (strLst2.length()>memorylength))
         {
@@ -1836,7 +1842,16 @@ void plotwindow::analysemeandata()
 
         printtoresultbox(tones);
 
-        letsplay();
+     /*   readyfortones=true;
+        myT1->readytoplay=true;
+        myT2->readytoplay=true;
+        myT3->readytoplay=true;
+        myT4->readytoplay=true;
+        myT5->readytoplay=true;
+        myT6->readytoplay=true;
+        myT7->readytoplay=true;
+        myT8->readytoplay=true; */
+        letsplay(); // timers version
 
     }
 
@@ -4029,6 +4044,8 @@ void plotwindow::on_pushButton_24_clicked()
     {
         QPixmap pmx = ui->widget->grab();
         pss->paintf->setbackimage(pmx);
+        pss->paintf->mainpic=pmx;
+        pss->paintf->pmain=pmx;
         this->hide();
         pss->paintf->show();
         pss->paintf->setFocus();
@@ -4043,4 +4060,10 @@ void plotwindow::on_spinBox_22_valueChanged(int arg1)
 void plotwindow::on_checkBox_13_clicked()
 {
     fixback=!fixback;
+}
+
+void plotwindow::on_pushButton_25_clicked()
+{
+    ui->widget->setBackground(backimg,true,Qt::IgnoreAspectRatio);
+    ui->widget->replot();
 }

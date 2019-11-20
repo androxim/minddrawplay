@@ -12,6 +12,13 @@
 
 // adaptive border for puzzle change
 // saving history of waves
+// hue filter
+
+// DONE:
+// flow mode: gather the whole pic from 15 fragments of it by focusing or relaxing
+// focus mode: delay for one random graphicscene related with attention level
+// and for all other pics delay is fixed.. when attention>85% change graphic scene on other random
+
 
 paintform::paintform(QWidget *parent) :
     QWidget(parent),
@@ -77,6 +84,7 @@ paintform::paintform(QWidget *parent) :
     ui->graphicsView_15->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     ui->graphicsView->setFrameStyle(0);
+    ui->graphicsView->setStyleSheet("background: transparent");
     ui->graphicsView_2->setFrameStyle(0);
     ui->graphicsView_3->setFrameStyle(0);
     ui->graphicsView_4->setFrameStyle(0);
@@ -158,6 +166,8 @@ paintform::paintform(QWidget *parent) :
 
     rationmode = Qt::IgnoreAspectRatio;
 
+    firstpuzzle = true;
+
     currentindexes = new int[14];
     for (int i=0; i<14; i++)
         currentindexes[i]=0;
@@ -185,9 +195,6 @@ paintform::paintform(QWidget *parent) :
     ui->verticalSlider->setGeometry(1038,820,20,150);
     ui->checkBox_10->setGeometry(1070,930,160,20);
     ui->checkBox_10->setEnabled(false);
-    ui->checkBox_18->setGeometry(1070,926,160,20);
-    ui->checkBox_18->setEnabled(false);
-    ui->checkBox_18->setVisible(false);
     ui->spinBox_3->setGeometry(1225,929,50,20);
     ui->label_3->setGeometry(1280,929,30,20);
     ui->checkBox_9->setGeometry(1200,905,100,20);
@@ -218,6 +225,9 @@ paintform::paintform(QWidget *parent) :
     ui->label_2->setGeometry(260,853,60,20);
     ui->label_7->setGeometry(260,878,120,20);
     ui->spinBox_6->setGeometry(370,878,40,20);
+    ui->checkBox_20->setGeometry(420,878,100,20);
+    ui->checkBox_21->setGeometry(486,878,60,20);
+    ui->checkBox_21->setVisible(false);
     ui->checkBox_4->setGeometry(260,905,120,20);
     ui->checkBox_4->setVisible(false);
     ui->checkBox_15->setGeometry(260,905,160,20);
@@ -227,7 +237,7 @@ paintform::paintform(QWidget *parent) :
     ui->spinBox_5->setEnabled(true);
     ui->verticalSlider_2->setEnabled(true);
     ui->checkBox_13->setGeometry(400,930,120,20);
-    ui->checkBox_14->setGeometry(260,930,120,20);
+    ui->checkBox_14->setGeometry(260,930,120,20);    
     ui->checkBox_5->setGeometry(400,905,120,20);
     ui->checkBox_5->setVisible(false);
     ui->checkBox_3->setGeometry(80,858,120,20);
@@ -279,11 +289,7 @@ paintform::paintform(QWidget *parent) :
     musicactiv=false;
     puzzlegrabed=false;
     collectiveflow=true;
-
-    focusmode=false;
-    activecell.resize(15);
-    for (int i=0; i<15; i++)
-        activecell[i]=false;
+    spacedflow=false; 
 
     prevpict = -1;
     prevpuzzle = -1;
@@ -334,6 +340,14 @@ paintform::paintform(QWidget *parent) :
 
     laststop=0;
     lenofinterval=2;
+
+  // pmain = mainpic.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation);
+  //  scene->addPixmap(mainpic.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
+  //  scene->update();
+
+  //  scene->clear();
+  //  scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
+  //  this->repaint();
 
     ui->widget->xAxis->setRange(0,32);
     ui->widget->yAxis->setRange(0,101);
@@ -481,15 +495,6 @@ paintform::paintform(QWidget *parent) :
     tpicschange->connect(tpicschange, SIGNAL(timeout()), this, SLOT(tpicschangeUpdate()));
     tpicschange->setInterval(timepics);
 
-    polyt = new QTimer(this);
-    polyt->connect(polyt, SIGNAL(timeout()), this, SLOT(polytUpdate()));
-    polyt->setInterval(100);
-    polycount=0;
-
-    activecellupdate = new QTimer(this);
-    activecellupdate->connect(activecellupdate, SIGNAL(timeout()), this, SLOT(activecellUpdate()));
-    activecellupdate->setInterval(1000);
-
     attentmodu=true;
     ui->radioButton_4->setChecked(true);
     ui->spinBox_6->setValue(borderpicchange);
@@ -503,35 +508,17 @@ paintform::paintform(QWidget *parent) :
 
     adaptivebord=false;
   //  ui->comboBox_2->setCurrentIndex(1);
+  //  scene->filllines();
+
+    pmain.load(":/pics/pics/empty.jpg");
+    mainpic.load(":/pics/pics/empty.jpg");
+    qim.load(":/pics/pics/empty.jpg");
+    qimload = true;
 }
 
 paintform::~paintform()
 {
     delete ui;
-}
-
-void paintform::setactiveflowtime(int t)
-{
-    if (t<30)
-        activecellupdate->setInterval(300);
-    else if ((t>30) && (t<40))
-        activecellupdate->setInterval(400);
-    else if ((t>40) && (t<50))
-        activecellupdate->setInterval(500);
-    else if ((t>50) && (t<60))
-        activecellupdate->setInterval(600);
-    else if ((t>60) && (t<70))
-        activecellupdate->setInterval(700);
-    else if ((t>70) && (t<80))
-        activecellupdate->setInterval(800);
-    else if (t>80)
-    {
-        for (int i=0; i<14; i++)
-            activecell[i]=false;
-        activatedcell = qrand()%14;
-        activecell[activatedcell]=true;
-    }
-    //ui->spinBox_3->setValue(tpicschange->interval());
 }
 
 void paintform::setdflowtime(int t)
@@ -694,111 +681,9 @@ void paintform::startpolyt()
     polyt->start();
 }
 
-void paintform::polytUpdate()
+void paintform::loadempty()
 {
-    if ((numsamples>1) && (scene->attentt>10))
-    {
-        polycount+=32;
-        if (polycount>1500)
-        {
-            scene->clear();
-            polycount=0;
-        }
-        int tp=scene->attentt/9;
-        if (tp>8)
-            tp=scene->attentt/9-qrand()%8;
-        for (int i=0; i<tp; i++)
-            scene->drawpolygon(3+qrand()%(scene->meditt/10+1),polycount,400+(qrand()%scene->attentt*8-scene->attentt*5),15,0.75);
-    }
-}
-
-void paintform::activecellUpdate()
-{
-    int t = qrand()%imglist.size();
-    if (activecell[0])
-    {
-        ui->graphicsView_2->scene()->clear();
-        ui->graphicsView_2->scene()->addPixmap(pmarray[t]);
-        currimglist[0]=folderpath+"/"+imglist.at(t);
-    }
-    if (activecell[1])
-    {
-        ui->graphicsView_3->scene()->clear();
-        ui->graphicsView_3->scene()->addPixmap(pmarray[t]);
-        currimglist[1]=folderpath+"/"+imglist.at(t);
-    }
-    if (activecell[2])
-    {
-        ui->graphicsView_4->scene()->clear();
-        ui->graphicsView_4->scene()->addPixmap(pmarray[t]);
-        currimglist[2]=folderpath+"/"+imglist.at(t);
-    }
-    if (activecell[3])
-    {
-        ui->graphicsView_5->scene()->clear();
-        ui->graphicsView_5->scene()->addPixmap(pmarray[t]);
-        currimglist[3]=folderpath+"/"+imglist.at(t);
-    }
-    if (activecell[4])
-    {
-        ui->graphicsView_6->scene()->clear();
-        ui->graphicsView_6->scene()->addPixmap(pmarray[t]);
-        currimglist[4]=folderpath+"/"+imglist.at(t);
-    }
-    if (activecell[5])
-    {
-        ui->graphicsView_7->scene()->clear();
-        ui->graphicsView_7->scene()->addPixmap(pmarray[t]);
-        currimglist[5]=folderpath+"/"+imglist.at(t);
-    }
-    if (activecell[6])
-    {
-        ui->graphicsView_8->scene()->clear();
-        ui->graphicsView_8->scene()->addPixmap(pmarray[t]);
-        currimglist[6]=folderpath+"/"+imglist.at(t);
-    }
-    if (activecell[7])
-    {
-        ui->graphicsView_9->scene()->clear();
-        ui->graphicsView_9->scene()->addPixmap(pmarray[t]);
-        currimglist[7]=folderpath+"/"+imglist.at(t);
-    }
-    if (activecell[8])
-    {
-        ui->graphicsView_10->scene()->clear();
-        ui->graphicsView_10->scene()->addPixmap(pmarray[t]);
-        currimglist[8]=folderpath+"/"+imglist.at(t);
-    }
-    if (activecell[9])
-    {
-        ui->graphicsView_11->scene()->clear();
-        ui->graphicsView_11->scene()->addPixmap(pmarray[t]);
-        currimglist[9]=folderpath+"/"+imglist.at(t);
-    }
-    if (activecell[10])
-    {
-        ui->graphicsView_12->scene()->clear();
-        ui->graphicsView_12->scene()->addPixmap(pmarray[t]);
-        currimglist[10]=folderpath+"/"+imglist.at(t);
-    }
-    if (activecell[11])
-    {
-        ui->graphicsView_13->scene()->clear();
-        ui->graphicsView_13->scene()->addPixmap(pmarray[t]);
-        currimglist[11]=folderpath+"/"+imglist.at(t);
-    }
-    if (activecell[12])
-    {
-        ui->graphicsView_14->scene()->clear();
-        ui->graphicsView_14->scene()->addPixmap(pmarray[t]);
-        currimglist[12]=folderpath+"/"+imglist.at(t);
-    }
-    if (activecell[13])
-    {
-        ui->graphicsView_15->scene()->clear();
-        ui->graphicsView_15->scene()->addPixmap(pmarray[t]);
-        currimglist[13]=folderpath+"/"+imglist.at(t);
-    }
+    on_pushButton_clicked();
 }
 
 void paintform::initpics()
@@ -868,9 +753,6 @@ void paintform::updateattention(int t)
 
        if (bfiltmode)
            setflowspace(t);
-
-       if (focusmode)
-           setactiveflowtime(t);
 
        if ((numsamples-laststop>lenofinterval) && (adaptivebord))
        {
@@ -959,10 +841,10 @@ void paintform::updatemeditation(int t)
 
     if (!attentmodu)
     {
-       scene->drawrate=70-t;
-       if (scene->drawrate<5)
-           scene->drawrate=5;
-       scene->tim->setInterval(scene->drawrate);
+      // scene->drawrate=70-t;
+      // if (scene->drawrate<5)
+      //     scene->drawrate=5;
+      // scene->tim->setInterval(scene->drawrate);
        ui->verticalSlider->setValue(t);
 
        if (bfiltmode)
@@ -970,9 +852,6 @@ void paintform::updatemeditation(int t)
 
        if (bfiltmode)
            setflowspace(t);
-
-       if (focusmode)
-           setactiveflowtime(t);
 
        if ((numsamples-laststop>lenofinterval) && (adaptivebord))
        {
@@ -1057,177 +936,121 @@ void paintform::randompics()
                 int t = qrand() % 14;
                 currentindexes[t]=randnumb[i];
             }
-            if (!activecell[0])
-            {
-                ui->graphicsView_2->scene()->clear();
-                ui->graphicsView_2->scene()->addPixmap(pmarray[currentindexes[0]]);
-                currimglist[0]=folderpath+"/"+imglist.at(currentindexes[0]);
-            }
-            if (!activecell[1])
-            {
-                ui->graphicsView_3->scene()->clear();
-                ui->graphicsView_3->scene()->addPixmap(pmarray[currentindexes[1]]);
-                currimglist[1]=folderpath+"/"+imglist.at(currentindexes[1]);
-            }
-            if (!activecell[2])
-            {
-                ui->graphicsView_4->scene()->clear();
-                ui->graphicsView_4->scene()->addPixmap(pmarray[currentindexes[2]]);
-                currimglist[2]=folderpath+"/"+imglist.at(currentindexes[2]);
-            }
-            if (!activecell[3])
-            {
-                ui->graphicsView_5->scene()->clear();
-                ui->graphicsView_5->scene()->addPixmap(pmarray[currentindexes[3]]);
-                currimglist[3]=folderpath+"/"+imglist.at(currentindexes[3]);
-            }
-            if (!activecell[4])
-            {
-                ui->graphicsView_6->scene()->clear();
-                ui->graphicsView_6->scene()->addPixmap(pmarray[currentindexes[4]]);
-                currimglist[4]=folderpath+"/"+imglist.at(currentindexes[4]);
-            }
-            if (!activecell[5])
-            {
-                ui->graphicsView_7->scene()->clear();
-                ui->graphicsView_7->scene()->addPixmap(pmarray[currentindexes[5]]);
-                currimglist[5]=folderpath+"/"+imglist.at(currentindexes[5]);
-            }
-            if (!activecell[6])
-            {
-                ui->graphicsView_8->scene()->clear();
-                ui->graphicsView_8->scene()->addPixmap(pmarray[currentindexes[6]]);
-                currimglist[6]=folderpath+"/"+imglist.at(currentindexes[6]);
-            }
-            if (!activecell[7])
-            {
-                ui->graphicsView_9->scene()->clear();
-                ui->graphicsView_9->scene()->addPixmap(pmarray[currentindexes[7]]);
-                currimglist[7]=folderpath+"/"+imglist.at(currentindexes[7]);
-            }
-            if (!activecell[8])
-            {
-                ui->graphicsView_10->scene()->clear();
-                ui->graphicsView_10->scene()->addPixmap(pmarray[currentindexes[8]]);
-                currimglist[8]=folderpath+"/"+imglist.at(currentindexes[8]);
-            }
-            if (!activecell[9])
-            {
-                ui->graphicsView_11->scene()->clear();
-                ui->graphicsView_11->scene()->addPixmap(pmarray[currentindexes[9]]);
-                currimglist[9]=folderpath+"/"+imglist.at(currentindexes[9]);
-            }
-            if (!activecell[10])
-            {
-                ui->graphicsView_12->scene()->clear();
-                ui->graphicsView_12->scene()->addPixmap(pmarray[currentindexes[10]]);
-                currimglist[10]=folderpath+"/"+imglist.at(currentindexes[10]);
-            }
-            if (!activecell[11])
-            {
-                ui->graphicsView_13->scene()->clear();
-                ui->graphicsView_13->scene()->addPixmap(pmarray[currentindexes[11]]);
-                currimglist[11]=folderpath+"/"+imglist.at(currentindexes[11]);
-            }
-            if (!activecell[12])
-            {
-                ui->graphicsView_14->scene()->clear();
-                ui->graphicsView_14->scene()->addPixmap(pmarray[currentindexes[12]]);
-                currimglist[12]=folderpath+"/"+imglist.at(currentindexes[12]);
-            }
-            if (!activecell[13])
-            {
-                ui->graphicsView_15->scene()->clear();
-                ui->graphicsView_15->scene()->addPixmap(pmarray[currentindexes[13]]);
-                currimglist[13]=folderpath+"/"+imglist.at(currentindexes[13]);
-            }
+
+            ui->graphicsView_2->scene()->clear();
+            ui->graphicsView_2->scene()->addPixmap(pmarray[currentindexes[0]]);
+            currimglist[0]=folderpath+"/"+imglist.at(currentindexes[0]);
+
+            ui->graphicsView_3->scene()->clear();
+            ui->graphicsView_3->scene()->addPixmap(pmarray[currentindexes[1]]);
+            currimglist[1]=folderpath+"/"+imglist.at(currentindexes[1]);
+
+            ui->graphicsView_4->scene()->clear();
+            ui->graphicsView_4->scene()->addPixmap(pmarray[currentindexes[2]]);
+            currimglist[2]=folderpath+"/"+imglist.at(currentindexes[2]);
+
+            ui->graphicsView_5->scene()->clear();
+            ui->graphicsView_5->scene()->addPixmap(pmarray[currentindexes[3]]);
+            currimglist[3]=folderpath+"/"+imglist.at(currentindexes[3]);
+
+            ui->graphicsView_6->scene()->clear();
+            ui->graphicsView_6->scene()->addPixmap(pmarray[currentindexes[4]]);
+            currimglist[4]=folderpath+"/"+imglist.at(currentindexes[4]);
+
+            ui->graphicsView_7->scene()->clear();
+            ui->graphicsView_7->scene()->addPixmap(pmarray[currentindexes[5]]);
+            currimglist[5]=folderpath+"/"+imglist.at(currentindexes[5]);
+
+            ui->graphicsView_8->scene()->clear();
+            ui->graphicsView_8->scene()->addPixmap(pmarray[currentindexes[6]]);
+            currimglist[6]=folderpath+"/"+imglist.at(currentindexes[6]);
+
+            ui->graphicsView_9->scene()->clear();
+            ui->graphicsView_9->scene()->addPixmap(pmarray[currentindexes[7]]);
+            currimglist[7]=folderpath+"/"+imglist.at(currentindexes[7]);
+
+            ui->graphicsView_10->scene()->clear();
+            ui->graphicsView_10->scene()->addPixmap(pmarray[currentindexes[8]]);
+            currimglist[8]=folderpath+"/"+imglist.at(currentindexes[8]);
+
+            ui->graphicsView_11->scene()->clear();
+            ui->graphicsView_11->scene()->addPixmap(pmarray[currentindexes[9]]);
+            currimglist[9]=folderpath+"/"+imglist.at(currentindexes[9]);
+
+            ui->graphicsView_12->scene()->clear();
+            ui->graphicsView_12->scene()->addPixmap(pmarray[currentindexes[10]]);
+            currimglist[10]=folderpath+"/"+imglist.at(currentindexes[10]);
+
+            ui->graphicsView_13->scene()->clear();
+            ui->graphicsView_13->scene()->addPixmap(pmarray[currentindexes[11]]);
+            currimglist[11]=folderpath+"/"+imglist.at(currentindexes[11]);
+
+            ui->graphicsView_14->scene()->clear();
+            ui->graphicsView_14->scene()->addPixmap(pmarray[currentindexes[12]]);
+            currimglist[12]=folderpath+"/"+imglist.at(currentindexes[12]);
+
+            ui->graphicsView_15->scene()->clear();
+            ui->graphicsView_15->scene()->addPixmap(pmarray[currentindexes[13]]);
+            currimglist[13]=folderpath+"/"+imglist.at(currentindexes[13]);
         }
         else if ((!flowmode) && (collectiveflow))
         {
-            if (!activecell[0])
-            {
-                ui->graphicsView_2->scene()->clear();
-                ui->graphicsView_2->scene()->addPixmap(pmarray[randnumb[0]]);
-                currimglist[0]=folderpath+"/"+imglist.at(randnumb[0]);
-            }
-            if (!activecell[1])
-            {
-                ui->graphicsView_3->scene()->clear();
-                ui->graphicsView_3->scene()->addPixmap(pmarray[randnumb[1]]);
-                currimglist[1]=folderpath+"/"+imglist.at(randnumb[1]);
-            }
-            if (!activecell[2])
-            {
-                ui->graphicsView_4->scene()->clear();
-                ui->graphicsView_4->scene()->addPixmap(pmarray[randnumb[2]]);
-                currimglist[2]=folderpath+"/"+imglist.at(randnumb[2]);
-            }
-            if (!activecell[3])
-            {
-                ui->graphicsView_5->scene()->clear();
-                ui->graphicsView_5->scene()->addPixmap(pmarray[randnumb[3]]);
-                currimglist[3]=folderpath+"/"+imglist.at(randnumb[3]);
-            }
-            if (!activecell[4])
-            {
-                ui->graphicsView_6->scene()->clear();
-                ui->graphicsView_6->scene()->addPixmap(pmarray[randnumb[4]]);
-                currimglist[4]=folderpath+"/"+imglist.at(randnumb[4]);
-            }
-            if (!activecell[5])
-            {
-                ui->graphicsView_7->scene()->clear();
-                ui->graphicsView_7->scene()->addPixmap(pmarray[randnumb[5]]);
-                currimglist[5]=folderpath+"/"+imglist.at(randnumb[5]);
-            }
-            if (!activecell[6])
-            {
-                ui->graphicsView_8->scene()->clear();
-                ui->graphicsView_8->scene()->addPixmap(pmarray[randnumb[6]]);
-                currimglist[6]=folderpath+"/"+imglist.at(randnumb[6]);
-            }
-            if (!activecell[7])
-            {
-                ui->graphicsView_9->scene()->clear();
-                ui->graphicsView_9->scene()->addPixmap(pmarray[randnumb[7]]);
-                currimglist[7]=folderpath+"/"+imglist.at(randnumb[7]);
-            }
-            if (!activecell[8])
-            {
-                ui->graphicsView_10->scene()->clear();
-                ui->graphicsView_10->scene()->addPixmap(pmarray[randnumb[8]]);
-                currimglist[8]=folderpath+"/"+imglist.at(randnumb[8]);
-            }
-            if (!activecell[9])
-            {
-                ui->graphicsView_11->scene()->clear();
-                ui->graphicsView_11->scene()->addPixmap(pmarray[randnumb[9]]);
-                currimglist[9]=folderpath+"/"+imglist.at(randnumb[9]);
-            }
-            if (!activecell[10])
-            {
-                ui->graphicsView_12->scene()->clear();
-                ui->graphicsView_12->scene()->addPixmap(pmarray[randnumb[10]]);
-                currimglist[10]=folderpath+"/"+imglist.at(randnumb[10]);
-            }
-            if (!activecell[11])
-            {
-                ui->graphicsView_13->scene()->clear();
-                ui->graphicsView_13->scene()->addPixmap(pmarray[randnumb[11]]);
-                currimglist[11]=folderpath+"/"+imglist.at(randnumb[11]);
-            }
-            if (!activecell[12])
-            {
-                ui->graphicsView_14->scene()->clear();
-                ui->graphicsView_14->scene()->addPixmap(pmarray[randnumb[12]]);
-                currimglist[12]=folderpath+"/"+imglist.at(randnumb[12]);
-            }
-            if (!activecell[13])
-            {
-                ui->graphicsView_15->scene()->clear();
-                ui->graphicsView_15->scene()->addPixmap(pmarray[randnumb[13]]);
-                currimglist[13]=folderpath+"/"+imglist.at(randnumb[13]);
-            }
+
+            ui->graphicsView_2->scene()->clear();
+            ui->graphicsView_2->scene()->addPixmap(pmarray[randnumb[0]]);
+            currimglist[0]=folderpath+"/"+imglist.at(randnumb[0]);
+
+            ui->graphicsView_3->scene()->clear();
+            ui->graphicsView_3->scene()->addPixmap(pmarray[randnumb[1]]);
+            currimglist[1]=folderpath+"/"+imglist.at(randnumb[1]);
+
+            ui->graphicsView_4->scene()->clear();
+            ui->graphicsView_4->scene()->addPixmap(pmarray[randnumb[2]]);
+            currimglist[2]=folderpath+"/"+imglist.at(randnumb[2]);
+
+            ui->graphicsView_5->scene()->clear();
+            ui->graphicsView_5->scene()->addPixmap(pmarray[randnumb[3]]);
+            currimglist[3]=folderpath+"/"+imglist.at(randnumb[3]);
+
+            ui->graphicsView_6->scene()->clear();
+            ui->graphicsView_6->scene()->addPixmap(pmarray[randnumb[4]]);
+            currimglist[4]=folderpath+"/"+imglist.at(randnumb[4]);
+
+            ui->graphicsView_7->scene()->clear();
+            ui->graphicsView_7->scene()->addPixmap(pmarray[randnumb[5]]);
+            currimglist[5]=folderpath+"/"+imglist.at(randnumb[5]);
+
+            ui->graphicsView_8->scene()->clear();
+            ui->graphicsView_8->scene()->addPixmap(pmarray[randnumb[6]]);
+            currimglist[6]=folderpath+"/"+imglist.at(randnumb[6]);
+
+            ui->graphicsView_9->scene()->clear();
+            ui->graphicsView_9->scene()->addPixmap(pmarray[randnumb[7]]);
+            currimglist[7]=folderpath+"/"+imglist.at(randnumb[7]);
+
+            ui->graphicsView_10->scene()->clear();
+            ui->graphicsView_10->scene()->addPixmap(pmarray[randnumb[8]]);
+            currimglist[8]=folderpath+"/"+imglist.at(randnumb[8]);
+
+            ui->graphicsView_11->scene()->clear();
+            ui->graphicsView_11->scene()->addPixmap(pmarray[randnumb[9]]);
+            currimglist[9]=folderpath+"/"+imglist.at(randnumb[9]);
+
+            ui->graphicsView_12->scene()->clear();
+            ui->graphicsView_12->scene()->addPixmap(pmarray[randnumb[10]]);
+            currimglist[10]=folderpath+"/"+imglist.at(randnumb[10]);
+
+            ui->graphicsView_13->scene()->clear();
+            ui->graphicsView_13->scene()->addPixmap(pmarray[randnumb[11]]);
+            currimglist[11]=folderpath+"/"+imglist.at(randnumb[11]);
+
+            ui->graphicsView_14->scene()->clear();
+            ui->graphicsView_14->scene()->addPixmap(pmarray[randnumb[12]]);
+            currimglist[12]=folderpath+"/"+imglist.at(randnumb[12]);
+
+            ui->graphicsView_15->scene()->clear();
+            ui->graphicsView_15->scene()->addPixmap(pmarray[randnumb[13]]);
+            currimglist[13]=folderpath+"/"+imglist.at(randnumb[13]);
         } else
         if ((!flowmode) && (!collectiveflow))
         {
@@ -1812,7 +1635,7 @@ bool paintform::eventFilter(QObject *target, QEvent *event)
         QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
         if (mouseEvent->button() == Qt::RightButton)
         {
-            if ((scene->tim->isActive()) && (scene->randfixcolor))
+            if ((scene->randfixcolor))
                 scene->randfxcl=QColor(qrand()%256,qrand()%256,qrand()%256,255-scene->attentt*2);
         }
         if (mouseEvent->button() == Qt::MiddleButton)
@@ -2800,19 +2623,28 @@ void paintform::on_pushButton_clicked()
     {
      //   scene->addPixmap(pm.scaledToWidth(ui->graphicsView->width()));
       //  scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
-        pmain = mainpic.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation);
-        scene->addPixmap(mainpic.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
-        scene->update();
+        if (!scene->drawflow)
+        {            
+            pmain = mainpic.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation);
+            scene->addPixmap(mainpic.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
+            scene->update();            
+        }
+        else
+        {
+            scene->clear();
+            this->setPalette(qpr);
+            this->repaint();
+        }
     }
     else
         scene->clear();
 
-    for (int i=0; i<50; i++)
-    {
-        centercoord[i][0]=qrand()%1500;
-        centercoord[i][1]=qrand()%800;
-        poltypearr[i]=3+qrand()%6;
-    }
+  //  for (int i=0; i<50; i++)
+  //  {
+  //      centercoord[i][0]=qrand()%1500;
+  //      centercoord[i][1]=qrand()%800;
+  //      poltypearr[i]=3+qrand()%6;
+  //  }
 }
 
 void paintform::on_pushButton_2_clicked()
@@ -2823,9 +2655,18 @@ void paintform::on_pushButton_2_clicked()
         mainpic.load(filename);
         pmain.load(filename);
         qim.load(filename);
-        qimload = true;
-      //  scene->addPixmap(pm.scaledToHeight(ui->graphicsView->height()));
-        scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
+        if (scene->drawflow)
+        {
+            scene->bkgndimg.load(filename);
+            qpr.setBrush(QPalette::Background, scene->bkgndimg.scaled(this->size(),rationmode,Qt::SmoothTransformation));
+            this->setPalette(qpr);
+            scene->clear();
+            this->repaint();
+        } else
+        {
+            qimload = true;
+            scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
+        }
 
        // if (puzzlemode)
        //     randompics();
@@ -2872,6 +2713,8 @@ void paintform::getimg1()
 void paintform::getimg2()
 {
     curpic=ui->graphicsView->grab();
+    if (!pmain.isNull())
+        pmain=curpic;
 }
 
 void paintform::on_pushButton_4_clicked()
@@ -2985,18 +2828,26 @@ void paintform::on_pushButton_6_clicked()
     mainpic.load(filename);
     currimglist[14]=filename;
     mainindex = rimg;
- //   if (filename!="")
+    scene->bkgndimg.load(filename);
+    pmain.load(filename);
+    qim.load(filename);
+    qimload = true;
+
+    if (scene->drawflow)
     {
-        pmain.load(filename);
-        qim.load(filename);
+       // scene->clear();
+        qpr.setBrush(QPalette::Background, scene->bkgndimg.scaled(this->size(),rationmode,Qt::SmoothTransformation));
+        this->setPalette(qpr);
+    } else
+    {
         qim=qim.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation);
-        qimload = true;
-      //  scene->addPixmap(pm.scaledToHeight(ui->graphicsView->height()));
-      //  scene->clear();
+        this->repaint();
+        scene->clear();
         scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
+    }
         //qDebug()<<"image loaded";
      //   scene->paintf->repaint();
-    }
+
   /*  if (ui->checkBox_12->isChecked())
     {
         ui->widget_2->setVisible(true);
@@ -3019,9 +2870,10 @@ void paintform::on_checkBox_8_clicked()
    // else
    //     ui->checkBox_16->setEnabled(true);
 
-    ui->checkBox_18->setEnabled(puzzlemode);
     ui->checkBox_10->setEnabled(puzzlemode);
+    ui->checkBox_20->setEnabled(!puzzlemode);
     ui->pushButton_7->setEnabled(puzzlemode);
+
     if (puzzlemode)
     {
         if (flowmode)
@@ -3053,6 +2905,12 @@ void paintform::on_checkBox_8_clicked()
 
     if (minimode)
         ui->checkBox_13->setEnabled(puzzlemode);
+
+    if (firstpuzzle)
+    {
+        //randompics();
+        firstpuzzle=false;
+    }
 }
 
 void paintform::on_pushButton_7_clicked()
@@ -3230,26 +3088,27 @@ void paintform::on_checkBox_16_clicked()
 {
     if (!puzzlemode)
     {
+        scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
         grabpuzzles();
         randompics();
     }
 
     if (puzzlegrabed)
     {
-        if (flowmode)
-            flowmode=false;
+        if (flowmode)                    
+            flowmode=false;                    
         else
         {
-            flowmode=true;
+            flowmode=true;            
             random_shuffle(puzzlelocs.begin(), puzzlelocs.end());
         }
 
         ui->checkBox_8->setChecked(flowmode);
         on_checkBox_8_clicked();
         changingpics=flowmode;
-        ui->checkBox_10->setChecked(flowmode);
+        ui->checkBox_10->setChecked(flowmode);                
         ui->checkBox_13->setEnabled(!flowmode);
-        ui->checkBox_11->setEnabled(flowmode);
+        ui->checkBox_11->setEnabled(flowmode);        
         ui->checkBox_11->setChecked(flowmode);
         if (flowmode)
             tpicschange->start();
@@ -3288,26 +3147,37 @@ void paintform::on_pushButton_10_clicked()
     }
 }
 
-void paintform::on_checkBox_18_clicked()
-{
-    focusmode=!focusmode;
-    if (!activecellupdate->isActive())
-    {
-        activatedcell = qrand()%14;
-        activecell[activatedcell]=true;
-        activecellupdate->start();
-    }
-    else
-    {
-        for (int i=0; i<14; i++)
-            activecell[i]=false;
-        activecellupdate->stop();
-    }
-}
-
 void paintform::on_checkBox_19_clicked()
 {
     adaptivebord=!adaptivebord;
     ui->verticalSlider_2->setEnabled(!adaptivebord);
     ui->spinBox_5->setEnabled(!adaptivebord);
+}
+
+void paintform::on_checkBox_20_clicked()
+{    
+    scene->drawflow=!scene->drawflow;
+    ui->checkBox_8->setEnabled(!scene->drawflow);
+    ui->checkBox_16->setEnabled(!scene->drawflow);
+    ui->checkBox_17->setEnabled(!scene->drawflow);
+    if ((scene->drawflow) && (!pmain.isNull()))
+    {
+       // scene->tim->start();
+        mww->setback(pmain);
+        qpr.setBrush(QPalette::Background, scene->bkgndimg.scaled(this->size(),rationmode,Qt::SmoothTransformation));
+        this->setPalette(qpr);
+        scene->clear();
+        this->repaint();
+    }
+  //  else
+    //    scene->tim->stop();
+}
+
+void paintform::on_checkBox_21_clicked()
+{
+    spacedflow=!spacedflow;
+    if (spacedflow)
+        scene->tim->start();
+    else
+        scene->tim->stop();
 }

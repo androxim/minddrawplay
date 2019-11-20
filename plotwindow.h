@@ -6,6 +6,7 @@
 #include <hilbert.h>
 #include <vector>
 #include "mainwindow.h"
+#include "omp.h"
 #include "stdio.h"
 #include <Eigen/Dense>
 #include <paintscene.h>
@@ -14,7 +15,6 @@
 #include "QSoundEffect"
 #include "QMediaPlayer"
 #include "rawsignal.h"
-
 
 namespace Ui {
 class plot;
@@ -40,6 +40,7 @@ class appconnect;
 class MainWindow;
 class Settings;
 class paintScene;
+class myTone;
 
 class plotwindow : public QWidget
 {
@@ -51,7 +52,15 @@ public:
     QString daqport;
     QString folderpath;
     rawsignal* rws;
-    bool bfiltmode,adaptivenumparts;   
+    bool bfiltmode,adaptivenumparts;
+    myTone* myT1;
+    myTone* myT2;
+    myTone* myT3;
+    myTone* myT4;
+    myTone* myT5;
+    myTone* myT6;
+    myTone* myT7;
+    myTone* myT8;
     QDir fd;
     bool backimageloaded;
     bool filteringback;
@@ -424,6 +433,8 @@ private slots:
     void on_spinBox_22_valueChanged(int arg1);
 
     void on_checkBox_13_clicked();
+
+    void on_pushButton_25_clicked();
 
 private:
     Ui::plot *ui;

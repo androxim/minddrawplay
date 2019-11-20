@@ -38,11 +38,13 @@ public:
     QPointF* linecoords;
     QVector<QPointF*> linesarr;
     int* linelengths;
+    QPixmap bkgndimg;
     double sumd, meand, angle;
     Complex t[TMAX];
     CArray cdata;
     QPolygonF polygon;
     QColor drcolor, fxcolor, randfxcl;
+    bool drawflow;
     bool randcolor, fixcolor, freqcolor, randfixcolor, drawbpoints, startedline, horizline, vertline, attmodul, drawcontours, timeoff;
     QPointF previousPoint, p1, p2;
     QImage qbim1,qbim2;
@@ -68,6 +70,8 @@ public:
     void k_curve(double x, double y,double lenght, double angle, int n_order);
     void line1(int x_1,int y_1, int x_2,int y_2);
     void drawpolygon(int p, int xc, int yc, double r, double d);
+    void filllines();
+    void applyfilteronbackimg();
 
     QImage applyEffectToImage(QImage src, QGraphicsEffect *effect, int extent);
     QImage blurred(const QImage& image, const QRect& rect, int radius, bool alphaOnly);

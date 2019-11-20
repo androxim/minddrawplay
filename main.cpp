@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
     intervalhilbert(&HT,&w,"");
 
     w.setFixedSize(638,355);
-    w.setWindowTitle("MindDrawPlay beta 2.21");
+    w.setWindowTitle("MindDrawPlay beta 2.24");
     w.show();
 
     return a.exec();

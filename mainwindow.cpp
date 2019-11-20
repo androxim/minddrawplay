@@ -30,10 +30,12 @@ MainWindow::MainWindow(QWidget *parent) :
     setWindowFlags(Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint);
     ui->setupUi(this);
     plotw = new plotwindow();
-    plotw->setWindowTitle("MindDrawPlay beta 2.21 | MindPlay");
+    plotw->setWindowTitle("MindDrawPlay beta 2.24 | MindPlay");
     paintw = new paintform();
     paintw->pw=plotw;
+    paintw->mww=this;
     paintw->setFixedSize(1600,970);
+
     plotw->setFixedSize(1600,978);
     plotw->move(QApplication::desktop()->screen()->rect().center() - plotw->rect().center()-QPoint(0,30));
     plotw->start=false;  
@@ -87,6 +89,15 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::setback(QPixmap pm)
+{
+    bkgnd=pm;
+    bkgnd = bkgnd.scaled(paintw->size(), Qt::IgnoreAspectRatio);
+    palette.setBrush(QPalette::Background, bkgnd);
+    paintw->setPalette(palette);
+    paintw->scene->bkgndimg=bkgnd;
+}
+
 void MainWindow::adddata(string s, QString spath)
 {
     ui->label->setText(QString::fromStdString(s));
@@ -129,6 +140,7 @@ void MainWindow::on_pushButton_3_clicked()
     plotw->pssstart=true;
     paintw->scene->clear();
     paintw->show();
+    paintw->loadempty();
    // paintw->startpolyt();
     if (!bciconnect)
     {
@@ -184,6 +196,7 @@ void MainWindow::on_pushButton_4_clicked()
     plotw->pssstart=true;
     paintw->scene->clear();
     paintw->show();
+    paintw->loadempty();
    // paintw->startpolyt();
     if (!bciconnect)
     {
