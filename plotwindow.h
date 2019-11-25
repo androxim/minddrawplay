@@ -166,11 +166,10 @@ public:
     void clearstim();
     void cleareeg(int start, int end);
     void clearfiltered();
-    void draw(int start);
+    void updatedata(int start);
     void bcidata(double d1);
     void analysemeandata();
     void analysepart();
-    void analyseinterval();
     void playdata();
     void gettones();
     void playtank1(QString tonesset);

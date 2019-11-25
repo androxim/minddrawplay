@@ -36,6 +36,7 @@ public:
     bool adaptivebord, firstpuzzle, spacedflow;
     int activatedcell;
     double avgv;
+    QPixmap pmg;
     bool collectiveflow;
     int picsrestored;
     set<int> stpic0, stpic1, stres;

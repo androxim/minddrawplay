@@ -89,15 +89,6 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::setback(QPixmap pm)
-{
-    bkgnd=pm;
-    bkgnd = bkgnd.scaled(paintw->size(), Qt::IgnoreAspectRatio);
-    palette.setBrush(QPalette::Background, bkgnd);
-    paintw->setPalette(palette);
-    paintw->scene->bkgndimg=bkgnd;
-}
-
 void MainWindow::adddata(string s, QString spath)
 {
     ui->label->setText(QString::fromStdString(s));

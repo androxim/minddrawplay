@@ -546,20 +546,28 @@ void paintform::setflowspace(int t)
 {
     if (t<20)
     {
-        picsforchange=12;
+        picsforchange=11;
         ui->spinBox_4->setValue(picsforchange);
     }
+  //  else if ((t>20) && (t<30))
+  //  {
+  //      picsforchange=9;
+  //      ui->spinBox_4->setValue(picsforchange);
+  //  }
     else if ((t>20) && (t<30))
-    {
-        picsforchange=9;
-        ui->spinBox_4->setValue(picsforchange);
-    }
-    else if ((t>30) && (t<40))
     {
         if (collectiveflow)
             picsforchange=7;
         else
             picsforchange=8;
+        ui->spinBox_4->setValue(picsforchange);
+    }
+    else if ((t>30) && (t<40))
+    {
+        if (collectiveflow)
+            picsforchange=6;
+        else
+            picsforchange=7;
         ui->spinBox_4->setValue(picsforchange);
     }
     else if ((t>40) && (t<50))
@@ -586,15 +594,7 @@ void paintform::setflowspace(int t)
             picsforchange=4;
         ui->spinBox_4->setValue(picsforchange);
     }
-    else if ((t>70) && (t<80))
-    {
-        if (collectiveflow)
-            picsforchange=2;
-        else
-            picsforchange=3;
-        ui->spinBox_4->setValue(picsforchange);
-    }
-    else if ((t>80) && (t<85))
+    else if ((t>70) && (t<77))
     {
         if (collectiveflow)
             picsforchange=1;
@@ -602,7 +602,7 @@ void paintform::setflowspace(int t)
             picsforchange=2;
         ui->spinBox_4->setValue(picsforchange);
     }
-    else if (t>85)
+    else if (t>77)
     {
         picsforchange=0;
         ui->spinBox_4->setValue(picsforchange);
@@ -610,7 +610,7 @@ void paintform::setflowspace(int t)
         {
             matchpuzzle();
             on_checkBox_16_clicked();
-            delay(1000);
+           // delay(500);
             on_pushButton_6_clicked();
             on_checkBox_16_clicked();
         }
@@ -1630,9 +1630,26 @@ bool paintform::eventFilter(QObject *target, QEvent *event)
   //      on_checkBox_8_clicked();
    // }
 
+    if ((target == ui->graphicsView) && (event->type() == QEvent::MouseButtonDblClick))
+    {
+       if ((!gamemode) && (!flowmode))
+       {
+            if (!puzzlemode)
+                pmg = ui->graphicsView->grab();
+            else
+                pmg = mainpic;
+
+            on_checkBox_8_clicked();
+            scene->addPixmap(pmg.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
+            scene->update();
+            ui->graphicsView->repaint();
+       }
+    }
+
     if ((target == ui->graphicsView) && (event->type() == QEvent::MouseButtonPress) && (!flowmode))
     {
         QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
+
         if (mouseEvent->button() == Qt::RightButton)
         {
             if ((scene->randfixcolor))
@@ -2565,10 +2582,15 @@ void paintform::setbackimage(QPixmap pm)
 {
     pmain=pm;
     qim=pm.toImage();
-    qimload = true;
-  //  scene->addPixmap(pm.scaledToHeight(ui->graphicsView->height()));
-   // scene->clear();
-    scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
+    qimload = true;  
+    if (!scene->drawflow)
+        scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
+    else
+    {
+        scene->bkgndimg=pm;
+        qpr.setBrush(QPalette::Background, scene->bkgndimg.scaled(this->size(),rationmode,Qt::SmoothTransformation));
+        this->setPalette(qpr);
+    }
 
 }
 
@@ -2655,6 +2677,7 @@ void paintform::on_pushButton_2_clicked()
         mainpic.load(filename);
         pmain.load(filename);
         qim.load(filename);
+        currimglist[14]=filename;
         if (scene->drawflow)
         {
             scene->bkgndimg.load(filename);
@@ -2909,6 +2932,10 @@ void paintform::on_checkBox_8_clicked()
     if (firstpuzzle)
     {
         //randompics();
+       // on_pushButton_7_clicked();
+      //  scene->update();
+      //  this->update();
+      //  this->repaint();
         firstpuzzle=false;
     }
 }
@@ -3072,8 +3099,17 @@ void paintform::on_comboBox_2_currentIndexChanged(int index)
 
 void paintform::on_pushButton_9_clicked()
 {
-    QPixmap pixMap = ui->graphicsView->grab();
-    pw->setbackimage(pixMap);
+    QPixmap pixMap;
+    if (!scene->drawflow)
+    {
+        pixMap = ui->graphicsView->grab();
+        pw->setbackimage(pixMap);
+    }
+    else
+    {
+        pixMap = scene->bkgndimg;
+        pw->setbackimage(pixMap);
+    }
     this->hide();
     pw->show();
     pw->setFocus();
@@ -3157,20 +3193,28 @@ void paintform::on_checkBox_19_clicked()
 void paintform::on_checkBox_20_clicked()
 {    
     scene->drawflow=!scene->drawflow;
-    ui->checkBox_8->setEnabled(!scene->drawflow);
-    ui->checkBox_16->setEnabled(!scene->drawflow);
-    ui->checkBox_17->setEnabled(!scene->drawflow);
+    if (minimode)
+    {
+        ui->checkBox_8->setEnabled(!scene->drawflow);
+        ui->checkBox_16->setEnabled(!scene->drawflow);
+        ui->checkBox_17->setEnabled(!scene->drawflow);
+    }
+    ui->pushButton_5->setEnabled(!scene->drawflow);
     if ((scene->drawflow) && (!pmain.isNull()))
     {
        // scene->tim->start();
-        mww->setback(pmain);
+        scene->bkgndimg=pmain;
         qpr.setBrush(QPalette::Background, scene->bkgndimg.scaled(this->size(),rationmode,Qt::SmoothTransformation));
         this->setPalette(qpr);
         scene->clear();
         this->repaint();
     }
-  //  else
-    //    scene->tim->stop();
+    else
+    {
+        // scene->tim->stop();
+        pmain=scene->bkgndimg;
+        scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
+    }
 }
 
 void paintform::on_checkBox_21_clicked()

@@ -706,6 +706,7 @@ void plotwindow::doplot()
     ui->label_24->setPalette(sp2);
     ui->label_24->setGeometry(350,20,181,26);
     ui->label_24->setVisible(false);
+    ui->progressBar->setGeometry(700,26,236,20);
 
    // ui->pushButton_9->setStyleSheet("QPushButton{background: rgb(255, 0, 0); }");
 
@@ -971,8 +972,19 @@ void plotwindow::clearfiltered()
     ui->widget->replot();
 }
 
-void plotwindow::draw(int start)
+void plotwindow::updatedata(int start)
 {
+    int pos=0;
+    if ((recparts>0) && (eegdata[graphcount][start-2]==0))
+    {
+        for (int j=start-2; j>0; j--)
+            if (!eegdata[graphcount][j]==0)
+            {
+                pos=j+1;
+                break;
+            }
+        start=pos;
+    }
     for (int i=0; i<hnt->imlength; i++)
         eegdata[graphcount][start+i]=drawshift+arrc.amp0[i];
 }
@@ -985,6 +997,9 @@ void plotwindow::update_attention(int t)
     if ((attentionvolume) && (t>volumebord))
         on_horizontalSlider_3_valueChanged(t);
 
+    if (attentmodul)
+        ui->progressBar->setValue(t);
+
     if ((!fixback) && (attentmodul) && (backimageloaded) && (t>picchangeborder)) // && (filteringback)
         on_pushButton_6_clicked();
 }
@@ -994,6 +1009,9 @@ void plotwindow::update_meditation(int t)
 {
     meditt = t;
     ui->label_24->setText("MEDITATION: "+QString::number(t)+"%");
+
+    if (!attentmodul)
+        ui->progressBar->setValue(t);
 
     if ((!fixback) && (!attentmodul) && (backimageloaded) && (t>picchangeborder)) // && (filteringback)
         on_pushButton_6_clicked();
@@ -1077,7 +1095,8 @@ void plotwindow::applyfilteronback()
         colorize->setStrength((double)attent/70);
 
         QM = backimg.toImage();
-        qbim1 = applyEffectToImage(QM, blur, 0);
+        qbim1 = applyEffectToImage(QM, blur, 0);                
+
         qbim2 = applyEffectToImage(qbim1, colorize, 0);
 
         ui->widget->setBackground(QPixmap::fromImage(qbim2),true,Qt::IgnoreAspectRatio);
@@ -1669,22 +1688,15 @@ void plotwindow::gettones()
 }
 
 void plotwindow::randomtone()
-{
-    QString ton=tones;
-   // while (ton==tones)
-    if (lasttones.contains(tones) or (pss->paintf->gamemode))
-    {
-        tonenumbers=0;
-      //  tones="";
-        delta = meandelta - 7 + qrand() % 15;
-        theta = meantheta - 7 + qrand() % 15;
-        alpha = meanalpha - 7 + qrand() % 15;
-        beta = meanbeta - 7 + qrand() % 15;
-        gamma = meangamma - 4 + qrand() % 8;
-        hgamma = meanhgamma - 4 + qrand() % 8;
-        gettones();
-    }
-  //  qDebug()<<ton<<"is changed on"<<tones;
+{    
+    tonenumbers=0;
+    delta = meandelta - 7 + qrand() % 18;
+    theta = meantheta - 7 + qrand() % 18;
+    alpha = meanalpha - 7 + qrand() % 18;
+    beta = meanbeta - 7 + qrand() % 18;
+    gamma = meangamma - 4 + qrand() % 11;
+    hgamma = meanhgamma - 4 + qrand() % 11;
+    gettones();
 }
 
 void plotwindow::analysemeandata()
@@ -1920,8 +1932,7 @@ void plotwindow::playdata()
             recparts++;
             ui->widget->xAxis->moveRange(hnt->imlength);
             //ui->widget->replot();
-        }
-      //  analyseinterval();
+        }   
         if (graphcount<eegintervals-1)
             graphcount++;
     }
@@ -1945,63 +1956,11 @@ void plotwindow::cleanmem()
     delete[] eegdata;
 }
 
-void plotwindow::analyseinterval()
-{
-    deltanum=0; thetanum=0; alphanum=0; betanum=0; gammanum=0; hgammanum=0;
-    int k=hnt->imlength*hnt->numst;
-
-    hnt->lfilt=20; edge=hnt->lfilt/2;
-    hnt->init();
-    hnt->npt=k;
-    for (int i=0; i<hnt->npt; i++)
-        hnt->x[i]=eegdata[graphcount][i]+150+graphcount*75;
-    hnt->firhilbert();
-
-    /*Complex t[k];
-    for (int i = 0; i < k; i++) {
-        t[i].real(eegdata[graphcount][i]+150+graphcount*75);
-        t[i].imag(0);
-    }
-    cdata = CArray(t, k);
-    hnt->fft(cdata);*/
-
-   // cout<<endl;
-   // for (int i = edge; i < k-edge; i++)
-    for (int i=hnt->lfilt/2+1; i<=hnt->npt-hnt->lfilt/2; i++)
-    {
-        double absc = abs(hnt->omega1[i]);
-       // int absc = (int)sqrt(cdata[i].real()*cdata[i].real()+cdata[i].imag()*cdata[i].imag());
-       // cout<<absc<<" ";
-        if ((absc>0) && (absc<3))
-            deltanum++;
-        if ((absc>3) && (absc<8))
-            thetanum++;
-        if ((absc>8) && (absc<14))
-            alphanum++;
-        if ((absc>14) && (absc<30))
-            betanum++;
-        if ((absc>30) && (absc<60))
-            gammanum++;
-        if ((absc>60))
-            hgammanum++;
-    }
-  //  cout<<endl;
-    delta = (double)deltanum/(k-edge*2)*100;
-    theta = (double)thetanum/(k-edge*2)*100;
-    alpha = (double)alphanum/(k-edge*2)*100;
-    beta = (double)betanum/(k-edge*2)*100;
-    gamma = (double)gammanum/(k-edge*2)*100;
-    hgamma = (double)hgammanum/(k-edge*2)*100;
-
-    if ((addmodeon) || (playsaved))
-        printtoresultstring("Interval "+QString::number(graphcount+1)+ "    delta%: "+QString::number(delta)+"    theta%: "+QString::number(theta)+"    alpha%: "+QString::number(alpha)+"    beta%: "+QString::number(beta)+"     gamma%: "+QString::number(gamma)+"    highgamma%: "+QString::number(hgamma));
-}
-
 void plotwindow::analysepart()
 {
     if ((addmodeon) && (addmoderec))
     {
-        draw(recparts*hnt->imlength);
+        updatedata(recparts*hnt->imlength);
         ui->widget->graph(graphcount)->setData(arrc.xc, eegdata[graphcount]);
         ui->widget->replot();
         recparts++;   
@@ -2058,15 +2017,15 @@ void plotwindow::timerUpdate()
             {
                 int t=attent;
                 if (t<20)
-                    hnt->imlength=125;
+                    hnt->imlength=100;
                 else if ((t>20) && (t<40))
-                    hnt->imlength=175;
+                    hnt->imlength=150;
                 else if ((t>40) && (t<60))
                     hnt->imlength=250;
                 else if ((t>60) && (t<80))
-                    hnt->imlength=500;
+                    hnt->imlength=400;
                 else if (t>80)
-                    hnt->imlength=750;
+                    hnt->imlength=600;
                 // hnt->imlength=450-t*4;
                 ui->spinBox_5->setValue(hnt->imlength*2);
                 ui->horizontalSlider->setValue(hnt->imlength*2);
@@ -2075,15 +2034,15 @@ void plotwindow::timerUpdate()
                 {
                     int t=meditt;
                     if (t<20)
-                        hnt->imlength=125;
+                        hnt->imlength=100;
                     else if ((t>20) && (t<40))
-                        hnt->imlength=175;
+                        hnt->imlength=150;
                     else if ((t>40) && (t<60))
                         hnt->imlength=250;
                     else if ((t>60) && (t<80))
-                        hnt->imlength=500;
+                        hnt->imlength=400;
                     else if (t>80)
-                        hnt->imlength=750;
+                        hnt->imlength=600;
                     // hnt->imlength=450-t*4;
                     ui->spinBox_5->setValue(hnt->imlength*2);
                     ui->horizontalSlider->setValue(hnt->imlength*2);

@@ -54,7 +54,6 @@ public:
     void museconnected();
     void getrawdata(float ft);
     void getfreqval(float dw, float tw, float aw, float bw, float gw);
-    void setback(QPixmap pm);
 
     ~MainWindow();
 
