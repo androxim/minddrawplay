@@ -90,6 +90,7 @@ public:
     void matchpuzzle();
     void startpolyt();
     void loadempty();
+    void setsoundtype(int index);
     ~paintform();
 
 

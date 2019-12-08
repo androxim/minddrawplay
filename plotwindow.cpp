@@ -25,6 +25,8 @@
 
 // TO DO:
 
+// blur, colorize - global vars
+
 // improve randomwaves mode
 // uploading any sounds for tones
 
@@ -176,7 +178,7 @@ plotwindow::plotwindow(QWidget *parent) :
     colorchange->setInterval(100);
 
     bfiltmode=false;
-
+    opencvstart=false;
     simsrfr=500;
     fftfreqs=true;
     attentionvolume=true; volumebord=40;
@@ -539,6 +541,13 @@ bool plotwindow::eventFilter(QObject *target, QEvent *event)
             ui->widget->xAxis->moveRange(-((high - low) / stepsPerPress));
             ui->widget->replot();
         }
+
+        if (keyEvent->key() == Qt::Key_P)
+        {
+            QPixmap pmx = ui->widget->grab();
+            setbackimage(pmx);
+        }
+
         if (keyEvent->key() == Qt::Key_Right)
         {double low = ui->widget->xAxis->range().lower;
             double high = ui->widget->xAxis->range().upper;
@@ -985,6 +994,7 @@ void plotwindow::updatedata(int start)
             }
         start=pos;
     }
+
     for (int i=0; i<hnt->imlength; i++)
         eegdata[graphcount][start+i]=drawshift+arrc.amp0[i];
 }
@@ -1001,7 +1011,7 @@ void plotwindow::update_attention(int t)
         ui->progressBar->setValue(t);
 
     if ((!fixback) && (attentmodul) && (backimageloaded) && (t>picchangeborder)) // && (filteringback)
-        on_pushButton_6_clicked();
+        on_pushButton_6_clicked();        
 }
 
 
@@ -1085,21 +1095,25 @@ QImage plotwindow::applyEffectToImage(QImage src, QGraphicsEffect *effect, int e
 void plotwindow::applyfilteronback()
 {
     //if (!backimg.isNull())
-    {
-        QGraphicsBlurEffect *blur = new QGraphicsBlurEffect;
-        blur->setBlurRadius((100-meditt)/10);
+    {      
+        blurp = new QGraphicsBlurEffect;
+        colorizep = new QGraphicsColorizeEffect;
 
-        QGraphicsColorizeEffect *colorize = new QGraphicsColorizeEffect;
+        blurp->setBlurRadius((100-meditt)/10);
+
        // colorize->setColor(QColor(pw->alpha*5,256-pw->beta*5,256-pw->gamma*6,pw->meditt*2));
-        colorize->setColor(QColor(beta*4,theta*4,alpha*4,meditt*2));
-        colorize->setStrength((double)attent/70);
+        colorizep->setColor(QColor(beta*4,theta*4,alpha*4,meditt*2));
+        colorizep->setStrength((double)attent/70);
 
         QM = backimg.toImage();
-        qbim1 = applyEffectToImage(QM, blur, 0);                
+        qbim1 = applyEffectToImage(QM, blurp, 0);
 
-        qbim2 = applyEffectToImage(qbim1, colorize, 0);
+        qbim2 = applyEffectToImage(qbim1, colorizep, 0);
 
-        ui->widget->setBackground(QPixmap::fromImage(qbim2),true,Qt::IgnoreAspectRatio);
+        delete pmvr;
+        pmvr = new QPixmap(QPixmap::fromImage(qbim2));
+
+        ui->widget->setBackground(*pmvr,true,Qt::IgnoreAspectRatio);
     }
 }
 
@@ -1116,7 +1130,7 @@ void plotwindow::setbackimage(QPixmap pm)
 
 void plotwindow::bcidata(double d1)
 {
-    arrc.amp0[counter]=floor(d1*pow(10.,2)+.5)/pow(10.,2);
+    arrc.amp0[counter]=d1; // floor(d1*pow(10.,2)+.5)/pow(10.,2);
         counter++; 
   //  xraw=(int)d1;
 }
@@ -1703,12 +1717,12 @@ void plotwindow::analysemeandata()
 {
     deltanum=0; thetanum=0; alphanum=0; betanum=0; gammanum=0; hgammanum=0;
 
-    hnt->lfilt=30; edge=hnt->lfilt/2;
+  /*  hnt->lfilt=30; edge=hnt->lfilt/2;
     hnt->init();
     hnt->npt=hnt->imlength;
     for (int i=0; i<hnt->npt; i++)
         hnt->x[i]=arrc.amp0[i];
-    hnt->firhilbert();
+    hnt->firhilbert(); */
 
     if (fftfreqs)
     {
@@ -1854,16 +1868,7 @@ void plotwindow::analysemeandata()
 
         printtoresultbox(tones);
 
-     /*   readyfortones=true;
-        myT1->readytoplay=true;
-        myT2->readytoplay=true;
-        myT3->readytoplay=true;
-        myT4->readytoplay=true;
-        myT5->readytoplay=true;
-        myT6->readytoplay=true;
-        myT7->readytoplay=true;
-        myT8->readytoplay=true; */
-        letsplay(); // timers version
+        letsplay();
 
     }
 
@@ -1878,7 +1883,7 @@ void plotwindow::analysemeandata()
         for (int i=graphcount-8; i<graphcount+1; i++)
             ui->widget->graph(i)->setPen(QColor(qrand() % 256, qrand() % 256, qrand() % 256));
     }
-    counter=0;
+   // counter=0;
 }
 
 void plotwindow::letsplay()
@@ -1930,8 +1935,7 @@ void plotwindow::playdata()
             analysemeandata();
             delay(ui->spinBox->value());
             recparts++;
-            ui->widget->xAxis->moveRange(hnt->imlength);
-            //ui->widget->replot();
+            ui->widget->xAxis->moveRange(hnt->imlength);            
         }   
         if (graphcount<eegintervals-1)
             graphcount++;
@@ -1959,11 +1963,11 @@ void plotwindow::cleanmem()
 void plotwindow::analysepart()
 {
     if ((addmodeon) && (addmoderec))
-    {
-        updatedata(recparts*hnt->imlength);
+    {        
+        updatedata(recparts*hnt->imlength);        
         ui->widget->graph(graphcount)->setData(arrc.xc, eegdata[graphcount]);
         ui->widget->replot();
-        recparts++;   
+        recparts++;           
         if (recparts==hnt->numst)
         {
             recparts=0;
@@ -2011,8 +2015,8 @@ void plotwindow::timerUpdate()
             // recurbuttfilt();
          if (!playsaved)
          {
-            analysemeandata();
-            analysepart();
+            analysemeandata();            
+            analysepart();            
             if ((soundmodul) && (attentmodul))
             {
                 int t=attent;
@@ -2049,7 +2053,7 @@ void plotwindow::timerUpdate()
                 }
          }
          counter=0;
-     }
+     }     
 }
 
 void plotwindow::setrandomscale()
@@ -3307,6 +3311,8 @@ void plotwindow::on_pushButton_6_clicked()
     backimageloaded=true;
     int rimg = rand() % imglist.length();
     QString filename=folderpath+"/"+imglist.at(rimg);
+    if (opencvstart)
+        mw->setsourceimg(filename);
     backimg.load(filename);
     ui->widget->setBackground(backimg,true,Qt::IgnoreAspectRatio);
     ui->widget->xAxis->grid()->setVisible(false);
@@ -3812,6 +3818,8 @@ void plotwindow::on_horizontalSlider_3_valueChanged(int value)
 void plotwindow::on_radioButton_clicked()
 {
     spacemode=false;  tank1mode=true; tank2mode=false;
+ //   if (mw->psstart)
+    pss->paintf->setsoundtype(0);
     ui->label->setVisible(true);
     ui->label_4->setVisible(true);
     ui->label->setText("b");
@@ -3862,6 +3870,8 @@ void plotwindow::on_radioButton_clicked()
 void plotwindow::on_radioButton_3_clicked()
 {
     spacemode=true; tank1mode=false; tank2mode=false;
+   // if (mw->psstart)
+    pss->paintf->setsoundtype(2);
     ui->label->setVisible(false);
     ui->label_4->setVisible(false);
     ui->label_2->setText("F4");
@@ -3908,6 +3918,8 @@ void plotwindow::on_radioButton_2_clicked()
     //   B G  C  E  D  g f# a  d  b
     //   B D# G# F# C# b d# g# f# c#
     spacemode=false; tank1mode=false; tank2mode=true;
+    if (addmodeon)
+        pss->paintf->setsoundtype(1);
     ui->label->setVisible(true);
     ui->label_4->setVisible(true);
     ui->label->setText("c#");

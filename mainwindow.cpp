@@ -19,9 +19,30 @@
 #include <chrono>
 #include "QThread"
 #include "QTimer"
+#include "opencv2/core.hpp"
+#include "opencv2/opencv.hpp"
+#include "opencv2/imgproc.hpp"
+#include "opencv2/highgui.hpp"
+#include <opencv2/core/types.hpp>
 
 QStringList strList1;
 QStringListModel *strListM1;
+
+using namespace cv;
+/// Global variables
+
+void Processing();
+void Hue( int, void* );
+void Saturation( int, void* );
+void Value( int, void* );
+
+Mat src,img,image;
+
+int elem1 = 255;
+int elem2 = 255;
+int elem3 = 255;
+
+int const max_elem = 500;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -40,8 +61,14 @@ MainWindow::MainWindow(QWidget *parent) :
     plotw->move(QApplication::desktop()->screen()->rect().center() - plotw->rect().center()-QPoint(0,30));
     plotw->start=false;  
 
+    folderpath="D:/PICS";
+    QDir fd(folderpath);
+    imglist = fd.entryList(QStringList() << "*.jpg" << "*.JPG",QDir::Files);
+
     pwstart=false;
     bciconnect=false;
+    opencvstart = false;
+    canchangehue=true;
     connectWin = new appconnect();
     connectWin->wd=plotw;
     connectWin->mw=this;
@@ -63,11 +90,23 @@ MainWindow::MainWindow(QWidget *parent) :
     deltafr = 2; thetafr = 5; alphafr = 9; betafr = 21; gammafr=33; hgammafr=64;
     zdeltaamp = 7; zthetaamp = 7; zalphaamp = 7; zbetaamp = 7; zgammaamp = 5; zhgammaamp = 3;
 
+    curhue = prevhue = 255;
     currentel = 0; currentsimdata = 0;
     simulateEEG = new QTimer(this);
     simulateEEG->connect(simulateEEG,SIGNAL(timeout()), this, SLOT(simulateEEGUpdate()));
     simulateEEG->setInterval(2);
   //  simulateEEG->start();
+
+    picfilt = new QTimer(0);
+    picfilt->connect(picfilt,SIGNAL(timeout()), this, SLOT(picfiltUpdate()));
+    picfilt->setInterval(20);
+    picfilt->start();
+
+  //  QThread* tr = new QThread();
+  //  picfilt->moveToThread(tr);
+  //  tr->start();
+  //  tr->setPriority(QThread::HighestPriority);
+
     simeeg = true; plotw->simeeg = true;
 
     connect(ui->actionOpen_Data_File, SIGNAL(triggered()), this, SLOT(OpenDataFile()));
@@ -87,6 +126,63 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void Hue(int, void *)
+{
+    Processing();
+}
+
+void Saturation(int, void *)
+{
+    Processing();
+}
+
+void Value(int, void *)
+{
+    Processing();
+}
+
+
+void Processing()
+{
+    cvtColor(src,img,COLOR_RGB2HSV);
+
+    int hue = elem1 - 255;
+    int saturation = elem2 - 255;
+    int value = elem3 - 255;
+
+    for(int y=0; y<img.cols; y++)
+    {
+        for(int x=0; x<img.rows; x++)
+        {
+            int cur1 = img.at<Vec3b>(Point(y,x))[0];
+            int cur2 = img.at<Vec3b>(Point(y,x))[1];
+            int cur3 = img.at<Vec3b>(Point(y,x))[2];
+            cur1 += hue;
+            cur2 += saturation;
+            cur3 += value;
+
+            if(cur1 < 0) cur1= 0; else if(cur1 > 255) cur1 = 255;
+            if(cur2 < 0) cur2= 0; else if(cur2 > 255) cur2 = 255;
+            if(cur3 < 0) cur3= 0; else if(cur3 > 255) cur3 = 255;
+
+            img.at<Vec3b>(Point(y,x))[0] = cur1;
+            img.at<Vec3b>(Point(y,x))[1] = cur2;
+            img.at<Vec3b>(Point(y,x))[2] = cur3;
+        }
+    }
+
+    cvtColor(img,image,COLOR_HSV2RGB);
+    imshow( "image", image );
+
+}
+
+void delay(int temp)
+{
+    QTime dieTime = QTime::currentTime().addMSecs(temp);
+    while (QTime::currentTime() < dieTime)
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
 }
 
 void MainWindow::adddata(string s, QString spath)
@@ -121,7 +217,7 @@ void MainWindow::on_pushButton_3_clicked()
  //      plotw->move(QApplication::desktop()->screen()->rect().center() - plotw->rect().center()+QPoint(0,10));
 
     plotw->show();
-    plotw->doplot();
+    plotw->doplot();    
     plotw->appcn=connectWin;
     paintw->scene->init(plotw, this);
     connectWin->ps=paintw->scene;
@@ -297,6 +393,50 @@ void MainWindow::mindwaveconnect()
     packetsRead = 0;
 }
 
+void MainWindow::setsourceimg(QString fpath)
+{
+    src = imread(fpath.toStdString());
+    imshow("image", src );
+}
+
+
+void MainWindow::sethue(int i)
+{
+    elem1=i*3;
+    setTrackbarPos("Huse", "image", elem1);
+}
+
+void MainWindow::startopencv()
+{
+    namedWindow("image",WINDOW_NORMAL);
+    //Point p(1600,900);
+    //Size sp(p);
+
+
+    createTrackbar( "Huse", "image",&elem1, max_elem,Hue);
+    createTrackbar( "Saturation", "image",&elem2, max_elem,Saturation);
+    createTrackbar( "Value", "image",&elem3, max_elem,Value);
+
+    int rimg = qrand() % imglist.length();
+    opencvpic=folderpath+"/"+imglist.at(rimg);
+
+    src = imread(opencvpic.toStdString());
+
+    resizeWindow("image",1600,900);
+    resize(1600,900);
+
+    imshow("image", src );
+    moveWindow("image", 160,40);
+    opencvstart=true;
+    plotw->opencvstart=true;
+   /* for (int i=0; i<500; i++)
+    {
+        elem1=i;
+        Processing();
+        delay(20);
+    } */
+}
+
 void MainWindow::simulateEEGUpdate()
 {
     const double mean = 0.0;
@@ -387,6 +527,11 @@ void MainWindow::mindwtUpdate()
                     plotw->update_attention(mw_atten);
                    // if (psstart)
                    //     paintw->scene->applyfilter();
+                    if ((opencvstart) && (canchangehue))
+                    {
+                        curhue=mw_atten*5;
+                        canchangehue=false;
+                    }
                 }
                 if (psstart)
                 {
@@ -503,4 +648,26 @@ void MainWindow::mindwtUpdate()
 void MainWindow::on_pushButton_5_clicked()
 {
     mindwaveconnect();
+}
+
+void MainWindow::picfiltUpdate()
+{
+    if (curhue<prevhue)
+    {
+        prevhue-=1;
+        elem1=prevhue;
+        setTrackbarPos("Huse", "image", elem1);
+    } else
+    if (curhue>prevhue)
+    {
+        prevhue+=1;
+        elem1=prevhue;
+        setTrackbarPos("Huse", "image", elem1);
+    } else
+        canchangehue=true;
+}
+
+void MainWindow::on_pushButton_6_clicked()
+{
+    startopencv();
 }

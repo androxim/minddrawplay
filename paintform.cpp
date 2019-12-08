@@ -417,7 +417,11 @@ paintform::paintform(QWidget *parent) :
     ui->widget_2->addGraph();
     ui->widget_2->graph(2)->setPen(QPen(Qt::magenta));
     ui->widget_2->graph(2)->setName("Alpha");
-    ui->widget_2->graph(2)->setData(fxc, alpha_arr);
+    ui->widget_2->graph(2)->setData(fxc, alpha_arr);        
+    ui->widget_2->graph(2)->selectionDecorator()->setPen(QPen(Qt::magenta));
+    QPen qp = ui->widget_2->graph(2)->pen();
+    qp.setWidth(3);
+    ui->widget_2->graph(2)->selectionDecorator()->setPen(qp);
 
     ui->widget_2->addGraph();
     ui->widget_2->graph(3)->setPen(QPen(Qt::blue));
@@ -545,76 +549,76 @@ void paintform::setdflowtime(int t)
 void paintform::setflowspace(int t)
 {
     if (t<20)
-    {
-        picsforchange=11;
-        ui->spinBox_4->setValue(picsforchange);
-    }
-  //  else if ((t>20) && (t<30))
-  //  {
-  //      picsforchange=9;
-  //      ui->spinBox_4->setValue(picsforchange);
-  //  }
-    else if ((t>20) && (t<30))
-    {
-        if (collectiveflow)
-            picsforchange=7;
-        else
-            picsforchange=8;
-        ui->spinBox_4->setValue(picsforchange);
-    }
-    else if ((t>30) && (t<40))
-    {
-        if (collectiveflow)
-            picsforchange=6;
-        else
-            picsforchange=7;
-        ui->spinBox_4->setValue(picsforchange);
-    }
-    else if ((t>40) && (t<50))
-    {
-        if (collectiveflow)
-            picsforchange=5;
-        else
-            picsforchange=6;
-        ui->spinBox_4->setValue(picsforchange);
-    }
-    else if ((t>50) && (t<60))
-    {
-        if (collectiveflow)
-            picsforchange=4;
-        else
-            picsforchange=5;
-        ui->spinBox_4->setValue(picsforchange);
-    }
-    else if ((t>60) && (t<70))
-    {
-        if (collectiveflow)
-            picsforchange=3;
-        else
-            picsforchange=4;
-        ui->spinBox_4->setValue(picsforchange);
-    }
-    else if ((t>70) && (t<77))
-    {
-        if (collectiveflow)
-            picsforchange=1;
-        else
-            picsforchange=2;
-        ui->spinBox_4->setValue(picsforchange);
-    }
-    else if (t>77)
-    {
-        picsforchange=0;
-        ui->spinBox_4->setValue(picsforchange);
-        if (flowmode)
-        {
-            matchpuzzle();
-            on_checkBox_16_clicked();
-           // delay(500);
-            on_pushButton_6_clicked();
-            on_checkBox_16_clicked();
-        }
-    }
+       {
+           picsforchange=12;
+           ui->spinBox_4->setValue(picsforchange);
+       }
+       else if ((t>20) && (t<30))
+       {
+           picsforchange=9;
+           ui->spinBox_4->setValue(picsforchange);
+       }
+       else if ((t>30) && (t<40))
+       {
+           if (collectiveflow)
+               picsforchange=7;
+           else
+               picsforchange=8;
+           ui->spinBox_4->setValue(picsforchange);
+       }
+       else if ((t>40) && (t<50))
+       {
+           if (collectiveflow)
+               picsforchange=5;
+           else
+               picsforchange=6;
+           ui->spinBox_4->setValue(picsforchange);
+       }
+       else if ((t>50) && (t<60))
+       {
+           if (collectiveflow)
+               picsforchange=4;
+           else
+               picsforchange=5;
+           ui->spinBox_4->setValue(picsforchange);
+       }
+       else if ((t>60) && (t<70))
+       {
+           if (collectiveflow)
+               picsforchange=3;
+           else
+               picsforchange=4;
+           ui->spinBox_4->setValue(picsforchange);
+       }
+       else if ((t>70) && (t<80))
+       {
+           if (collectiveflow)
+               picsforchange=2;
+           else
+               picsforchange=3;
+           ui->spinBox_4->setValue(picsforchange);
+       }
+       else if ((t>80) && (t<85))
+       {
+           if (collectiveflow)
+               picsforchange=1;
+           else
+               picsforchange=2;
+           ui->spinBox_4->setValue(picsforchange);
+       }
+       else if (t>85)
+       {
+           picsforchange=0;
+           ui->spinBox_4->setValue(picsforchange);
+           if (flowmode)
+           {
+               matchpuzzle();
+               on_checkBox_16_clicked();
+               delay(500);
+               on_pushButton_6_clicked();
+               on_checkBox_16_clicked();
+           }
+       }
 }
 
 bool paintform::getattentmode()
@@ -1632,7 +1636,7 @@ bool paintform::eventFilter(QObject *target, QEvent *event)
 
     if ((target == ui->graphicsView) && (event->type() == QEvent::MouseButtonDblClick))
     {
-       if ((!gamemode) && (!flowmode))
+       if ((!gamemode) && (!flowmode) && (!scene->drawflow) && (minimode))
        {
             if (!puzzlemode)
                 pmg = ui->graphicsView->grab();
@@ -1640,6 +1644,7 @@ bool paintform::eventFilter(QObject *target, QEvent *event)
                 pmg = mainpic;
 
             on_checkBox_8_clicked();
+            ui->checkBox_8->setChecked(puzzlemode);
             scene->addPixmap(pmg.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
             scene->update();
             ui->graphicsView->repaint();
@@ -2909,7 +2914,7 @@ void paintform::on_checkBox_8_clicked()
     else
         ui->graphicsView->setGeometry(50,50,1500,800);
     if ((qimload) && (!flowmode))
-        scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
+        scene->addPixmap(mainpic.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
     ui->graphicsView->repaint();
     ui->graphicsView_2->setVisible(puzzlemode);
     ui->graphicsView_3->setVisible(puzzlemode);
@@ -2979,7 +2984,7 @@ void paintform::on_checkBox_10_clicked()
 void paintform::on_pushButton_8_clicked()
 {
     fd.setPath(folderpath);
-    imglist = fd.entryList(QStringList() << "*.jpg" << "*.JPG",QDir::Files);
+    fd.entryList(QStringList() << "*.jpg" << "*.JPG",QDir::Files);
     pmarray.clear();
     pmarray.resize(imglist.length());
     randnumb = vector<int>(imglist.length());
@@ -3082,6 +3087,16 @@ void paintform::on_verticalSlider_2_sliderMoved(int position)
 {
     ui->spinBox_5->setValue(position);
     borderlevel=position;
+}
+
+void paintform::setsoundtype(int index)
+{
+    if (index==0)
+        ui->comboBox_2->setCurrentIndex(0);
+    else if (index==1)
+        ui->comboBox_2->setCurrentIndex(1);
+    else
+        ui->comboBox_2->setCurrentIndex(2);
 }
 
 void paintform::on_comboBox_2_currentIndexChanged(int index)

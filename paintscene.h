@@ -42,6 +42,7 @@ public:
     double sumd, meand, angle;
     Complex t[TMAX];
     CArray cdata;
+    QPalette qptr;
     QPolygonF polygon;
     QColor drcolor, fxcolor, randfxcl;
     bool drawflow;

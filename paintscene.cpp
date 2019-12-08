@@ -23,6 +23,8 @@ paintScene::paintScene(QObject *parent) : QGraphicsScene(parent)
     linecoords = new QPointF[2000];
     linesarr.resize(1000);
     linelengths = new int[1000];
+    colorize = new QGraphicsColorizeEffect;
+    blur = new QGraphicsBlurEffect;
     for (int i=0; i<1000; i++)
     {
         linesarr[i] = new QPointF[1000];
@@ -190,19 +192,18 @@ void paintScene::applyfilteronbackimg()
     qbim2 = applyEffectToImage(qbim1, colorize, 0);
   // qbim2 = blurred(paintf->qim,QRect(previousPoint.x(),previousPoint.y(),previousPoint.x()+200,previousPoint.y()+200),10,false);
 
-    QPalette qp;
-    qp.setBrush(QPalette::Background, QPixmap::fromImage(qbim2).scaled(paintf->size(), Qt::IgnoreAspectRatio));
-    paintf->setPalette(qp);
+    qptr.setBrush(QPalette::Background, QPixmap::fromImage(qbim2).scaled(paintf->size(), Qt::IgnoreAspectRatio));
+    paintf->setPalette(qptr);
     paintf->repaint();
 
 }
 
 void paintScene::applyfilter()
-{
+{    
     if ((paintf->qimload) && (paintf->bfiltmode))
     {
         if (!paintf->qim.isNull())
-        {
+        {      
         colorize = new QGraphicsColorizeEffect;
         blur = new QGraphicsBlurEffect;
         blur->setBlurRadius((100-pw->attent)/15);

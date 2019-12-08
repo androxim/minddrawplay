@@ -40,7 +40,6 @@ class appconnect;
 class MainWindow;
 class Settings;
 class paintScene;
-class myTone;
 
 class plotwindow : public QWidget
 {
@@ -52,21 +51,16 @@ public:
     QString daqport;
     QString folderpath;
     rawsignal* rws;
+    QGraphicsBlurEffect *blurp;
+    QGraphicsColorizeEffect *colorizep;
     bool bfiltmode,adaptivenumparts;
-    myTone* myT1;
-    myTone* myT2;
-    myTone* myT3;
-    myTone* myT4;
-    myTone* myT5;
-    myTone* myT6;
-    myTone* myT7;
-    myTone* myT8;
     QDir fd;
     bool backimageloaded;
     bool filteringback;
     bool hidebutt, soundmodul, fixback;
     QStringList imglist;
     int picchangeborder;
+    bool opencvstart;
     QPixmap pm;
     QImage QM, qbim1, qbim2;
     QSoundEffect* Glow; QSoundEffect* D3;

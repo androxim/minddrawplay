@@ -28,18 +28,24 @@ public:
     bool pwstart;
     bool simeeg;
     bool bciconnect;
+    bool opencvstart;
     QString daqport;
     QTimer* mindwt;
+    QTimer* picfilt;
     QTimer* simulateEEG;
     updateplot* updl;
-
     int packetsRead;
     int connectionId;
     int currentsimdata;
     int currentel;
     int srfr;
+    int curhue, prevhue;
     QPixmap bkgnd;
     QPalette palette;
+    QString folderpath;
+    QString opencvpic;
+    QStringList imglist;
+    bool canchangehue;
     int deltafr, thetafr, alphafr, betafr, gammafr, hgammafr;
     int deltaphs, thetaphs, alphaphs, betaphs, gammaphs;
     int zdeltaamp, zthetaamp, zalphaamp, zbetaamp, zgammaamp, zhgammaamp;
@@ -52,8 +58,11 @@ public:
     void mindwaveconnect();
     void museconnect();
     void museconnected();
+    void startopencv();
     void getrawdata(float ft);
     void getfreqval(float dw, float tw, float aw, float bw, float gw);
+    void setsourceimg(QString fpath);
+    void sethue(int i);
 
     ~MainWindow();
 
@@ -71,8 +80,11 @@ private slots:
 
     void on_pushButton_5_clicked();
 
+    void picfiltUpdate();
     void mindwtUpdate();
     void simulateEEGUpdate();
+
+    void on_pushButton_6_clicked();
 
 private:
     Ui::MainWindow *ui;
