@@ -33,18 +33,17 @@ public:
     QTimer* mindwt;
     QTimer* picfilt;
     QTimer* simulateEEG;
-    updateplot* updl;
+    updateplot* updl;    
     int packetsRead;
     int connectionId;
     int currentsimdata;
     int currentel;
     int srfr;
+    int opencvinterval;
     int curhue, prevhue;
     QPixmap bkgnd;
     QPalette palette;
-    QString folderpath;
     QString opencvpic;
-    QStringList imglist;
     bool canchangehue;
     int deltafr, thetafr, alphafr, betafr, gammafr, hgammafr;
     int deltaphs, thetaphs, alphaphs, betaphs, gammaphs;
@@ -62,7 +61,11 @@ public:
     void getrawdata(float ft);
     void getfreqval(float dw, float tw, float aw, float bw, float gw);
     void setsourceimg(QString fpath);
+    void setsourceimgd(QImage qp);
     void sethue(int i);
+    void setopencvt(int i);
+    void setattent(int i);
+    QImage grabopcvpic();
 
     ~MainWindow();
 

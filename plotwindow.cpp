@@ -1883,6 +1883,17 @@ void plotwindow::analysemeandata()
         for (int i=graphcount-8; i<graphcount+1; i++)
             ui->widget->graph(i)->setPen(QColor(qrand() % 256, qrand() % 256, qrand() % 256));
     }
+
+    if ((opencvstart) && (!filteringback))
+    {
+        backimg = QPixmap::fromImage(mw->grabopcvpic());
+
+     //   QElapsedTimer timerpp;
+     //   timerpp.start();
+        ui->widget->setBackground(backimg,true,Qt::IgnoreAspectRatio);
+        ui->widget->replot();
+      //  qDebug() << "The pic filling took" << timerpp.elapsed() << "milliseconds";
+    }
    // counter=0;
 }
 
@@ -3312,7 +3323,11 @@ void plotwindow::on_pushButton_6_clicked()
     int rimg = rand() % imglist.length();
     QString filename=folderpath+"/"+imglist.at(rimg);
     if (opencvstart)
+    {
+       // QPixmap pxm = ui->widget->grab();
         mw->setsourceimg(filename);
+       // mw->setsourceimgd(pxm.toImage());
+    }
     backimg.load(filename);
     ui->widget->setBackground(backimg,true,Qt::IgnoreAspectRatio);
     ui->widget->xAxis->grid()->setVisible(false);
@@ -3980,6 +3995,8 @@ void plotwindow::on_pushButton_23_clicked()
         ui->widget->replot();
         ui->checkBox_6->setChecked(false);
         backimageloaded=true;
+        if (opencvstart)
+            mw->setsourceimg(filename);
     }
 }
 

@@ -44,11 +44,11 @@ LIBS += -lwsock32 -lws2_32 -mthreads -L$$PWD/./ -lthinkgear
 
 INCLUDEPATH += C:\OpenCV\OpenCV_bin\install\include
 
-LIBS += C:\OpenCV\OpenCV_bin\bin\libopencv_core412.dll
-LIBS += C:\OpenCV\OpenCV_bin\bin\libopencv_highgui412.dll
-LIBS += C:\OpenCV\OpenCV_bin\bin\libopencv_imgcodecs412.dll
-LIBS += C:\OpenCV\OpenCV_bin\bin\libopencv_imgproc412.dll
-LIBS += C:\OpenCV\OpenCV_bin\bin\libopencv_calib3d412.dll
+LIBS += C:\OpenCV\OpenCV_bin\bin\libopencv_core412.dll \
+        C:\OpenCV\OpenCV_bin\bin\libopencv_highgui412.dll \
+        C:\OpenCV\OpenCV_bin\bin\libopencv_imgcodecs412.dll \
+        C:\OpenCV\OpenCV_bin\bin\libopencv_imgproc412.dll \
+        C:\OpenCV\OpenCV_bin\bin\libopencv_calib3d412.dll
 
 
 

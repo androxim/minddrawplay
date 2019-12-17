@@ -24,25 +24,33 @@
 #include "opencv2/imgproc.hpp"
 #include "opencv2/highgui.hpp"
 #include <opencv2/core/types.hpp>
+#include <thread>
 
 QStringList strList1;
 QStringListModel *strListM1;
 
 using namespace cv;
-/// Global variables
+using std::cout; using std::cerr; using std::endl;
 
 void Processing();
 void Hue( int, void* );
 void Saturation( int, void* );
 void Value( int, void* );
+void Attent( int, void* );
+void onMouse( int event, int x, int y, int, void* );
 
 Mat src,img,image;
+
+QStringList imglist;
+QString folderpath;
 
 int elem1 = 255;
 int elem2 = 255;
 int elem3 = 255;
+int elem4 = 50;
 
 int const max_elem = 500;
+int const max_elem2 = 100;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -97,10 +105,10 @@ MainWindow::MainWindow(QWidget *parent) :
     simulateEEG->setInterval(2);
   //  simulateEEG->start();
 
-    picfilt = new QTimer(0);
+    opencvinterval=50;
+    picfilt = new QTimer(this);
     picfilt->connect(picfilt,SIGNAL(timeout()), this, SLOT(picfiltUpdate()));
-    picfilt->setInterval(20);
-    picfilt->start();
+    picfilt->setInterval(opencvinterval);    
 
   //  QThread* tr = new QThread();
   //  picfilt->moveToThread(tr);
@@ -128,6 +136,12 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::setopencvt(int i)
+{
+    opencvinterval=i;
+    picfilt->setInterval(opencvinterval);
+}
+
 void Hue(int, void *)
 {
     Processing();
@@ -143,6 +157,20 @@ void Value(int, void *)
     Processing();
 }
 
+void Attent( int, void* )
+{
+   // Processing();
+}
+
+QImage Mat2QImage(cv::Mat const& srct)
+{
+     cv::Mat temp; // make the same cv::Mat
+     cvtColor(srct, temp,COLOR_HSV2RGB); // cvtColor Makes a copt, that what i need
+     QImage dest((const uchar *) temp.data, temp.cols, temp.rows, temp.step, QImage::Format_RGB888);
+     dest.bits(); // enforce deep copy, see documentation
+     // of QImage::QImage ( const uchar * data, int width, int height, Format format )
+     return dest;
+}
 
 void Processing()
 {
@@ -176,6 +204,17 @@ void Processing()
     cvtColor(img,image,COLOR_HSV2RGB);
     imshow( "image", image );
 
+}
+
+void onMouse( int event, int x, int y, int, void* )
+{
+    if (event == EVENT_MBUTTONDOWN)
+    {
+        int rimg = qrand() % imglist.length();
+        QString ocvpic=folderpath+"/"+imglist.at(rimg);
+        src = imread(ocvpic.toStdString());
+        imshow("image", src );
+    }
 }
 
 void delay(int temp)
@@ -399,11 +438,28 @@ void MainWindow::setsourceimg(QString fpath)
     imshow("image", src );
 }
 
+void MainWindow::setsourceimgd(QImage qp)
+{
+    cv::Mat matp(qp.height(),qp.width(),CV_8UC3, qp.bits());
+    //src = matp;
+    imshow("image", src );
+}
 
 void MainWindow::sethue(int i)
 {
     elem1=i*3;
-    setTrackbarPos("Huse", "image", elem1);
+    setTrackbarPos("Hue", "image", elem1);
+}
+
+void MainWindow::setattent(int i)
+{
+    elem4=i;
+    setTrackbarPos("Attention","image",elem4);
+}
+
+QImage MainWindow::grabopcvpic()
+{
+   return Mat2QImage(img);
 }
 
 void MainWindow::startopencv()
@@ -413,9 +469,11 @@ void MainWindow::startopencv()
     //Size sp(p);
 
 
-    createTrackbar( "Huse", "image",&elem1, max_elem,Hue);
-    createTrackbar( "Saturation", "image",&elem2, max_elem,Saturation);
-    createTrackbar( "Value", "image",&elem3, max_elem,Value);
+    createTrackbar("Hue","image",&elem1, max_elem,Hue);
+    createTrackbar("Saturation","image",&elem2, max_elem,Saturation);
+    createTrackbar("Value","image",&elem3, max_elem,Value);
+    createTrackbar("Attention","image",&elem4,max_elem2,Attent);
+    setMouseCallback( "image", onMouse, 0 );
 
     int rimg = qrand() % imglist.length();
     opencvpic=folderpath+"/"+imglist.at(rimg);
@@ -429,6 +487,7 @@ void MainWindow::startopencv()
     moveWindow("image", 160,40);
     opencvstart=true;
     plotw->opencvstart=true;
+    picfilt->start();
    /* for (int i=0; i<500; i++)
     {
         elem1=i;
@@ -526,12 +585,15 @@ void MainWindow::mindwtUpdate()
                 {
                     plotw->update_attention(mw_atten);
                    // if (psstart)
-                   //     paintw->scene->applyfilter();
-                    if ((opencvstart) && (canchangehue))
-                    {
-                        curhue=mw_atten*5;
-                        canchangehue=false;
-                    }
+                   //     paintw->scene->applyfilter();                   
+                }
+                if (opencvstart)
+                    setattent(mw_atten);
+                if ((opencvstart) && (canchangehue))
+                {
+                    curhue=mw_atten*5;
+                    canchangehue=false;
+                  //  setopencvt((100-mw_atten)/3);
                 }
                 if (psstart)
                 {
@@ -656,13 +718,13 @@ void MainWindow::picfiltUpdate()
     {
         prevhue-=1;
         elem1=prevhue;
-        setTrackbarPos("Huse", "image", elem1);
+        setTrackbarPos("Hue", "image", elem1);
     } else
     if (curhue>prevhue)
     {
         prevhue+=1;
         elem1=prevhue;
-        setTrackbarPos("Huse", "image", elem1);
+        setTrackbarPos("Hue", "image", elem1);
     } else
         canchangehue=true;
 }
