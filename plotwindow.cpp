@@ -25,8 +25,6 @@
 
 // TO DO:
 
-// blur, colorize - global vars
-
 // improve randomwaves mode
 // uploading any sounds for tones
 
@@ -813,7 +811,7 @@ void plotwindow::doplot()
 
     ui->radioButton->setGeometry(1330,846,95,20);
     ui->pushButton_25->setGeometry(1450,830,80,20);
-    ui->checkBox_11->setGeometry(1430,850,110,20);
+    ui->checkBox_11->setGeometry(1430,850,124,20);
     ui->checkBox_12->setGeometry(1430,870,130,20);
     ui->comboBox->setGeometry(1430,890,90,20);
     ui->radioButton_2->setGeometry(1330,866,95,20);
@@ -929,16 +927,6 @@ void plotwindow::plot(QCustomPlot *customPlot)
     customPlot->axisRect()->setRangeZoom(Qt::Vertical);
     zerophaseinit(lcutoff,hcutoff,butterord,hnt->srfr);
     start=true;
-}
-
-double plotwindow::phasediff(double* stim1, double* stim2, int length)
-{
-    return 0;
-}
-
-double plotwindow::arphasediff(int posstim, int length)
-{
-    return hnt->phsdif;
 }
 
 void plotwindow::clearstim(int posstim, int length)
@@ -1099,21 +1087,34 @@ void plotwindow::applyfilteronback()
         blurp = new QGraphicsBlurEffect;
         colorizep = new QGraphicsColorizeEffect;
 
-        blurp->setBlurRadius((100-meditt)/10);
+        blurp->setBlurRadius((100-attent)/12);
 
        // colorize->setColor(QColor(pw->alpha*5,256-pw->beta*5,256-pw->gamma*6,pw->meditt*2));
-        colorizep->setColor(QColor(beta*4,theta*4,alpha*4,meditt*2));
-        colorizep->setStrength((double)attent/70);
+    //    colorizep->setColor(QColor(beta*4,theta*4,alpha*4,meditt*2));
+    //    colorizep->setStrength((double)attent/70);
+
+
+        if ((opencvstart))// && (!filteringback))
+        {
+            backimg = QPixmap::fromImage(mw->grabopcvpic());
+
+         //   QElapsedTimer timerpp;
+         //   timerpp.start();
+          //  ui->widget->setBackground(backimg,true,Qt::IgnoreAspectRatio);
+          //  ui->widget->replot();
+          //  qDebug() << "The pic filling took" << timerpp.elapsed() << "milliseconds";
+        }
 
         QM = backimg.toImage();
         qbim1 = applyEffectToImage(QM, blurp, 0);
 
-        qbim2 = applyEffectToImage(qbim1, colorizep, 0);
+      //  qbim2 = applyEffectToImage(qbim1, colorizep, 0);
 
         delete pmvr;
-        pmvr = new QPixmap(QPixmap::fromImage(qbim2));
+        pmvr = new QPixmap(QPixmap::fromImage(qbim1));
 
         ui->widget->setBackground(*pmvr,true,Qt::IgnoreAspectRatio);
+
     }
 }
 
@@ -1365,6 +1366,9 @@ void plotwindow::checkstatesUpdate()
         startnmmode=true;
     if ((GetKeyState('E') & 0x8000) && (startnmmode))
         startnmmode=false;
+
+    if ((startnmmode) && (attent>50))
+        pushenter();
 
     psleep = 10;
 
@@ -1739,8 +1743,6 @@ void plotwindow::analysemeandata()
 
         cdata = CArray(t,length);
         hnt->fft(cdata);
-        double* frampl = new double[length];
-        double* phs = new double[length];
         double deltafr, thetafr, alphafr, betafr, gammafr, hgammafr, totalpow, temppow;
         deltafr=0; thetafr=0; alphafr=0; betafr=0; gammafr=0; hgammafr=0; totalpow=0;
         for (int i=1; i<bordfreq*4; i++)
@@ -1801,8 +1803,8 @@ void plotwindow::analysemeandata()
         hgamma = (double)hgammanum/(hnt->imlength-edge*2)*100;
     }
 
-    if ((startnmmode) && (attent>50))
-       pushenter();
+  //  if ((startnmmode) && (attent>50))
+  //     pushenter();
         // pushright();
 
     if ((addmodeon) || (playsaved) || (mindplay))
@@ -1820,10 +1822,12 @@ void plotwindow::analysemeandata()
         pss->paintf->updatefreqarrs(delta,theta,alpha,beta,gamma,hgamma);
 
     if ((pssstart) && (bfiltmode) && (!pss->paintf->gamemode) && (!pss->paintf->flowmode))
+    {
         if (!pss->drawflow)
             pss->applyfilter();
         else
             pss->applyfilteronbackimg();
+    }
 
     if ((pssstart) && (bfiltmode) && (pss->paintf->gamemode))
     {
@@ -1833,7 +1837,7 @@ void plotwindow::analysemeandata()
 
     if ((filteringback) && (!backimg.isNull()))
         applyfilteronback();
-
+  //  ui->widget->replot();
     //qDebug()<<"mdelta "<<meandelta<<" mtheta "<<meantheta<<" malpha "<<meanalpha<<" mbeta "<<meanbeta<<" mgamma "<<meangamma<<" mhgamma "<<meanhgamma<<endl;
     printtoresultmean("mdelta% "+QString::number(meandelta)+"    mtheta% "+QString::number(meantheta)+"    malpha% "+QString::number(meanalpha)+"    mbeta% "+QString::number(meanbeta)+"    mgamma% "+QString::number(meangamma)+"    mhgamma% "+QString::number(meanhgamma));
     // "Part "+QString::number(graphcount*hnt->numst+recparts+1)+
@@ -1884,16 +1888,6 @@ void plotwindow::analysemeandata()
             ui->widget->graph(i)->setPen(QColor(qrand() % 256, qrand() % 256, qrand() % 256));
     }
 
-    if ((opencvstart) && (!filteringback))
-    {
-        backimg = QPixmap::fromImage(mw->grabopcvpic());
-
-     //   QElapsedTimer timerpp;
-     //   timerpp.start();
-        ui->widget->setBackground(backimg,true,Qt::IgnoreAspectRatio);
-        ui->widget->replot();
-      //  qDebug() << "The pic filling took" << timerpp.elapsed() << "milliseconds";
-    }
    // counter=0;
 }
 
@@ -1979,7 +1973,7 @@ void plotwindow::analysepart()
         ui->widget->graph(graphcount)->setData(arrc.xc, eegdata[graphcount]);
         ui->widget->replot();
         recparts++;           
-        if (recparts==hnt->numst)
+        if (recparts >= hnt->numst)
         {
             recparts=0;
             if (graphcount>eegintervals+2)
@@ -1997,7 +1991,7 @@ void plotwindow::analysepart()
             ui->widget->graph(graphcount)->setPen(QColor(qrand() % 256, qrand() % 256, qrand() % 256));
 
             if (adaptivenumparts)
-            {
+            {                
                 if (attent<20)
                     hnt->numst = qrand() % 12 + 4;
                 else if ((attent>20) && (attent<40))
@@ -2018,50 +2012,35 @@ void plotwindow::analysepart()
 
 void plotwindow::timerUpdate()
 {
-     // wait till new fragment
+     // check if new fragment ready
      if (counter>=hnt->imlength)
      {        
          if (usefiltering)
              zerophasefilt(0,hnt->imlength);
-            // recurbuttfilt();
+           //  recurbuttfilt();
          if (!playsaved)
          {
             analysemeandata();            
             analysepart();            
-            if ((soundmodul) && (attentmodul))
+            if (soundmodul)
             {
-                int t=attent;
-                if (t<20)
+                if (attentmodul)
+                    curmodval = attent;
+                else
+                    curmodval = meditt;
+                if (curmodval<20)
                     hnt->imlength=100;
-                else if ((t>20) && (t<40))
+                else if ((curmodval>20) && (curmodval<40))
                     hnt->imlength=150;
-                else if ((t>40) && (t<60))
+                else if ((curmodval>40) && (curmodval<60))
                     hnt->imlength=250;
-                else if ((t>60) && (t<80))
+                else if ((curmodval>60) && (curmodval<80))
                     hnt->imlength=400;
-                else if (t>80)
+                else if (curmodval>80)
                     hnt->imlength=600;
-                // hnt->imlength=450-t*4;
                 ui->spinBox_5->setValue(hnt->imlength*2);
                 ui->horizontalSlider->setValue(hnt->imlength*2);
-            } else
-                if ((soundmodul) && (!attentmodul))
-                {
-                    int t=meditt;
-                    if (t<20)
-                        hnt->imlength=100;
-                    else if ((t>20) && (t<40))
-                        hnt->imlength=150;
-                    else if ((t>40) && (t<60))
-                        hnt->imlength=250;
-                    else if ((t>60) && (t<80))
-                        hnt->imlength=400;
-                    else if (t>80)
-                        hnt->imlength=600;
-                    // hnt->imlength=450-t*4;
-                    ui->spinBox_5->setValue(hnt->imlength*2);
-                    ui->horizontalSlider->setValue(hnt->imlength*2);
-                }
+            }
          }
          counter=0;
      }     
@@ -2353,21 +2332,6 @@ void plotwindow::getrawdata(int chn, double val)
     }
     rawdata[chn][indexes[chn]]=val;
     indexes[chn]++;
-}
-
-void plotwindow::filterdata(int posstim, int length)
-{
-
-}
-
-void plotwindow::filterar(int posstim, int length)
-{
-
-}
-
-void plotwindow::zerocrossingstim(int posstim, int length)
-{
-
 }
 
 void plotwindow::recurbutterf(int order, double sfr, double hpf, double* x, int length)

@@ -105,7 +105,7 @@ MainWindow::MainWindow(QWidget *parent) :
     simulateEEG->setInterval(2);
   //  simulateEEG->start();
 
-    opencvinterval=50;
+    opencvinterval=100;
     picfilt = new QTimer(this);
     picfilt->connect(picfilt,SIGNAL(timeout()), this, SLOT(picfiltUpdate()));
     picfilt->setInterval(opencvinterval);    
@@ -168,7 +168,6 @@ QImage Mat2QImage(cv::Mat const& srct)
      cvtColor(srct, temp,COLOR_HSV2RGB); // cvtColor Makes a copt, that what i need
      QImage dest((const uchar *) temp.data, temp.cols, temp.rows, temp.step, QImage::Format_RGB888);
      dest.bits(); // enforce deep copy, see documentation
-     // of QImage::QImage ( const uchar * data, int width, int height, Format format )
      return dest;
 }
 
@@ -202,7 +201,7 @@ void Processing()
     }
 
     cvtColor(img,image,COLOR_HSV2RGB);
-    imshow( "image", image );
+   // imshow( "image", image );
 
 }
 
@@ -588,12 +587,16 @@ void MainWindow::mindwtUpdate()
                    //     paintw->scene->applyfilter();                   
                 }
                 if (opencvstart)
+                {
                     setattent(mw_atten);
+                   // elem2 = 210 + mw_atten/2;
+                   // setTrackbarPos("Saturation", "image", elem2);
+                }
                 if ((opencvstart) && (canchangehue))
                 {
-                    curhue=mw_atten*5;
+                    curhue=100+mw_atten*4;
                     canchangehue=false;
-                  //  setopencvt((100-mw_atten)/3);
+                  //  setopencvt(50+mw_atten*2);
                 }
                 if (psstart)
                 {
@@ -609,7 +612,7 @@ void MainWindow::mindwtUpdate()
         {
             if (TG_GetValue(connectionId, TG_DATA_MEDITATION)>0)
             {
-                mw_medit=TG_GetValue(connectionId, TG_DATA_MEDITATION);
+                mw_medit=TG_GetValue(connectionId, TG_DATA_MEDITATION);                
                 if (plotw->start)
                     plotw->update_meditation(mw_medit);
                 if (psstart)

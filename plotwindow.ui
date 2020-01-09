@@ -1575,7 +1575,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>brain-filtering</string>
+    <string>img brain-filtering</string>
    </property>
   </widget>
   <widget class="QComboBox" name="comboBox">

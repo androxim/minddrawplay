@@ -46,8 +46,8 @@ class plotwindow : public QWidget
     Q_OBJECT       
 
 public:  
-    int stepsPerPress, drawshift, graphcount, recnumb, baseshift, scaletimeout, tonenumbers, maxtones, chorddelay, mxttimeout;
-    int counter,stims,startpos,tscale,ampval,corrprednumb,recparts, autoregdegree, autoreglength, daqscalevalue, transdelay, flength, chnums, sampleblock, exch, sourcech;
+    int stepsPerPress, drawshift, graphcount, recnumb, baseshift, scaletimeout, tonenumbers, maxtones, chorddelay, mxttimeout, curmodval;
+    int counter, stims, startpos, tscale, ampval, corrprednumb, recparts, autoregdegree, autoreglength, daqscalevalue, transdelay, flength, chnums, sampleblock, exch, sourcech;
     QString daqport;
     QString folderpath;
     rawsignal* rws;
@@ -153,7 +153,6 @@ public:
     ~plotwindow();
     void plot(QCustomPlot *customPlot);
     bool eventFilter(QObject *target, QEvent *event);          
-    double phasediff(double* stim1, double* stim2, int length);
     void clearstim(int posstim, int length);
     void doplot();
     void singlestim();
@@ -197,14 +196,8 @@ public:
     void cleanmem();
 
     void hilbonar(int pos);
-    double arphasediff(int posstim, int length);
 
     void getrawdata(int chn, double val);
-
-    void filterdata(int posstim, int length);
-    void filterar(int posstim, int length);
-
-    void zerocrossingstim(int posstim, int length);
 
     void recurbutterf(int order, double sfr, double hpf, double* x, int length);
     void recurbutterfilter(int posstim, int length);
