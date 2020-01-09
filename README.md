@@ -1,6 +1,7 @@
 # minddrawplay
 
 The code is written in C++, Qt 5.6.0, compiled with MinGW 4.9.2 32bit
+DEPENDENCIES: requires OpenCV libraries (see .pro file)
 
 The project is specifically made for mobile EEG device MindWave NeuroSky,
 but also can work with other EEG devices (with less features) through BCI2000 module.
