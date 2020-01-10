@@ -40,6 +40,7 @@ appconnect.h / appconnect.cpp codes by J. Adam Wilson, BCI2000, GNU General Publ
 sockstream.h / sockstream.cpp codes by Juergen Mellinger, GNU General Public License v. 3.0
 
 thinkgear.h / thinkgear.lib / thinkgear.dll from official MindWave NeuroSky SDK
+
 https://store.neurosky.com/pages/license-agreement
 
 Eigen library, Mozilla Public License v. 2.0
