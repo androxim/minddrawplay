@@ -25,13 +25,6 @@
  * $END_BCI2000_LICENSE$
  ***************************************************************************/
 
-// !!! SOLVED !!! - the reason was replotting after each cycle - which is not necessary!
-// the problem with delay in signal transduction from Socket BCI2000
-// with smallest timer values - [0,1] it gets only half of generated data
-// but with timer value [2] - gets enough data, but increases delays between
-// stimulation cycles much longer than should be (~2 times longer inter-stimulation delays)
-// key lines: 169, 233
-
 #include "appconnect.h"
 #include <sstream>
 #include "QDebug"
