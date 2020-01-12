@@ -65,6 +65,7 @@ public:
     void sethue(int i);
     void setopencvt(int i);
     void setattent(int i);
+    void setoverlay(int i);
     QImage grabopcvpic();
 
     ~MainWindow();

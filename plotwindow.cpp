@@ -113,6 +113,7 @@ plotwindow::plotwindow(QWidget *parent) :
     ui->setupUi(this);    
     ui->widget->installEventFilter(this);
 
+    canbackchange=true;
     attentmodul=true;
     recplaying=false;
     tim = new QTimer(this);
@@ -998,8 +999,16 @@ void plotwindow::update_attention(int t)
     if (attentmodul)
         ui->progressBar->setValue(t);
 
+    if ((!fixback) && (attentmodul) && (backimageloaded) && (t<picchangeborder))
+        if (!canbackchange)
+            canbackchange=true;
+
     if ((!fixback) && (attentmodul) && (backimageloaded) && (t>picchangeborder)) // && (filteringback)
-        on_pushButton_6_clicked();        
+        if (canbackchange)
+        {
+            on_pushButton_6_clicked();
+            canbackchange=false;
+        }
 }
 
 
@@ -1777,30 +1786,6 @@ void plotwindow::analysemeandata()
         hgamma=hgammafr*100;
 
        // cout<<fixed<<setprecision(2)<<delta<<" "<<theta<<" "<<alpha<<" "<<beta<<" "<<gamma<<" "<<hgamma<<endl;
-    } else
-    {
-        for (int i=hnt->lfilt/2+1; i<=hnt->npt-hnt->lfilt/2; i++)
-        {
-            double absc = abs(hnt->omega1[i]);
-            if ((absc>0) && (absc<3))
-                deltanum++;
-            if ((absc>3) && (absc<8))
-                thetanum++;
-            if ((absc>8) && (absc<14))
-                alphanum++;
-            if ((absc>14) && (absc<30))
-                betanum++;
-            if ((absc>30) && (absc<60))
-                gammanum++;
-            if ((absc>60))
-                hgammanum++;
-        }
-        delta = (double)deltanum/(hnt->imlength-edge*2)*100;
-        theta = (double)thetanum/(hnt->imlength-edge*2)*100;
-        alpha = (double)alphanum/(hnt->imlength-edge*2)*100;
-        beta = (double)betanum/(hnt->imlength-edge*2)*100;
-        gamma = (double)gammanum/(hnt->imlength-edge*2)*100;
-        hgamma = (double)hgammanum/(hnt->imlength-edge*2)*100;
     }
 
   //  if ((startnmmode) && (attent>50))
@@ -2205,10 +2190,6 @@ int plotwindow::maxabsstim(int pos)
         if (abs(arrc.of1[j])>maxel)
             maxel=abs(arrc.of1[j])+1;
     return maxel;
-}
-
-void plotwindow::stimulationonly(int pos)
-{
 }
 
 void plotwindow::maxentropyf(double *input, int length, int degree, double **ar, double *per, double *pef, double *h, double *g)

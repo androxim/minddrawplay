@@ -33,13 +33,16 @@ using namespace cv;
 using std::cout; using std::cerr; using std::endl;
 
 void Processing();
+void ProcessingMix();
 void Hue( int, void* );
 void Saturation( int, void* );
 void Value( int, void* );
 void Attent( int, void* );
+void Overlay( int, void* );
+void Border( int, void* );
 void onMouse( int event, int x, int y, int, void* );
 
-Mat src,img,image;
+Mat src,srccopy,dst,dstcopy,img,image;
 
 QStringList imglist;
 QString folderpath;
@@ -48,6 +51,11 @@ int elem1 = 255;
 int elem2 = 255;
 int elem3 = 255;
 int elem4 = 50;
+int elem5 = 50;
+int elem6 = 100;
+
+bool canchangepic = true;
+double alphaval = 0.5;
 
 int const max_elem = 500;
 int const max_elem2 = 100;
@@ -105,7 +113,7 @@ MainWindow::MainWindow(QWidget *parent) :
     simulateEEG->setInterval(2);
   //  simulateEEG->start();
 
-    opencvinterval=100;
+    opencvinterval=50;
     picfilt = new QTimer(this);
     picfilt->connect(picfilt,SIGNAL(timeout()), this, SLOT(picfiltUpdate()));
     picfilt->setInterval(opencvinterval);    
@@ -157,6 +165,16 @@ void Value(int, void *)
     Processing();
 }
 
+void Border(int, void *)
+{
+  //  Processing();
+}
+
+void Overlay( int, void* )
+{
+    ProcessingMix();
+}
+
 void Attent( int, void* )
 {
    // Processing();
@@ -201,8 +219,19 @@ void Processing()
     }
 
     cvtColor(img,image,COLOR_HSV2RGB);
-   // imshow( "image", image );
 
+    addWeighted(image, alphaval, srccopy, 1 - alphaval, 0, dst);
+    imshow("image", dst);
+
+    // imshow( "image", image );
+
+}
+
+void ProcessingMix()
+{
+    alphaval = 1 - (double) elem5 / 100;
+    addWeighted(image, alphaval, srccopy, 1 - alphaval, 0, dst);
+    imshow("image", dst);
 }
 
 void onMouse( int event, int x, int y, int, void* )
@@ -212,7 +241,18 @@ void onMouse( int event, int x, int y, int, void* )
         int rimg = qrand() % imglist.length();
         QString ocvpic=folderpath+"/"+imglist.at(rimg);
         src = imread(ocvpic.toStdString());
-        imshow("image", src );
+        cv::resize(srccopy, srccopy, cv::Size(src.cols,src.rows), 0, 0, cv::INTER_LINEAR);
+        addWeighted(src, alphaval, srccopy, 1 - alphaval, 0, dst);
+        imshow("image", dst);
+    } else
+    if (event == EVENT_RBUTTONDOWN)
+    {
+        int rimg = qrand() % imglist.length();
+        QString ocvpic=folderpath+"/"+imglist.at(rimg);
+        srccopy = imread(ocvpic.toStdString());
+        cv::resize(srccopy, srccopy, cv::Size(src.cols,src.rows), 0, 0, cv::INTER_LINEAR);
+        addWeighted(src, alphaval, srccopy, 1 - alphaval, 0, dst);
+        imshow("image", dst);
     }
 }
 
@@ -456,14 +496,22 @@ void MainWindow::setattent(int i)
     setTrackbarPos("Attention","image",elem4);
 }
 
+void MainWindow::setoverlay(int i)
+{
+    elem5=i;
+    setTrackbarPos("Overlay","image",elem5);
+}
+
 QImage MainWindow::grabopcvpic()
 {
-   return Mat2QImage(img);
+     return Mat2QImage(img);
+   // cvtColor(dst,dstcopy,COLOR_RGB2HSV);
+  //  return Mat2QImage(dstcopy);
 }
 
 void MainWindow::startopencv()
 {
-    namedWindow("image",WINDOW_NORMAL);
+    namedWindow("image",WINDOW_NORMAL + WINDOW_OPENGL);
     //Point p(1600,900);
     //Size sp(p);
 
@@ -472,18 +520,35 @@ void MainWindow::startopencv()
     createTrackbar("Saturation","image",&elem2, max_elem,Saturation);
     createTrackbar("Value","image",&elem3, max_elem,Value);
     createTrackbar("Attention","image",&elem4,max_elem2,Attent);
+    createTrackbar("Overlay","image",&elem5,max_elem2,Overlay);
+    createTrackbar("Border","image",&elem6,max_elem2,Border);
+
     setMouseCallback( "image", onMouse, 0 );
+
+    int alpha = 0.4;
+    int x = 100;
+    int y = 100;
+    int width = 300;
+    int height = 200;
+    cv::Rect rect(x, y, width, height);
+    cv::Point pt1(x, y);
+    cv::Point pt2(x + width, y + height);
 
     int rimg = qrand() % imglist.length();
     opencvpic=folderpath+"/"+imglist.at(rimg);
-
     src = imread(opencvpic.toStdString());
+    image = imread(opencvpic.toStdString());
 
+    rimg = qrand() % imglist.length();
+    QString stp = folderpath+"/"+imglist.at(rimg);
+    srccopy =  imread(stp.toStdString());
+
+    //cv::rectangle(srccopy, rect, cv::Scalar(110, 255, 232));
     resizeWindow("image",1600,900);
-    resize(1600,900);
-
-    imshow("image", src );
+    resize(1600,900);  
     moveWindow("image", 160,40);
+    imshow("image", src);
+
     opencvstart=true;
     plotw->opencvstart=true;
     picfilt->start();
@@ -589,6 +654,20 @@ void MainWindow::mindwtUpdate()
                 if (opencvstart)
                 {
                     setattent(mw_atten);
+                    setoverlay(mw_atten);
+                    if ((mw_atten>elem6) && (canchangepic))
+                    {
+                        int rimg = qrand() % imglist.length();
+                        QString ocvpic=folderpath+"/"+imglist.at(rimg);
+                        src=srccopy.clone();
+                        srccopy = imread(ocvpic.toStdString());
+                        cv::resize(srccopy, srccopy, cv::Size(src.cols,src.rows), 0, 0, cv::INTER_LINEAR);
+                        addWeighted(src, alphaval, srccopy, 1 - alphaval, 0, dst);
+                        imshow("image", dst);
+                        canchangepic=false;
+                    }
+                    if ((mw_atten<elem6) && (!canchangepic))
+                        canchangepic=true;
                    // elem2 = 210 + mw_atten/2;
                    // setTrackbarPos("Saturation", "image", elem2);
                 }

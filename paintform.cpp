@@ -31,6 +31,7 @@ paintform::paintform(QWidget *parent) :
     changingpics=false;
     updatingpuzzle=false;
     flowmode=false;
+    canpuzzlechange=true;
     fnameattent="D:/Androxim/attentflow.dat";
     fnamefreq="D:/Androxim/freqflow.dat";
     ui->checkBox_9->setChecked(true);
@@ -548,6 +549,8 @@ void paintform::setdflowtime(int t)
 
 void paintform::setflowspace(int t)
 {
+    if ((t<85) && (!canpuzzlechange))
+        canpuzzlechange=true;
     if (t<20)
        {
            picsforchange=12;
@@ -610,13 +613,14 @@ void paintform::setflowspace(int t)
        {
            picsforchange=0;
            ui->spinBox_4->setValue(picsforchange);
-           if (flowmode)
+           if ((flowmode) && (canpuzzlechange))
            {
                matchpuzzle();
                on_checkBox_16_clicked();
                delay(500);
                on_pushButton_6_clicked();
                on_checkBox_16_clicked();
+               canpuzzlechange=false;
            }
        }
 }

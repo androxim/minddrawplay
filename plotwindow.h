@@ -55,7 +55,7 @@ public:
     QGraphicsColorizeEffect *colorizep;
     bool bfiltmode,adaptivenumparts;
     QDir fd;
-    bool backimageloaded;
+    bool backimageloaded,canbackchange;
     bool filteringback;
     bool hidebutt, soundmodul, fixback;
     QStringList imglist;
@@ -182,7 +182,6 @@ public:
     double estimateoptprop(int n, double p1, double p2, int pos);
     void setaddmode(bool f);  
     int maxabsstim(int pos);
-    void stimulationonly(int pos);
     double offlinevaluation(int pos, int i);
     void maxentropyf(double *input, int length, int degree, double **ar, double *per, double *pef, double *h, double *g);
     void autoregress(double *input, int length, int degree, double *coeffs);
