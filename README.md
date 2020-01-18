@@ -23,7 +23,7 @@ Examples of running app: https://www.artstation.com/neur0forest/albums/1425498
 
 ==== hardware requirements ====
 
-EEG device MindWave NeuroSky
+- EEG device MindWave NeuroSky
 
 http://neurosky.com
 
@@ -31,7 +31,7 @@ in case of a problem with the device connection via bluetooth, try to install dr
 
 http://download.neurosky.com/public/Products/MindWave%20headset/RF%20driver/RF%20driver.zip
 
-full-hd resolution for the screen 
+- full-hd resolution of the screen is required for a proper usage of the application GUI
 
 ====  software requirements ====
 
