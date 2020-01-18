@@ -1006,6 +1006,19 @@
     <string>flow</string>
    </property>
   </widget>
+  <widget class="QCheckBox" name="checkBox_18">
+   <property name="geometry">
+    <rect>
+     <x>520</x>
+     <y>710</y>
+     <width>141</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>grab mindplay flow</string>
+   </property>
+  </widget>
   <zorder>pushButton_5</zorder>
   <zorder>pushButton_8</zorder>
   <zorder>graphicsView</zorder>
@@ -1077,6 +1090,7 @@
   <zorder>checkBox_19</zorder>
   <zorder>checkBox_20</zorder>
   <zorder>checkBox_21</zorder>
+  <zorder>checkBox_18</zorder>
  </widget>
  <customwidgets>
   <customwidget>

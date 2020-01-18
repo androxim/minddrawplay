@@ -59,9 +59,10 @@ public:
     bool filteringback;
     bool hidebutt, soundmodul, fixback;
     QStringList imglist;
-    int picchangeborder;
+    int picchangeborder, colorizeback;
     bool opencvstart;
-    QPixmap pm;
+    QPixmap pm, pmx;
+    QPalette sp1, sp2;
     QImage QM, qbim1, qbim2;
     QSoundEffect* Glow; QSoundEffect* D3;
     QSoundEffect* fdiez; QSoundEffect* A3;
@@ -251,6 +252,7 @@ public:
     void radiobut2();
     void radiobut3();
     void enablenumparts(bool fl);
+    void enablehue();
 
     void setpicfolder(QString fp);
     void applyfilteronback();
@@ -285,10 +287,6 @@ private slots:
 
     void on_checkBox_3_clicked();
 
-    void on_pushButton_2_clicked();
-
-    void on_pushButton_3_clicked();
-
     void on_pushButton_4_clicked();
 
     void on_checkBox_4_clicked();
@@ -302,8 +300,6 @@ private slots:
     void on_spinBox_6_valueChanged(int arg1);
 
     void on_spinBox_8_valueChanged(int arg1);
-
-    void on_pushButton_5_clicked();
 
     void on_pushButton_6_clicked();
 
@@ -340,8 +336,6 @@ private slots:
     void on_horizontalSlider_valueChanged(int value);
 
     void on_horizontalSlider_sliderReleased();
-
-    void on_horizontalSlider_2_valueChanged(int value);
 
     void on_spinBox_2_valueChanged(int arg1);
 
@@ -420,6 +414,8 @@ private slots:
     void on_checkBox_13_clicked();
 
     void on_pushButton_25_clicked();
+
+    void on_checkBox_14_clicked();
 
 private:
     Ui::plot *ui;

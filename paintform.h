@@ -32,20 +32,25 @@ public:
     int poltypearr[108];
     int centercoord[108][2];
     QDir fd;
+    QPalette sp1,sp2;
     QString folderpath;
     bool adaptivebord, firstpuzzle, spacedflow;
     int activatedcell;
+    double thet;
+    double bet;
+    int pt;
     double avgv;
     QPixmap pmg;
-    bool collectiveflow;
+    bool collectiveflow, updateback;
     int picsrestored;
+    double estattn;
     set<int> stpic0, stpic1, stres;
     set<int>::iterator iterst;
     vector<int> puzzlelocs, randpuzzlelocs, sortpuzzlelocs;
     QString fnameattent,fnamefreq;
     int puzzlew, puzzleh, borderlevel, borderpicchange, setsize;
     int numsamples, numfrsamples, lenofinterval, laststop;
-    QVector<double> attent_arr, medit_arr, border_arr, xc, fxc, delta_arr, theta_arr, alpha_arr, beta_arr, gamma_arr, hgamma_arr;
+    QVector<double> attent_arr, medit_arr, border_arr, xc, fxc, estatt_arr, delta_arr, theta_arr, alpha_arr, beta_arr, gamma_arr, hgamma_arr;
     QStringList imglist;
     QVector<QString> currimglist;
     QSet<int> pressedKeys;
@@ -70,6 +75,7 @@ public:
     void getimg1();
     void getimg2();
     void updateattention(int t);
+    void updateattentionplot(int t);
     void updatemeditation(int t);
     void randompics();
     void initpics();
@@ -91,6 +97,7 @@ public:
     void startpolyt();
     void loadempty();
     void setsoundtype(int index);
+    double getestattval();
     ~paintform();
 
 
@@ -188,6 +195,8 @@ private slots:
     void on_checkBox_20_clicked();
 
     void on_checkBox_21_clicked();
+
+    void on_checkBox_18_clicked();
 
 private:
     Ui::paintform *ui;

@@ -52,7 +52,7 @@ int elem2 = 255;
 int elem3 = 255;
 int elem4 = 50;
 int elem5 = 50;
-int elem6 = 100;
+int elem6 = 90;
 
 bool canchangepic = true;
 double alphaval = 0.5;
@@ -229,7 +229,7 @@ void Processing()
 
 void ProcessingMix()
 {
-    alphaval = 1 - (double) elem5 / 100;
+    alphaval = (double) elem5 / 100;
     addWeighted(image, alphaval, srccopy, 1 - alphaval, 0, dst);
     imshow("image", dst);
 }
@@ -458,7 +458,7 @@ void MainWindow::mindwaveconnect()
         simulateEEG->stop();
         simeeg=false;
         plotw->hnt->srfr=512;
-        plotw->hnt->imlength=512;
+        plotw->hnt->imlength=256;
         mindwt->start();
         plotw->mindwstart=true;
         plotw->simeeg=false;
@@ -499,7 +499,9 @@ void MainWindow::setattent(int i)
 void MainWindow::setoverlay(int i)
 {
     elem5=i;
+    setattent(elem5);
     setTrackbarPos("Overlay","image",elem5);
+    checkoverlay();
 }
 
 QImage MainWindow::grabopcvpic()
@@ -551,6 +553,8 @@ void MainWindow::startopencv()
 
     opencvstart=true;
     plotw->opencvstart=true;
+    if (plotw->start)
+        plotw->enablehue();
     picfilt->start();
    /* for (int i=0; i<500; i++)
     {
@@ -592,6 +596,23 @@ void MainWindow::simulateEEGUpdate()
     if (psstart)
         paintw->scene->getdata(currentsimdata/4);
     //  qDebug()<<currentsimdata;
+}
+
+void MainWindow::checkoverlay()
+{
+    if ((elem5>elem6) && (canchangepic))
+    {
+        int rimg = qrand() % imglist.length();
+        QString ocvpic=folderpath+"/"+imglist.at(rimg);
+        src=srccopy.clone();
+        srccopy = imread(ocvpic.toStdString());
+        cv::resize(srccopy, srccopy, cv::Size(src.cols,src.rows), 0, 0, cv::INTER_LINEAR);
+        addWeighted(src, alphaval, srccopy, 1 - alphaval, 0, dst);
+        imshow("image", dst);
+        canchangepic=false;
+    }
+    if ((elem5<elem6) && (!canchangepic))
+        canchangepic=true;
 }
 
 void MainWindow::mindwtUpdate()
@@ -646,40 +667,22 @@ void MainWindow::mindwtUpdate()
             {
                 mw_atten=TG_GetValue(connectionId, TG_DATA_ATTENTION);
                 if (plotw->start)
-                {
                     plotw->update_attention(mw_atten);
-                   // if (psstart)
-                   //     paintw->scene->applyfilter();                   
-                }
                 if (opencvstart)
-                {
-                    setattent(mw_atten);
-                    setoverlay(mw_atten);
-                    if ((mw_atten>elem6) && (canchangepic))
-                    {
-                        int rimg = qrand() % imglist.length();
-                        QString ocvpic=folderpath+"/"+imglist.at(rimg);
-                        src=srccopy.clone();
-                        srccopy = imread(ocvpic.toStdString());
-                        cv::resize(srccopy, srccopy, cv::Size(src.cols,src.rows), 0, 0, cv::INTER_LINEAR);
-                        addWeighted(src, alphaval, srccopy, 1 - alphaval, 0, dst);
-                        imshow("image", dst);
-                        canchangepic=false;
-                    }
-                    if ((mw_atten<elem6) && (!canchangepic))
-                        canchangepic=true;
+                {                   
+                   // setoverlay(mw_atten);                   
                    // elem2 = 210 + mw_atten/2;
                    // setTrackbarPos("Saturation", "image", elem2);
-                }
-                if ((opencvstart) && (canchangehue))
-                {
-                    curhue=100+mw_atten*4;
-                    canchangehue=false;
-                  //  setopencvt(50+mw_atten*2);
+                    if (canchangehue)
+                    {
+                        curhue=100+mw_atten*4;
+                        canchangehue=false;
+                    //  setopencvt(50+mw_atten*2);
+                    }
                 }
                 if (psstart)
                 {
-                    paintw->updateattention(mw_atten);
+                    paintw->updateattentionplot(mw_atten);
                     //paintw->updateplots(false);
                     //paintw->bfiltmode;
                   //      paintw->randompics();

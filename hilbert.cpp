@@ -18,7 +18,7 @@ hilbert::hilbert(int srfr, int pstim, int lft, double osfr, double thfr, int del
     extrphase = 0;
     posstim = pstim;    
     imstprop = 1;
-    imlength = srfr;
+    imlength = srfr/2;
     stlength = imlength * imstprop;
     stampl = ampl;
     lfilt = lft;

@@ -31,6 +31,7 @@ paintform::paintform(QWidget *parent) :
     changingpics=false;
     updatingpuzzle=false;
     flowmode=false;
+    updateback=false;
     canpuzzlechange=true;
     fnameattent="D:/Androxim/attentflow.dat";
     fnamefreq="D:/Androxim/freqflow.dat";
@@ -195,6 +196,7 @@ paintform::paintform(QWidget *parent) :
     ui->checkBox_8->setEnabled(false);
     ui->verticalSlider->setGeometry(1038,820,20,150);
     ui->checkBox_10->setGeometry(1070,930,160,20);
+    ui->checkBox_18->setGeometry(1070,950,160,20);
     ui->checkBox_10->setEnabled(false);
     ui->spinBox_3->setGeometry(1225,929,50,20);
     ui->label_3->setGeometry(1280,929,30,20);
@@ -305,6 +307,7 @@ paintform::paintform(QWidget *parent) :
     beta_arr = QVector<double>(TFMAX);
     gamma_arr = QVector<double>(TFMAX);
     hgamma_arr = QVector<double>(TFMAX);
+    estatt_arr = QVector<double>(TFMAX);
     fxc = QVector<double>(TFMAX);
 
     currimglist = QVector<QString>(15);
@@ -324,6 +327,7 @@ paintform::paintform(QWidget *parent) :
         beta_arr[j]=0;
         gamma_arr[j]=0;
         hgamma_arr[j]=0;
+        estatt_arr[j]=0;
     }
 
     xc = QVector<double>(TPMAX);
@@ -361,7 +365,7 @@ paintform::paintform(QWidget *parent) :
     ui->widget->legend->setBrush(QBrush(QColor(255,255,255,190)));
 
     ui->widget_2->xAxis->setRange(0,32);
-    ui->widget_2->yAxis->setRange(0,50);
+    ui->widget_2->yAxis->setRange(0,100);
 
     ui->widget->addGraph();
     ui->widget->graph(0)->setPen(QPen(Qt::darkRed));
@@ -439,17 +443,20 @@ paintform::paintform(QWidget *parent) :
     ui->widget_2->graph(5)->setName("H-Gamma");
     ui->widget_2->graph(5)->setData(fxc, hgamma_arr);
 
- //   ui->widget->setAttribute(Qt::WA_TranslucentBackground,true);
- //   ui->widget->setWindowOpacity(0.5);
+    ui->widget_2->addGraph();
+    ui->widget_2->graph(6)->setPen(QPen(Qt::darkRed));
+    ui->widget_2->graph(6)->setName("Est-Attention");
+    ui->widget_2->graph(6)->setData(fxc, estatt_arr);
+
+    ui->widget->setAttribute(Qt::WA_TranslucentBackground,true);
+    ui->widget->setWindowOpacity(0.5);
  //   ui->widget_2->setAttribute(Qt::WA_TranslucentBackground,true);
  //   ui->widget_2->setWindowOpacity(0.5);
     ui->widget_2->replot();
 
-    QPalette sp1;
     sp1.setColor(QPalette::Window, Qt::white);
     sp1.setColor(QPalette::WindowText, Qt::red);
 
-    QPalette sp2;
     sp2.setColor(QPalette::Window, Qt::white);
     sp2.setColor(QPalette::WindowText, Qt::darkGreen);
 
@@ -515,6 +522,8 @@ paintform::paintform(QWidget *parent) :
   //  ui->comboBox_2->setCurrentIndex(1);
   //  scene->filllines();
 
+    pt=5;
+
     pmain.load(":/pics/pics/empty.jpg");
     mainpic.load(":/pics/pics/empty.jpg");
     qim.load(":/pics/pics/empty.jpg");
@@ -550,7 +559,12 @@ void paintform::setdflowtime(int t)
 void paintform::setflowspace(int t)
 {
     if ((t<85) && (!canpuzzlechange))
+    {
+        delay(200);
+        on_pushButton_6_clicked();
+        on_checkBox_16_clicked();
         canpuzzlechange=true;
+    }
     if (t<20)
        {
            picsforchange=12;
@@ -614,11 +628,8 @@ void paintform::setflowspace(int t)
            picsforchange=0;
            ui->spinBox_4->setValue(picsforchange);
            if ((flowmode) && (canpuzzlechange))
-           {
-               matchpuzzle();
-               on_checkBox_16_clicked();
-               delay(500);
-               on_pushButton_6_clicked();
+           {              
+               matchpuzzle();               
                on_checkBox_16_clicked();
                canpuzzlechange=false;
            }
@@ -628,6 +639,14 @@ void paintform::setflowspace(int t)
 bool paintform::getattentmode()
 {
     return attentmodu;
+}
+
+double paintform::getestattval()
+{
+    if (numfrsamples>0)
+        return estattn;
+    else
+        return 0;
 }
 
 void paintform::updatefreqarrs(double deltat, double thetat, double alphat, double betat, double gammat, double hgammat)
@@ -655,6 +674,27 @@ void paintform::updatefreqarrs(double deltat, double thetat, double alphat, doub
     beta_arr[numfrsamples]=betat;
     gamma_arr[numfrsamples]=gammat;
     hgamma_arr[numfrsamples]=hgammat;
+
+    thet=0;
+    bet=0;
+
+    if (numfrsamples<pt)
+        estattn=(1-thetat/betat)*100;
+    else
+    {
+        for (int i=0; i<pt; i++)
+        {
+            thet+=theta_arr[numfrsamples-i];
+            bet+=beta_arr[numfrsamples-i];
+        }
+        thet/=pt;
+        bet/=pt;
+        estattn=((1-thet/bet)-0.4)/0.4*100;
+    }
+    if (estattn<0) estattn=0;
+    if (estattn>100) estattn=100;
+    estatt_arr[numfrsamples]=estattn;
+
     fxc[numfrsamples]=numfrsamples;
 
     ui->widget_2->graph(0)->setData(fxc, delta_arr);
@@ -663,6 +703,7 @@ void paintform::updatefreqarrs(double deltat, double thetat, double alphat, doub
     ui->widget_2->graph(3)->setData(fxc, beta_arr);
     ui->widget_2->graph(4)->setData(fxc, gamma_arr);
     ui->widget_2->graph(5)->setData(fxc, hgamma_arr);
+    ui->widget_2->graph(6)->setData(fxc, estatt_arr);
 
     ui->widget_2->replot();
 
@@ -722,10 +763,8 @@ void paintform::initpics()
         ui->graphicsView_2->setVisible(false);
 }
 
-void paintform::updateattention(int t)
+void paintform::updateattentionplot(int t)
 {
-    scene->attentt=t;
-
     if (numsamples>32)
         ui->widget->xAxis->moveRange(1);
     attent_arr[numsamples]=t;
@@ -737,6 +776,15 @@ void paintform::updateattention(int t)
 
     ui->widget->replot();
 
+    numsamples++;
+
+    updateattention(t);
+}
+
+void paintform::updateattention(int t)
+{
+    scene->attentt=t;
+
   /*  QFile outputFile(fnameattent);
     outputFile.open( QIODevice::Append);
     QTextStream fout(&outputFile);
@@ -744,8 +792,6 @@ void paintform::updateattention(int t)
     fout<<medit_arr[numsamples]<<",";
     fout<<border_arr[numsamples]<<" ";
     outputFile.close(); */
-
-    numsamples++;
 
     if (attentmodu)
     {
@@ -756,10 +802,10 @@ void paintform::updateattention(int t)
         scene->tim->setInterval(scene->drawrate);
         ui->verticalSlider->setValue(t);
 
-       if (bfiltmode)
+       if ((bfiltmode) || (!canpuzzlechange))
            setdflowtime(t);
 
-       if (bfiltmode)
+       if ((bfiltmode) || (!canpuzzlechange))
            setflowspace(t);
 
        if ((numsamples-laststop>lenofinterval) && (adaptivebord))
@@ -796,32 +842,8 @@ void paintform::updateattention(int t)
            }
        }
 
-
-       if (t<20)
-       {
-           ui->label_23->setStyleSheet("QLabel { color : yellow; }");
-           ui->radioButton_4->setStyleSheet("QRadioButton { color : yellow; }");
-       }
-       else if ((t>20) && (t<40))
-       {
-           ui->label_23->setStyleSheet("QLabel { color : cyan; }");
-           ui->radioButton_4->setStyleSheet("QRadioButton { color : cyan; }");
-       }
-       else if ((t>40) && (t<60))
-       {
-           ui->label_23->setStyleSheet("QLabel { color : blue; }");
-           ui->radioButton_4->setStyleSheet("QRadioButton { color : blue; }");
-       }
-       else if ((t>60) && (t<80))
-       {
-           ui->label_23->setStyleSheet("QLabel { color : green; }");
-           ui->radioButton_4->setStyleSheet("QRadioButton { color : green; }");
-       }
-       else if (t>80)
-       {
-           ui->label_23->setStyleSheet("QLabel { color : red; }");
-           ui->radioButton_4->setStyleSheet("QRadioButton { color : red; }");
-       }
+       ui->label_23->setStyleSheet("QLabel { color : red; }");
+       ui->radioButton_4->setStyleSheet("QRadioButton { color : red; }");
 
        ui->label_5->setText(QString::number(t)+"%");
 
@@ -855,10 +877,10 @@ void paintform::updatemeditation(int t)
       // scene->tim->setInterval(scene->drawrate);
        ui->verticalSlider->setValue(t);
 
-       if (bfiltmode)
+       if ((bfiltmode) || (!canpuzzlechange))
            setdflowtime(t);
 
-       if (bfiltmode)
+       if ((bfiltmode) || (!canpuzzlechange))
            setflowspace(t);
 
        if ((numsamples-laststop>lenofinterval) && (adaptivebord))
@@ -895,31 +917,8 @@ void paintform::updatemeditation(int t)
            }
        }
 
-       if (t<20)
-       {
-           ui->label_24->setStyleSheet("QLabel { color : yellow; }");
-           ui->radioButton_5->setStyleSheet("QRadioButton { color : yellow; }");
-       }
-       else if ((t>20) && (t<40))
-       {
-           ui->label_24->setStyleSheet("QLabel { color : cyan; }");
-           ui->radioButton_5->setStyleSheet("QRadioButton { color : cyan; }");
-       }
-       else if ((t>40) && (t<60))
-       {
-           ui->label_24->setStyleSheet("QLabel { color : blue; }");
-           ui->radioButton_5->setStyleSheet("QRadioButton { color : blue; }");
-       }
-       else if ((t>60) && (t<80))
-       {
-           ui->label_24->setStyleSheet("QLabel { color : red; }");
-           ui->radioButton_5->setStyleSheet("QRadioButton { color : red; }");
-       }
-       else if (t>80)
-       {
-           ui->label_24->setStyleSheet("QLabel { color : darkGreen; }");
-           ui->radioButton_5->setStyleSheet("QRadioButton { color : darkGreen; }");
-       }
+       ui->label_24->setStyleSheet("QLabel { color : darkGreen; }");
+       ui->radioButton_5->setStyleSheet("QRadioButton { color : darkGreen; }");
 
        ui->label_5->setText(QString::number(t)+"%");
 
@@ -2593,7 +2592,10 @@ void paintform::setbackimage(QPixmap pm)
     qim=pm.toImage();
     qimload = true;  
     if (!scene->drawflow)
+    {
+        scene->clear();
         scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
+    }
     else
     {
         scene->bkgndimg=pm;
@@ -3179,7 +3181,7 @@ void paintform::on_checkBox_16_clicked()
             ui->graphicsView->setGeometry(50,50,1500,800);
        // if (qimload)
        //     scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
-      //  ui->graphicsView->repaint();
+        ui->graphicsView->repaint();
     }
 //    pw->bfiltmode=bfiltmode;
 //    puzzlemode=true;
@@ -3243,4 +3245,9 @@ void paintform::on_checkBox_21_clicked()
         scene->tim->start();
     else
         scene->tim->stop();
+}
+
+void paintform::on_checkBox_18_clicked()
+{
+    updateback=!updateback;
 }

@@ -90,12 +90,13 @@ plotwindow::plotwindow(QWidget *parent) :
             eegdata[i][j]=0;
     }
     simeeg=true;
+    colorizeback=false;
     NumC = new double [20];
     DenC = new double [20];
     sigb.lf=10; sigb.hf=12;
     noibp.lf=8; noibp.hf=14;
     noibs.lf=9; noibs.hf=13;
-    samplenums=500; samplesize=32; eegintervals=8; intervallength=256; mindplay=false; blink=false;
+    samplenums=500; samplesize=32; eegintervals=8; intervallength=256; mindplay=false; blink=true;
     nextdrawshift=200;
     arrc.xc = QVector<double>(NMAX);
     arrc.amp0 = QVector<double>(NMAX);
@@ -699,11 +700,10 @@ void plotwindow::doplot()
     ui->pushButton_21->setVisible(false);
     ui->pushButton_22->setVisible(false);
 
-    QPalette sp1;
+
     sp1.setColor(QPalette::Window, Qt::white);
     sp1.setColor(QPalette::WindowText, Qt::red);
 
-    QPalette sp2;
     sp2.setColor(QPalette::Window, Qt::white);
     sp2.setColor(QPalette::WindowText, Qt::darkGreen);
 
@@ -715,6 +715,7 @@ void plotwindow::doplot()
     ui->label_24->setGeometry(350,20,181,26);
     ui->label_24->setVisible(false);
     ui->progressBar->setGeometry(700,26,236,20);
+    ui->progressBar->setPalette(sp1);
 
    // ui->pushButton_9->setStyleSheet("QPushButton{background: rgb(255, 0, 0); }");
 
@@ -788,15 +789,6 @@ void plotwindow::doplot()
     ui->checkBox_3->setGeometry(800,810,100,25);
     ui->pushButton_24->setGeometry(920,810,90,25);
     ui->pushButton_4->setGeometry(1040,810,70,25);
-    ui->pushButton_2->setGeometry(1125,810,40,25);
-    ui->pushButton_3->setGeometry(1175,810,40,25);
-    ui->pushButton_5->setGeometry(1220,810,70,25);
-    ui->label_11->setGeometry(1310,810,70,25);
-    ui->horizontalSlider_2->setGeometry(1310,830,120,12);
-    ui->spinBox->setGeometry(1390,810,50,25);
-    ui->spinBox->setDisabled(true);
-    ui->spinBox->setValue(hnt->imlength*1.953125);
-    ui->pushButton_5->setDisabled(true);
 
     ui->spinBox_7->setGeometry(610,810,50,25);
     ui->spinBox_7->setEnabled(false);
@@ -811,10 +803,11 @@ void plotwindow::doplot()
     ui->checkBox_5->setGeometry(1210,900,125,25);
 
     ui->radioButton->setGeometry(1330,846,95,20);
-    ui->pushButton_25->setGeometry(1450,830,80,20);
-    ui->checkBox_11->setGeometry(1430,850,124,20);
-    ui->checkBox_12->setGeometry(1430,870,130,20);
-    ui->comboBox->setGeometry(1430,890,90,20);
+    ui->pushButton_25->setGeometry(1436,810,120,21);
+    ui->checkBox_14->setGeometry(1430,833,130,20);
+    ui->checkBox_11->setGeometry(1430,853,145,20);
+    ui->checkBox_12->setGeometry(1430,873,130,20);
+    ui->comboBox->setGeometry(1430,893,90,20);
     ui->radioButton_2->setGeometry(1330,866,95,20);
     ui->radioButton_3->setGeometry(1330,886,95,20);
 
@@ -882,7 +875,8 @@ void plotwindow::doplot()
   //  ui->widget->xAxis->grid()->setVisible(false);
   //  ui->widget->yAxis->grid()->setVisible(false);
   //  ui->widget->replot();
-
+    if (opencvstart)
+        enablehue();
     plot(ui->widget);
 }
 
@@ -920,7 +914,7 @@ void plotwindow::plot(QCustomPlot *customPlot)
     customPlot->xAxis->setLabel("x");
     customPlot->yAxis->setLabel("y");    
     customPlot->rescaleAxes();
-    customPlot->xAxis->setRange(150, hnt->imlength * 11);
+    customPlot->xAxis->setRange(150, hnt->imlength * 22);
     customPlot->yAxis->setRange(-1600, 0);
     customPlot->xAxis->moveRange(hnt->posstim - hnt->srfr / 2);
     customPlot->setInteraction(QCP::iRangeDrag, true);
@@ -1066,6 +1060,11 @@ void plotwindow::enablenumparts(bool fl)
     ui->spinBox_7->setEnabled(fl);
 }
 
+void plotwindow::enablehue()
+{
+    ui->checkBox_11->setEnabled(true);
+}
+
 void plotwindow::setpicfolder(QString fp)
 {
     folderpath=fp;
@@ -1096,31 +1095,29 @@ void plotwindow::applyfilteronback()
         blurp = new QGraphicsBlurEffect;
         colorizep = new QGraphicsColorizeEffect;
 
-        blurp->setBlurRadius((100-attent)/12);
+        blurp->setBlurRadius((100-attent)/10);
 
-       // colorize->setColor(QColor(pw->alpha*5,256-pw->beta*5,256-pw->gamma*6,pw->meditt*2));
-    //    colorizep->setColor(QColor(beta*4,theta*4,alpha*4,meditt*2));
-    //    colorizep->setStrength((double)attent/70);
-
-
-        if ((opencvstart))// && (!filteringback))
+        if (colorizeback)
         {
-            backimg = QPixmap::fromImage(mw->grabopcvpic());
-
-         //   QElapsedTimer timerpp;
-         //   timerpp.start();
-          //  ui->widget->setBackground(backimg,true,Qt::IgnoreAspectRatio);
-          //  ui->widget->replot();
-          //  qDebug() << "The pic filling took" << timerpp.elapsed() << "milliseconds";
+           // colorize->setColor(QColor(pw->alpha*5,256-pw->beta*5,256-pw->gamma*6,pw->meditt*2));
+            colorizep->setColor(QColor(beta*4,theta*4,alpha*4,meditt*2));
+            colorizep->setStrength((double)attent/70);
         }
+
+        if ((opencvstart) && (!colorizeback))
+            backimg = QPixmap::fromImage(mw->grabopcvpic());
 
         QM = backimg.toImage();
         qbim1 = applyEffectToImage(QM, blurp, 0);
 
-      //  qbim2 = applyEffectToImage(qbim1, colorizep, 0);
+        if (colorizeback)
+            qbim2 = applyEffectToImage(qbim1, colorizep, 0);
 
         delete pmvr;
-        pmvr = new QPixmap(QPixmap::fromImage(qbim1));
+        if (!colorizeback)
+            pmvr = new QPixmap(QPixmap::fromImage(qbim1));
+        else
+            pmvr = new QPixmap(QPixmap::fromImage(qbim2));
 
         ui->widget->setBackground(*pmvr,true,Qt::IgnoreAspectRatio);
 
@@ -1804,7 +1801,11 @@ void plotwindow::analysemeandata()
     }
 
     if (pssstart)
+    {
         pss->paintf->updatefreqarrs(delta,theta,alpha,beta,gamma,hgamma);
+        if (opencvstart)
+            mw->setoverlay(pss->paintf->getestattval());
+    }
 
     if ((pssstart) && (bfiltmode) && (!pss->paintf->gamemode) && (!pss->paintf->flowmode))
     {
@@ -1822,6 +1823,14 @@ void plotwindow::analysemeandata()
 
     if ((filteringback) && (!backimg.isNull()))
         applyfilteronback();
+
+    if ((pssstart) && (pss->paintf->updateback))
+    {
+        pmx = ui->widget->grab();
+        pss->paintf->setbackimage(pmx);
+        pss->paintf->mainpic=pmx;
+        pss->paintf->pmain=pmx;
+    }
   //  ui->widget->replot();
     //qDebug()<<"mdelta "<<meandelta<<" mtheta "<<meantheta<<" malpha "<<meanalpha<<" mbeta "<<meanbeta<<" mgamma "<<meangamma<<" mhgamma "<<meanhgamma<<endl;
     printtoresultmean("mdelta% "+QString::number(meandelta)+"    mtheta% "+QString::number(meantheta)+"    malpha% "+QString::number(meanalpha)+"    mbeta% "+QString::number(meanbeta)+"    mgamma% "+QString::number(meangamma)+"    mhgamma% "+QString::number(meanhgamma));
@@ -1906,34 +1915,7 @@ void plotwindow::delay(int temp)
 
 void plotwindow::playdata()
 {
-    playsaved=true;
-    nums=1;
-   // sdelta=14; stheta=26; salpha=22; sbeta=26; sgamma=8; shgamma=4;
-    sdelta=0; stheta=0; salpha=0; sbeta=0; sgamma=0; shgamma=0;
-    meandelta=0; meantheta=0; meanalpha=0; meanbeta=0; meangamma=0; meanhgamma=0;
-    graphcount=0;
-    tonedelay=ui->spinBox->value();
-    printtoresultstring("");
-    printtoresultmean("mdelta% "+QString::number(meandelta)+"    mtheta% "+QString::number(meantheta)+"    malpha% "+QString::number(meanalpha)+"    mbeta% "+QString::number(meanbeta)+"    mgamma% "+QString::number(meangamma)+"    mhgamma% "+QString::number(meanhgamma));
-    for (int j=0; j<eegintervals; j++)
-    {
-        recparts=0;
-        for (int i=0; i<hnt->numst; i++)
-        {
-            for (int k=0; k<hnt->imlength; k++)
-                arrc.amp0[k]=eegdata[j][hnt->imlength*i+k]+150+j*75;
-            analysemeandata();
-            delay(ui->spinBox->value());
-            recparts++;
-            ui->widget->xAxis->moveRange(hnt->imlength);            
-        }   
-        if (graphcount<eegintervals-1)
-            graphcount++;
-    }
-    printtoresultstring("");
-    printtoresultbox("");
-    ui->widget->setFocus();
-    playsaved=false;
+
 }
 
 void plotwindow::cleareegdata()
@@ -2057,21 +2039,7 @@ void plotwindow::setrandomscale()
 
 void plotwindow::savedatatofile(QString fname)
 {
-    QFile outputFile(fname);
-    outputFile.open(QIODevice::WriteOnly);
-    QTextStream fout(&outputFile);  
-    fout << intlen << " " << hnt->imlength << " " << hnt->numst << endl;
-    for (int i=0; i<=graphcount; i++)
-    {
-        fout << "Part: "+QString::number(i+1)+" ";
-        for (int j=0; j<PMAX; j++)
-            fout << eegdata[i][j] << " ";
-        fout << endl;
-    }
-    fout<<endl;
-    for (int i=0; i<strLst1.length(); i++)
-        fout << strLst1.at(i) << endl;
-    outputFile.close();
+
 }
 
 void plotwindow::savescaletofile(QString fname)
@@ -2086,42 +2054,7 @@ void plotwindow::savescaletofile(QString fname)
 
 void plotwindow::loaddatafromfile(QString fname)
 {
-    QFile inputFile(fname);
-    inputFile.open(QIODevice::ReadOnly);
-    QTextStream fin(&inputFile);        
-    QStringList sl;
-    eegintervals=0;
-    QString line = fin.readLine();
-   // for (int i=0; i<eegintervals; i++)
-        ui->widget->clearGraphs();
-    if (line.length()>0)
-    {
-        sl = line.split(QRegExp("\\s+"), QString::SkipEmptyParts);
-        intlen = sl[0].toDouble();
-        hnt->imlength = sl[1].toInt();
-        hnt->numst = sl[2].toInt();
-        ui->spinBox_5->setValue(hnt->imlength*1.953125);
-        ui->spinBox_7->setValue(hnt->numst);
-    }
-    line = fin.readLine();
-    while (line.length()>0)
-    {
-        ui->widget->addGraph();
-        eegintervals++;
-        graphcount=eegintervals-1;
-        sl = line.split(QRegExp("\\s+"), QString::SkipEmptyParts);
-        for (int k=2; k < PMAX; k++)
-            eegdata[graphcount][k-2]=sl[k].toDouble();
-        ui->widget->graph(graphcount)->setPen(QColor(qrand() % 256, qrand() % 256, qrand() % 256));
-        ui->widget->graph(graphcount)->setName("EEG: ["+QString::number(graphcount*intlen)+" "+QString::number((graphcount+1)*intlen)+"] secs");
-        ui->widget->graph(graphcount)->setData(arrc.xc, eegdata[graphcount]);
-        if (graphcount>5)
-        ui->widget->yAxis->moveRange(-nextdrawshift);
-        line = fin.readLine();
-    }
-    ui->spinBox_6->setValue(eegintervals);
-    ui->widget->replot();
-    inputFile.close();
+
 }
 
 void plotwindow::loadscalefromfile(QString fname)
@@ -3163,25 +3096,6 @@ void plotwindow::on_widget_destroyed()
     delete hnt;
 }
 
-void plotwindow::on_pushButton_2_clicked()
-{
-    QString filename=QFileDialog::getSaveFileName(this,tr("Save File"),"D:/MINDWAVE//","Data file (*.dat);;All files (*.*)");
-    if (filename!="")
-        savedatatofile(filename);
-}
-
-void plotwindow::on_pushButton_3_clicked()
-{
-   QString filename=QFileDialog::getOpenFileName(this,tr("Open File"),"D:/MINDWAVE/","Data file (*.dat);;All files (*.*)");
-   if (filename!="")
-   {
-       loaddatafromfile(filename);
-       ui->pushButton_5->setDisabled(false);
-       ui->spinBox->setDisabled(false);
-       ui->spinBox->setValue(hnt->imlength*1.953125);
-   }
-}
-
 void plotwindow::on_pushButton_4_clicked()
 {
     slSettings();
@@ -3284,11 +3198,6 @@ void plotwindow::on_pushButton_6_clicked()
     ui->widget->showFullScreen();
     ui->widget->setWindowState(Qt::WindowFullScreen);
     ui->widget->setGeometry(QApplication::desktop()->screenGeometry()); */
-}
-
-void plotwindow::on_pushButton_5_clicked() // TEST BUTTON
-{
-    playdata();
 }
 
 void plotwindow::on_pushButton_16_clicked()
@@ -3422,17 +3331,11 @@ void plotwindow::on_checkBox_7_clicked()
 void plotwindow::on_horizontalSlider_valueChanged(int value)
 {
     ui->spinBox_5->setValue(value);
-    ui->horizontalSlider_2->setValue(value);
 }
 
 void plotwindow::on_horizontalSlider_sliderReleased()
 {
     on_spinBox_5_editingFinished();
-}
-
-void plotwindow::on_horizontalSlider_2_valueChanged(int value)
-{
-    ui->spinBox->setValue(value);
 }
 
 void plotwindow::on_spinBox_2_valueChanged(int arg1)
@@ -3948,6 +3851,8 @@ void plotwindow::on_pushButton_23_clicked()
 void plotwindow::on_checkBox_11_clicked()
 {
     filteringback=!filteringback;
+    colorizeback=false;
+    ui->checkBox_14->setEnabled(!ui->checkBox_11->isChecked());
 }
 
 void plotwindow::on_comboBox_currentIndexChanged(int index)
@@ -3955,12 +3860,14 @@ void plotwindow::on_comboBox_currentIndexChanged(int index)
     if (index==0)
     {
         attentmodul=true;
+        ui->progressBar->setPalette(sp1);
         ui->label_23->setVisible(true);
         ui->label_24->setVisible(false);
     }
     else
     {
         attentmodul=false;
+        ui->progressBar->setPalette(sp2);
         ui->label_23->setVisible(false);
         ui->label_24->setVisible(true);
     }
@@ -3975,7 +3882,7 @@ void plotwindow::on_pushButton_24_clicked()
 {
     if (pssstart)
     {
-        QPixmap pmx = ui->widget->grab();
+        pmx = ui->widget->grab();
         pss->paintf->setbackimage(pmx);
         pss->paintf->mainpic=pmx;
         pss->paintf->pmain=pmx;
@@ -3999,4 +3906,12 @@ void plotwindow::on_pushButton_25_clicked()
 {
     ui->widget->setBackground(backimg,true,Qt::IgnoreAspectRatio);
     ui->widget->replot();
+}
+
+void plotwindow::on_checkBox_14_clicked()
+{
+    filteringback=!filteringback;
+    colorizeback=!colorizeback;
+    if (opencvstart)
+        ui->checkBox_11->setEnabled(!ui->checkBox_14->isChecked());
 }

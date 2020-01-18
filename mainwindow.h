@@ -66,6 +66,7 @@ public:
     void setopencvt(int i);
     void setattent(int i);
     void setoverlay(int i);
+    void checkoverlay();
     QImage grabopcvpic();
 
     ~MainWindow();
@@ -86,7 +87,7 @@ private slots:
 
     void picfiltUpdate();
     void mindwtUpdate();
-    void simulateEEGUpdate();
+    void simulateEEGUpdate();    
 
     void on_pushButton_6_clicked();
 
