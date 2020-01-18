@@ -1,6 +1,6 @@
 # minddrawplay
 
-The code is written in C++, Qt 5.6.0, compiled with MinGW 4.9.2 32bit
+The code is written in C++, Qt 5.6.0
 
 The project is specifically made for mobile EEG device MindWave NeuroSky,
 
