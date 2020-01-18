@@ -27,6 +27,12 @@ EEG device MindWave NeuroSky
 
 http://neurosky.com
 
+in case of a problem with the device connection via bluetooth, try to install driver manually:
+
+http://download.neurosky.com/public/Products/MindWave%20headset/RF%20driver/RF%20driver.zip
+
+full-hd resolution for the screen 
+
 ====  software requirements ====
 
 OpenCV libraries (see .pro file)
