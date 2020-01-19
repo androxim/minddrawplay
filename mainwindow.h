@@ -67,6 +67,7 @@ public:
     void setattent(int i);
     void setoverlay(int i);
     void checkoverlay();
+    void setfolderpath(QString fp);
     QImage grabopcvpic();
 
     ~MainWindow();
@@ -90,6 +91,8 @@ private slots:
     void simulateEEGUpdate();    
 
     void on_pushButton_6_clicked();
+
+    void on_pushButton_7_clicked();
 
 private:
     Ui::MainWindow *ui;

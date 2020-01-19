@@ -81,6 +81,8 @@ MainWindow::MainWindow(QWidget *parent) :
     QDir fd(folderpath);
     imglist = fd.entryList(QStringList() << "*.jpg" << "*.JPG",QDir::Files);
 
+    ui->lineEdit->setText(folderpath);
+
     pwstart=false;
     bciconnect=false;
     opencvstart = false;
@@ -615,6 +617,14 @@ void MainWindow::checkoverlay()
         canchangepic=true;
 }
 
+void MainWindow::setfolderpath(QString fp)
+{
+    folderpath=fp;
+    QDir fd(folderpath);
+    imglist = fd.entryList(QStringList() << "*.jpg" << "*.JPG",QDir::Files);
+    ui->lineEdit->setText(folderpath);
+}
+
 void MainWindow::mindwtUpdate()
 {
     int c=0;
@@ -816,5 +826,19 @@ void MainWindow::picfiltUpdate()
 
 void MainWindow::on_pushButton_6_clicked()
 {
-    startopencv();
+    if (imglist.length()>0)
+        startopencv();
+    else
+    {
+        QMessageBox msgBox;
+        msgBox.setText("Choose a folder with .jpg files!");
+        msgBox.exec();
+    }
+}
+
+void MainWindow::on_pushButton_7_clicked()
+{
+    QString fPath=QFileDialog::getExistingDirectory(this, "Get Any Folder", "D://");
+    if (fPath!="")
+        setfolderpath(fPath);
 }
