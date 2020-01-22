@@ -1,5 +1,7 @@
 # minddrawplay
 
+![MindDrawPlay screen](mdpscreen.jpg)
+     
 The code is written in C++, Qt 5.6.0
 
 The project is specifically made for mobile EEG device MindWave NeuroSky,
