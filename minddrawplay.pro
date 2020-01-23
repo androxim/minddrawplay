@@ -20,7 +20,8 @@ SOURCES += main.cpp\
     settings.cpp \
     paintscene.cpp \
     paintform.cpp \
-    rawsignal.cpp
+    rawsignal.cpp \
+    soundplayer.cpp
 
 HEADERS  += mainwindow.h \
             qcustomplot.h \
@@ -32,7 +33,8 @@ HEADERS  += mainwindow.h \
     paintscene.h \
     paintform.h \
     thinkgear.h \
-    rawsignal.h
+    rawsignal.h \
+    soundplayer.h
 
 FORMS    += mainwindow.ui \
             plotwindow.ui \

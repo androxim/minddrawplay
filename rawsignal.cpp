@@ -10,7 +10,7 @@ rawsignal::rawsignal(QWidget *parent) :
     setWindowFlags(Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint);
     setWindowFlags(Qt::FramelessWindowHint|Qt::WindowStaysOnTopHint);
     setAttribute(Qt::WA_TranslucentBackground,true);
-    setWindowOpacity(0.88);
+    setWindowOpacity(0.75);
     numsmp=0;
     signal = QVector<double>(MAXPT);
     xc = QVector<double>(MAXPT);

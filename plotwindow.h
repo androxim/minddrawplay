@@ -15,6 +15,7 @@
 #include "QSoundEffect"
 #include "QMediaPlayer"
 #include "rawsignal.h"
+#include "soundplayer.h"
 
 namespace Ui {
 class plot;
@@ -47,10 +48,11 @@ class plotwindow : public QWidget
 
 public:  
     int stepsPerPress, drawshift, graphcount, recnumb, baseshift, scaletimeout, tonenumbers, maxtones, chorddelay, mxttimeout, curmodval;
-    int counter, stims, startpos, tscale, ampval, corrprednumb, recparts, autoregdegree, autoreglength, daqscalevalue, transdelay, flength, chnums, sampleblock, exch, sourcech;
+    int counter, stims, startpos, tscale, ampval, corrprednumb, recparts, daqscalevalue, transdelay, flength, chnums, sampleblock, exch, sourcech;
     QString daqport;
     QString folderpath;
     rawsignal* rws;
+    soundplayer splayer;
     QGraphicsBlurEffect *blurp;
     QGraphicsColorizeEffect *colorizep;
     bool bfiltmode,adaptivenumparts;
@@ -63,32 +65,14 @@ public:
     bool opencvstart;
     QPixmap pm, pmx;
     QPalette sp1, sp2;
-    QImage QM, qbim1, qbim2;
-    QSoundEffect* Glow; QSoundEffect* D3;
-    QSoundEffect* fdiez; QSoundEffect* A3;
-    QSoundEffect* Clow; QSoundEffect* C4;
-    QSoundEffect* atone; QSoundEffect* A4;
-    QSoundEffect* Elow; QSoundEffect* D4;
-    QSoundEffect* dtone; QSoundEffect* E4;
-    QSoundEffect* Dlow; QSoundEffect* F3;
-    QSoundEffect* btone;
-    QSoundEffect* Blow; QSoundEffect* F4;
-    QSoundEffect* gtone;
-    QSoundEffect* tone_Blow; QSoundEffect* tone_b;
-    QSoundEffect* tone_Dlowsh; QSoundEffect* tone_dsh;
-    QSoundEffect* tone_Glowsh; QSoundEffect* tone_gsh;
-    QSoundEffect* tone_Flowsh; QSoundEffect* tone_fsh;
-    QSoundEffect* tone_Clowsh; QSoundEffect* tone_csh;
+    QImage QM, qbim1, qbim2;   
     bool readyfortones;
     qreal volume;
     int simsrfr;
-    int grct;
     int maxtonerepeats, memorylength, attent;
     bool paintfstart, attentmodul, recplaying;
     bool start, offlinedata, addmode, addmodeon, estimation, adaptampl, addmoderec, hideardata, usefiltering, filterardata, carfilter, zerocr, phasepr;
     bool showprediction, estimpredstim, filtereddata, correctdelay, maxentropy, leastsqr, regforstim, hronar, hronarrun, filtfir;
-    double *autoreginput;
-    double *autoregcoeffs;
     double plv, averopttime, fsampr, flowpass;
     int *exlchannels;
     bool recurbutter, zerobutter, mindplay, blink, playsaved, scalechange, spacemode, tank1mode, tank2mode, recordstarted, micrecord, antirepeat, randmxt;
@@ -144,6 +128,7 @@ public:
     hilbert* hnt;
     coords arrc;
     appconnect* appcn;
+    Complex t[2048];
     QSound* Bells;
     QString tones;
     QString lasttones;
@@ -164,7 +149,6 @@ public:
     void bcidata(double d1);
     void analysemeandata();
     void analysepart();
-    void playdata();
     void gettones();
     void playtank1(QString tonesset);
     void playtank2(QString tonesset);
@@ -172,7 +156,6 @@ public:
     void randomtone();
     void letsplay();
 
-    void recurbuttfilt();
     void savedatatofile(QString fname);
     void loaddatafromfile(QString fname);
     void savescaletofile(QString fname);
@@ -183,10 +166,7 @@ public:
     double estimateoptprop(int n, double p1, double p2, int pos);
     void setaddmode(bool f);  
     int maxabsstim(int pos);
-    double offlinevaluation(int pos, int i);
-    void maxentropyf(double *input, int length, int degree, double **ar, double *per, double *pef, double *h, double *g);
-    void autoregress(double *input, int length, int degree, double *coeffs);
-    void runautoreg(int pos);
+    double offlinevaluation(int pos, int i);    
     double zcdifference(int pos);
     void printtoresultstring(QString str);
     void printtoresultbox(QString str);
@@ -195,13 +175,7 @@ public:
 
     void cleanmem();
 
-    void hilbonar(int pos);
-
     void getrawdata(int chn, double val);
-
-    void recurbutterf(int order, double sfr, double hpf, double* x, int length);
-    void recurbutterfilter(int posstim, int length);
-    void recurbutterfilterar(int posstim, int length);
 
     double* ComputeLP(int FilterOrder );
     double* ComputeHP(int FilterOrder );

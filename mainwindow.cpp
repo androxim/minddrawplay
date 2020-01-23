@@ -85,8 +85,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     pwstart=false;
     bciconnect=false;
-    opencvstart = false;
-    canchangehue=true;
+    opencvstart = false; 
     connectWin = new appconnect();
     connectWin->wd=plotw;
     connectWin->mw=this;
@@ -108,14 +107,19 @@ MainWindow::MainWindow(QWidget *parent) :
     deltafr = 2; thetafr = 5; alphafr = 9; betafr = 21; gammafr=33; hgammafr=64;
     zdeltaamp = 7; zthetaamp = 7; zalphaamp = 7; zbetaamp = 7; zgammaamp = 5; zhgammaamp = 3;
 
+    canchangehue=true;
+    canchangeoverlay=true;
     curhue = prevhue = 255;
+    curoverl = prevoverl = 50;
+
     currentel = 0; currentsimdata = 0;
     simulateEEG = new QTimer(this);
     simulateEEG->connect(simulateEEG,SIGNAL(timeout()), this, SLOT(simulateEEGUpdate()));
     simulateEEG->setInterval(2);
   //  simulateEEG->start();
 
-    opencvinterval=50;
+    fullscr=false;
+    opencvinterval=20;
     picfilt = new QTimer(this);
     picfilt->connect(picfilt,SIGNAL(timeout()), this, SLOT(picfiltUpdate()));
     picfilt->setInterval(opencvinterval);    
@@ -521,22 +525,13 @@ void MainWindow::startopencv()
 
 
     createTrackbar("Hue","image",&elem1, max_elem,Hue);
-    createTrackbar("Saturation","image",&elem2, max_elem,Saturation);
-    createTrackbar("Value","image",&elem3, max_elem,Value);
+   // createTrackbar("Saturation","image",&elem2, max_elem,Saturation);
+   // createTrackbar("Value","image",&elem3, max_elem,Value);
     createTrackbar("Attention","image",&elem4,max_elem2,Attent);
     createTrackbar("Overlay","image",&elem5,max_elem2,Overlay);
     createTrackbar("Border","image",&elem6,max_elem2,Border);
 
-    setMouseCallback( "image", onMouse, 0 );
-
-    int alpha = 0.4;
-    int x = 100;
-    int y = 100;
-    int width = 300;
-    int height = 200;
-    cv::Rect rect(x, y, width, height);
-    cv::Point pt1(x, y);
-    cv::Point pt2(x + width, y + height);
+    setMouseCallback( "image", onMouse, 0 );    
 
     int rimg = qrand() % imglist.length();
     opencvpic=folderpath+"/"+imglist.at(rimg);
@@ -547,10 +542,9 @@ void MainWindow::startopencv()
     QString stp = folderpath+"/"+imglist.at(rimg);
     srccopy =  imread(stp.toStdString());
 
-    //cv::rectangle(srccopy, rect, cv::Scalar(110, 255, 232));
     resizeWindow("image",1600,900);
     resize(1600,900);  
-    moveWindow("image", 160,40);
+    moveWindow("image", 160,39);
     imshow("image", src);
 
     opencvstart=true;
@@ -558,6 +552,7 @@ void MainWindow::startopencv()
     if (plotw->start)
         plotw->enablehue();
     picfilt->start();
+
    /* for (int i=0; i<500; i++)
     {
         elem1=i;
@@ -680,7 +675,8 @@ void MainWindow::mindwtUpdate()
                     plotw->update_attention(mw_atten);
                 if (opencvstart)
                 {                   
-                   // setoverlay(mw_atten);                   
+                   // setoverlay(mw_atten);
+                   //   setattent(mw_atten);
                    // elem2 = 210 + mw_atten/2;
                    // setTrackbarPos("Saturation", "image", elem2);
                     if (canchangehue)
@@ -689,10 +685,25 @@ void MainWindow::mindwtUpdate()
                         canchangehue=false;
                     //  setopencvt(50+mw_atten*2);
                     }
+               //     if (canchangeoverlay)
+               //     {
+               //         curoverl=mw_atten;
+               //         canchangeoverlay=false;
+                    //  setopencvt(50+mw_atten*2);
+                  //  }
                 }
                 if (psstart)
                 {
                     paintw->updateattentionplot(mw_atten);
+                    if (opencvstart)
+                    {
+                        setattent(paintw->getestattval());
+                    //    if (canchangeoverlay)
+                        {
+                            curoverl=elem4;
+                      //      canchangeoverlay=false;
+                        }
+                    }
                     //paintw->updateplots(false);
                     //paintw->bfiltmode;
                   //      paintw->randompics();
@@ -808,20 +819,46 @@ void MainWindow::on_pushButton_5_clicked()
 }
 
 void MainWindow::picfiltUpdate()
-{
-    if (curhue<prevhue)
+{    
+    char key = cv::waitKey(10);
+    if (key == ' ')
     {
-        prevhue-=1;
-        elem1=prevhue;
-        setTrackbarPos("Hue", "image", elem1);
-    } else
-    if (curhue>prevhue)
-    {
-        prevhue+=1;
-        elem1=prevhue;
-        setTrackbarPos("Hue", "image", elem1);
-    } else
+        if (!fullscr)
+        {
+            cv::setWindowProperty("image",cv::WND_PROP_FULLSCREEN,1);
+            fullscr=true;
+        }
+        else
+        {
+            cv::setWindowProperty("image",cv::WND_PROP_FULLSCREEN,0);
+            fullscr=false;
+        }
+    }
+    if ((abs(curhue-prevhue)==0) || ((abs(curhue-prevhue)==1)))
         canchangehue=true;
+    else
+    {
+        if (curhue<prevhue)
+            prevhue-=2;
+        else
+            prevhue+=2;
+        elem1=prevhue;
+        setTrackbarPos("Hue", "image", elem1);
+    }
+
+
+    if ((abs(curoverl-prevoverl)==0) || ((abs(curoverl-prevoverl)==1)))
+        canchangeoverlay=true;
+    else
+    {
+        if (curoverl<prevoverl)
+            prevoverl-=2;
+        else
+            prevoverl+=2;
+        elem5=prevoverl;
+        setTrackbarPos("Overlay", "image", elem5);
+    }
+    checkoverlay();
 }
 
 void MainWindow::on_pushButton_6_clicked()

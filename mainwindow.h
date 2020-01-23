@@ -28,7 +28,7 @@ public:
     bool pwstart;
     bool simeeg;
     bool bciconnect;
-    bool opencvstart;
+    bool opencvstart, fullscr;
     QString daqport;
     QTimer* mindwt;
     QTimer* picfilt;
@@ -40,11 +40,11 @@ public:
     int currentel;
     int srfr;
     int opencvinterval;
-    int curhue, prevhue;
+    int curhue, prevhue, curoverl, prevoverl;
     QPixmap bkgnd;
     QPalette palette;
     QString opencvpic;
-    bool canchangehue;
+    bool canchangehue, canchangeoverlay;
     int deltafr, thetafr, alphafr, betafr, gammafr, hgammafr;
     int deltaphs, thetaphs, alphaphs, betaphs, gammaphs;
     int zdeltaamp, zthetaamp, zalphaamp, zbetaamp, zgammaamp, zhgammaamp;

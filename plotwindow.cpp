@@ -64,7 +64,6 @@ plotwindow::plotwindow(QWidget *parent) :
     counter=0; startpos=0; ampval=70; tscale=12; recparts=0; transdelay=20; chnums=3, sampleblock=4;
     offlinedata=false; addmode=true; addmodeon=false; adaptampl=false; hideardata=true;
     estimpredstim=true; filtereddata=false; correctdelay=false;
-    maxentropy=false; leastsqr=true; regforstim=false; hronar=true; hronarrun=false; phasepr=true;
     usefiltering=true; filterardata=false; carfilter=true; zerocr=true;
     recurbutter=false; filtfir=false; zerobutter=true; playsaved=false;
     tank1mode=false; tank2mode=true; spacemode=false;
@@ -74,10 +73,7 @@ plotwindow::plotwindow(QWidget *parent) :
     rawsignalabove=true;
     flength=16; fsampr=512; flowpass=40;
     butterord=2; lcutoff=4; hcutoff=70;
-    autoreginput=new double[1000];
-    autoreglength=0;
-    autoregdegree=100;
-    autoregcoeffs=new double[500];
+
     exlchannels = new int[64]; exch=64;
     indexes = new int [64];
     for (int i=0; i<64; i++)
@@ -128,46 +124,6 @@ plotwindow::plotwindow(QWidget *parent) :
     mxttim->connect(mxttim, SIGNAL(timeout()), this, SLOT(mxttimerUpdate()));
     mxttim->setInterval(mxttimeout*1000);
 
-    int tcheck=200;
-    tn1 = new QTimer(this);
-    tn1->connect(tn1, SIGNAL(timeout()), this, SLOT(tn1Update()));
-    tn1->setInterval(tcheck);
-    tn2 = new QTimer(this);
-    tn2->connect(tn2, SIGNAL(timeout()), this, SLOT(tn2Update()));
-    tn2->setInterval(tcheck);
-    tn3 = new QTimer(this);
-    tn3->connect(tn3, SIGNAL(timeout()), this, SLOT(tn3Update()));
-    tn3->setInterval(tcheck);
-    tn4 = new QTimer(this);
-    tn4->connect(tn4, SIGNAL(timeout()), this, SLOT(tn4Update()));
-    tn4->setInterval(tcheck);
-    tn5 = new QTimer(this);
-    tn5->connect(tn5, SIGNAL(timeout()), this, SLOT(tn5Update()));
-    tn5->setInterval(tcheck);
-    tn6 = new QTimer(this);
-    tn6->connect(tn6, SIGNAL(timeout()), this, SLOT(tn6Update()));
-    tn6->setInterval(tcheck);
-    tn7 = new QTimer(this);
-    tn7->connect(tn7, SIGNAL(timeout()), this, SLOT(tn7Update()));
-    tn7->setInterval(tcheck);
-    tn8 = new QTimer(this);
-    tn8->connect(tn8, SIGNAL(timeout()), this, SLOT(tn8Update()));
-    tn8->setInterval(tcheck);
-    tn9 = new QTimer(this);
-    tn9->connect(tn9, SIGNAL(timeout()), this, SLOT(tn9Update()));
-    tn9->setInterval(tcheck);
-    tn10 = new QTimer(this);
-    tn10->connect(tn10, SIGNAL(timeout()), this, SLOT(tn10Update()));
-    tn10->setInterval(tcheck);
-
-    tryplay = new QTimer(this);
-    tryplay->connect(tryplay, SIGNAL(timeout()), this, SLOT(playUpdate()));
-   // tryplay->setInterval(1000);
-
-   // tn1->start(); tn2->start(); tn3->start(); tn4->start(); tn5->start();
-   // tn6->start(); tn7->start(); tn8->start(); tn9->start(); tn10->start();
-   // tryplay->start();
-
     checkstates = new QTimer(this);
     checkstates->connect(checkstates,SIGNAL(timeout()), this, SLOT(checkstatesUpdate()));
     checkstates->setInterval(100);
@@ -180,8 +136,7 @@ plotwindow::plotwindow(QWidget *parent) :
     bfiltmode=false;
     opencvstart=false;
     simsrfr=500;
-    fftfreqs=true;
-    attentionvolume=true; volumebord=40;
+    attentionvolume=true; volumebord=25;
     readyfortones=false;
     estimation=false;
     showprediction=false;
@@ -221,37 +176,7 @@ plotwindow::plotwindow(QWidget *parent) :
         on_radioButton_3_clicked();
     }  
 
-    Glow = new QSoundEffect; Glow->setSource(QUrl::fromLocalFile(":/sounds/sounds/tank_Glow_.wav"));
-    D3 = new QSoundEffect(); D3->setSource(QUrl::fromLocalFile(":/sounds/sounds/D3_.wav"));
-    fdiez = new QSoundEffect(); fdiez->setSource(QUrl::fromLocalFile(":/sounds/sounds/tank_fdiez_.wav"));
-    A3 = new QSoundEffect(); A3->setSource(QUrl::fromLocalFile(":/sounds/sounds/A3_.wav"));
-    Clow = new QSoundEffect(); Clow->setSource(QUrl::fromLocalFile(":/sounds/sounds/tank_Clow_.wav"));
-    C4 = new QSoundEffect(); C4->setSource(QUrl::fromLocalFile(":/sounds/sounds/C4_.wav"));
-    atone = new QSoundEffect(); atone->setSource(QUrl::fromLocalFile(":/sounds/sounds/tank_a_.wav"));
-    A4 = new QSoundEffect(); A4->setSource(QUrl::fromLocalFile(":/sounds/sounds/A4_.wav"));
-    Elow = new QSoundEffect(); Elow->setSource(QUrl::fromLocalFile(":/sounds/sounds/tank_Elow_.wav"));
-    D4 = new QSoundEffect(); D4->setSource(QUrl::fromLocalFile(":/sounds/sounds/D4_.wav"));
-    dtone = new QSoundEffect(); dtone->setSource(QUrl::fromLocalFile(":/sounds/sounds/tank_d_.wav"));
-    E4 = new QSoundEffect(); E4->setSource(QUrl::fromLocalFile(":/sounds/sounds/E4_.wav"));
-    Dlow = new QSoundEffect(); Dlow->setSource(QUrl::fromLocalFile(":/sounds/sounds/tank_Dlow_.wav"));
-    F3 = new QSoundEffect(); F3->setSource(QUrl::fromLocalFile(":/sounds/sounds/F3_.wav"));
-    btone = new QSoundEffect(); btone->setSource(QUrl::fromLocalFile(":/sounds/sounds/tank_b_.wav"));
-    Blow = new QSoundEffect(); Blow->setSource(QUrl::fromLocalFile(":/sounds/sounds/tank_Blow_.wav"));
-    F4 = new QSoundEffect(); F4->setSource(QUrl::fromLocalFile(":/sounds/sounds/F4_.wav"));
-    gtone = new QSoundEffect(); gtone->setSource(QUrl::fromLocalFile(":/sounds/sounds/tank_g_.wav"));
-    tone_Blow = new QSoundEffect(); tone_Blow->setSource(QUrl::fromLocalFile(":/sounds/sounds/tone_B.wav"));
-    tone_b = new QSoundEffect(); tone_b->setSource(QUrl::fromLocalFile(":/sounds/sounds/tone_b_.wav"));
-    tone_Dlowsh = new QSoundEffect(); tone_Dlowsh->setSource(QUrl::fromLocalFile(":/sounds/sounds/tone_Dsh.wav"));
-    tone_dsh = new QSoundEffect(); tone_dsh->setSource(QUrl::fromLocalFile(":/sounds/sounds/tone_dsh_.wav"));
-    tone_Glowsh = new QSoundEffect(); tone_Glowsh->setSource(QUrl::fromLocalFile(":/sounds/sounds/tone_Gsh.wav"));
-    tone_gsh = new QSoundEffect(); tone_gsh->setSource(QUrl::fromLocalFile(":/sounds/sounds/tone_gsh_.wav"));
-    tone_Flowsh = new QSoundEffect(); tone_Flowsh->setSource(QUrl::fromLocalFile(":/sounds/sounds/tone_Fsh.wav"));
-    tone_fsh = new QSoundEffect(); tone_fsh->setSource(QUrl::fromLocalFile(":/sounds/sounds/tone_fsh_.wav"));
-    tone_Clowsh = new QSoundEffect(); tone_Clowsh->setSource(QUrl::fromLocalFile(":/sounds/sounds/tone_Csh.wav"));
-    tone_csh = new QSoundEffect(); tone_csh->setSource(QUrl::fromLocalFile(":/sounds/sounds/tone_csh_.wav"));
     tim->start();
-
-    grct=0;
 
     adaptivenumparts=true;
 
@@ -1062,7 +987,8 @@ void plotwindow::enablenumparts(bool fl)
 
 void plotwindow::enablehue()
 {
-    ui->checkBox_11->setEnabled(true);
+    if (!ui->checkBox_14->isChecked())
+        ui->checkBox_11->setEnabled(true);
 }
 
 void plotwindow::setpicfolder(QString fp)
@@ -1095,7 +1021,7 @@ void plotwindow::applyfilteronback()
         blurp = new QGraphicsBlurEffect;
         colorizep = new QGraphicsColorizeEffect;
 
-        blurp->setBlurRadius((100-attent)/10);
+        blurp->setBlurRadius((100-attent)/12);
 
         if (colorizeback)
         {
@@ -1105,7 +1031,11 @@ void plotwindow::applyfilteronback()
         }
 
         if ((opencvstart) && (!colorizeback))
+        {
+            if (!backimageloaded)
+                backimageloaded=true;
             backimg = QPixmap::fromImage(mw->grabopcvpic());
+        }
 
         QM = backimg.toImage();
         qbim1 = applyEffectToImage(QM, blurp, 0);
@@ -1137,41 +1067,14 @@ void plotwindow::setbackimage(QPixmap pm)
 
 void plotwindow::bcidata(double d1)
 {
-    arrc.amp0[counter]=d1; // floor(d1*pow(10.,2)+.5)/pow(10.,2);
+    arrc.amp0[counter]=d1;
         counter++; 
   //  xraw=(int)d1;
 }
 
 void plotwindow::settonesvolume()
 {
-    D3->setVolume(volume);
-    Glow->setVolume(volume);
-    A3->setVolume(volume);
-    fdiez->setVolume(volume);
-    C4->setVolume(volume);
-    Clow->setVolume(volume);
-    A4->setVolume(volume);
-    atone->setVolume(volume);
-    D4->setVolume(volume);
-    Elow->setVolume(volume);
-    E4->setVolume(volume);
-    dtone->setVolume(volume);
-    F3->setVolume(volume);
-    Dlow->setVolume(volume);
-    btone->setVolume(volume);
-    F4->setVolume(volume);
-    Blow->setVolume(volume);
-    gtone->setVolume(volume);
-    tone_Blow->setVolume(volume);
-    tone_b->setVolume(volume);
-    tone_Dlowsh->setVolume(volume);
-    tone_dsh->setVolume(volume);
-    tone_Glowsh->setVolume(volume);
-    tone_gsh->setVolume(volume);
-    tone_Flowsh->setVolume(volume);
-    tone_fsh->setVolume(volume);
-    tone_Clowsh->setVolume(volume);
-    tone_csh->setVolume(volume);
+   splayer.setvolume(volume);
 }
 
 // B G  C  E  D  g f# a  d  b
@@ -1181,135 +1084,91 @@ void plotwindow::play_Glow()
 {
     ui->pushButton_7->setDown(true);
     if (spacemode)
-    {
-     //   if (!D3->isPlaying())
-        D3->play();
-    }
+        emit splayer.playD3();
     else if (tank1mode)
-        Glow->play();
-    else {
-      //  if (!tone_Dlowsh->isPlaying())
-      //  tone_Dlowsh->stop();
-        tone_Dlowsh->play();
-    }
+        emit splayer.playGlow();
+    else
+        emit splayer.playtone_Dlowsh();
 }
 
 void plotwindow::play_fdiez()
 {
     ui->pushButton_8->setDown(true);
     if (spacemode)
-    {
-       // if (!A3->isPlaying())
-        A3->play();
-    }
+        emit splayer.playA3();
     else if (tank1mode)
-        fdiez->play();
-    else {
-     //   if (!tone_dsh->isPlaying())
-     //   tone_dsh->stop();
-        tone_dsh->play();
-    }
+        emit splayer.playfdiez();
+    else
+        emit splayer.playtone_dsh();
 }
 
 void plotwindow::play_Clow()
 {
     ui->pushButton_9->setDown(true);
     if (spacemode)
-    {
-      //  if (!C4->isPlaying())
-        C4->play();
-    }
+        emit splayer.playC4();
     else if (tank1mode)
-        Clow->play();
-    else {
-       // if (!tone_Glowsh->isPlaying())
-     //   tone_Glowsh->stop();
-        tone_Glowsh->play();
-    }
+        emit splayer.playClow();
+    else
+        emit splayer.playtone_Glowsh();
+
 }
 
 void plotwindow::play_a()
 {
     ui->pushButton_10->setDown(true);
     if (spacemode)
-    {
-     //   if (!A4->isPlaying())
-        A4->play();
-    }
+        emit splayer.playA4();
     else if (tank1mode)
-        atone->play();
+        emit splayer.playatone();
     else
-    {
-      //  if (!tone_gsh->isPlaying())
-      //  tone_gsh->stop();
-        tone_gsh->play();
-    }
+        emit splayer.playtone_gsh();
 }
 
 void plotwindow::play_Elow()
 {
     ui->pushButton_11->setDown(true);
     if (spacemode)
-    {
-      //  if (!D4->isPlaying())
-        D4->play();
-    }
+        emit splayer.playD4();
     else if (tank1mode)
-        Elow->play();
-    else {
-      //  if (!tone_Flowsh->isPlaying())
-     //   tone_Flowsh->stop();
-        tone_Flowsh->play();
-    }
+        emit splayer.playElow();
+    else
+        emit splayer.playtone_Flowsh();
 }
 
 void plotwindow::play_d()
 {
     ui->pushButton_12->setDown(true);
     if (spacemode)
-    {
-      //  if (!E4->isPlaying())
-        E4->play();
-    }
+        emit splayer.playE4();
     else if (tank1mode)
-        dtone->play();
+        emit splayer.playdtone();
     else
-    {
-      //  if (!tone_fsh->isPlaying())
-     //   tone_fsh->stop();
-        tone_fsh->play();
-    }
+        emit splayer.playtone_fsh();
 }
 
 void plotwindow::play_Dlow()
 {
     ui->pushButton_13->setDown(true);
     if (spacemode)
-    {
-      //  if (!F3->isPlaying())
-        F3->play();
-    }
+        emit splayer.playF3();
     else if (tank1mode)
-        Dlow->play();
-    else {
-      //  if (!tone_Clowsh->isPlaying())
-      //  tone_Clowsh->stop();
-        tone_Clowsh->play();
-    }
+        emit splayer.playDlow();
+    else
+        emit splayer.playtone_Clowsh();
 }
 
 void plotwindow::play_b()
-{
-    if (tank1mode)
+{    
+    if (tank1mode)            
     {
         ui->pushButton_14->setDown(true);
-        btone->play();
-    } else if (tank2mode)
+        emit splayer.playbtone();
+    }
+    else if (tank2mode)
     {
         ui->pushButton_14->setDown(true);
-     //   if (!tone_csh->isPlaying())
-      //  tone_csh->stop();
-        tone_csh->play();
+        emit splayer.playtone_csh();
     }
 }
 
@@ -1317,33 +1176,24 @@ void plotwindow::play_Blow()
 {
     ui->pushButton_15->setDown(true);
     if (spacemode)
-    {
-      //  if (!F4->isPlaying())
-        F4->play();
-    }
+        emit splayer.playF4();
     else if (tank1mode)
-        Blow->play();
-    else
-    {
-      //  if (!tone_Blow->isPlaying())
-     //   tone_Blow->stop();
-        tone_Blow->play();
-    }
+        emit splayer.playBlow();
+    else    
+        emit splayer.playtone_Blow();
 }
 
 void plotwindow::play_g()
 {
     if (tank1mode)
     {
-        ui->pushButton_16->setDown(true);
-        gtone->play();
+        ui->pushButton_16->setDown(true); 
+        emit splayer.playgtone();
     } else
     if (tank2mode)
     {
-        ui->pushButton_16->setDown(true);
-      //  if (!tone_b->isPlaying())
-   //     tone_b->stop();
-        tone_b->play();        
+        ui->pushButton_16->setDown(true); 
+        emit splayer.playtone_b();
     }
 }
 
@@ -1727,84 +1577,74 @@ void plotwindow::analysemeandata()
 {
     deltanum=0; thetanum=0; alphanum=0; betanum=0; gammanum=0; hgammanum=0;
 
-  /*  hnt->lfilt=30; edge=hnt->lfilt/2;
-    hnt->init();
-    hnt->npt=hnt->imlength;
-    for (int i=0; i<hnt->npt; i++)
-        hnt->x[i]=arrc.amp0[i];
-    hnt->firhilbert(); */
+    int length = 2048; int bordfreq=70;
+    for (int i=0; i<hnt->imlength; i++)
+        t[i].real(arrc.amp0[i]);
 
-    if (fftfreqs)
+    for (int i=hnt->imlength; i<length; i++)  // zero-padding
+        t[i].real(0);
+
+    for (int i=0; i<length; i++)
+        t[i].imag(0);
+
+    cdata = CArray(t,length);
+    hnt->fft(cdata);
+    double deltafr, thetafr, alphafr, betafr, gammafr, hgammafr, totalpow, temppow;
+    deltafr=0; thetafr=0; alphafr=0; betafr=0; gammafr=0; hgammafr=0; totalpow=0;
+    for (int i=1; i<bordfreq*4; i++)
     {
-        int length = 2048; int bordfreq=70;
-        Complex t[length];
-        for (int i=0; i<hnt->imlength; i++)
-            t[i].real(arrc.amp0[i]);
-
-        for (int i=hnt->imlength; i<length; i++)  // zero-padding
-            t[i].real(0);
-
-        for (int i=0; i<length; i++)
-            t[i].imag(0);
-
-        cdata = CArray(t,length);
-        hnt->fft(cdata);
-        double deltafr, thetafr, alphafr, betafr, gammafr, hgammafr, totalpow, temppow;
-        deltafr=0; thetafr=0; alphafr=0; betafr=0; gammafr=0; hgammafr=0; totalpow=0;
-        for (int i=1; i<bordfreq*4; i++)
-        {
-            temppow=2*sqrt(cdata[i].real()*cdata[i].real()+cdata[i].imag()*cdata[i].imag());
-            totalpow+=temppow;
-            if ((i>0) && (i<4*4))
-                deltafr+=temppow;
-            if ((i>=4*4) && (i<8*4))
-                thetafr+=temppow;
-            if ((i>=8*4) && (i<15*4))
-                alphafr+=temppow;
-            if ((i>=15*4) && (i<33*4))
-                betafr+=temppow;
-            if ((i>=33*4) && (i<50*4))
-                gammafr+=temppow;
-            if ((i>=50*4))
-                hgammafr+=temppow;
-        }
-        deltafr/=totalpow;
-        thetafr/=totalpow;
-        alphafr/=totalpow;
-        betafr/=totalpow;
-        gammafr/=totalpow;
-        hgammafr/=totalpow;
-
-        delta=deltafr*100;
-        theta=thetafr*100;
-        alpha=alphafr*100;
-        beta=betafr*100;
-        gamma=gammafr*100;
-        hgamma=hgammafr*100;
-
-       // cout<<fixed<<setprecision(2)<<delta<<" "<<theta<<" "<<alpha<<" "<<beta<<" "<<gamma<<" "<<hgamma<<endl;
+        temppow=2*sqrt(cdata[i].real()*cdata[i].real()+cdata[i].imag()*cdata[i].imag());
+        totalpow+=temppow;
+        if ((i>0) && (i<4*4))
+            deltafr+=temppow;
+        if ((i>=4*4) && (i<8*4))
+            thetafr+=temppow;
+        if ((i>=8*4) && (i<15*4))
+            alphafr+=temppow;
+        if ((i>=15*4) && (i<33*4))
+            betafr+=temppow;
+        if ((i>=33*4) && (i<50*4))
+            gammafr+=temppow;
+        if ((i>=50*4))
+            hgammafr+=temppow;
     }
+    deltafr/=totalpow;
+    thetafr/=totalpow;
+    alphafr/=totalpow;
+    betafr/=totalpow;
+    gammafr/=totalpow;
+    hgammafr/=totalpow;
+
+    delta=deltafr*100;
+    theta=thetafr*100;
+    alpha=alphafr*100;
+    beta=betafr*100;
+    gamma=gammafr*100;
+    hgamma=hgammafr*100;
+
+// cout<<fixed<<setprecision(2)<<delta<<" "<<theta<<" "<<alpha<<" "<<beta<<" "<<gamma<<" "<<hgamma<<endl;
 
   //  if ((startnmmode) && (attent>50))
   //     pushenter();
         // pushright();
 
-    if ((addmodeon) || (playsaved) || (mindplay))
+    if ((addmodeon) || (mindplay))
     {
         nums++;
-        sdelta+=delta; meandelta=floor((((double)sdelta/nums))*pow(10.,2)+.5)/pow(10.,2);
-        stheta+=theta; meantheta=floor((((double)stheta/nums))*pow(10.,2)+.5)/pow(10.,2);
-        salpha+=alpha; meanalpha=floor((((double)salpha/nums))*pow(10.,2)+.5)/pow(10.,2);
-        sbeta+=beta; meanbeta=floor((((double)sbeta/nums))*pow(10.,2)+.5)/pow(10.,2);
-        sgamma+=gamma; meangamma=floor((((double)sgamma/nums))*pow(10.,2)+.5)/pow(10.,2);
-        shgamma+=hgamma; meanhgamma=floor((((double)shgamma/nums))*pow(10.,2)+.5)/pow(10.,2);
+        sdelta+=delta; meandelta=(double)sdelta/nums;
+        stheta+=theta; meantheta=(double)stheta/nums;
+        salpha+=alpha; meanalpha=(double)salpha/nums;
+        sbeta+=beta; meanbeta=(double)sbeta/nums;
+        sgamma+=gamma; meangamma=(double)sgamma/nums;
+        shgamma+=hgamma; meanhgamma=(double)shgamma/nums;
     }
 
     if (pssstart)
     {
         pss->paintf->updatefreqarrs(delta,theta,alpha,beta,gamma,hgamma);
-        if (opencvstart)
-            mw->setoverlay(pss->paintf->getestattval());
+       // if (opencvstart)
+           // mw->setoverlay(pss->paintf->getestattval());
+         //   mw->setattent(pss->paintf->getestattval());
     }
 
     if ((pssstart) && (bfiltmode) && (!pss->paintf->gamemode) && (!pss->paintf->flowmode))
@@ -1831,14 +1671,11 @@ void plotwindow::analysemeandata()
         pss->paintf->mainpic=pmx;
         pss->paintf->pmain=pmx;
     }
-  //  ui->widget->replot();
+
     //qDebug()<<"mdelta "<<meandelta<<" mtheta "<<meantheta<<" malpha "<<meanalpha<<" mbeta "<<meanbeta<<" mgamma "<<meangamma<<" mhgamma "<<meanhgamma<<endl;
-    printtoresultmean("mdelta% "+QString::number(meandelta)+"    mtheta% "+QString::number(meantheta)+"    malpha% "+QString::number(meanalpha)+"    mbeta% "+QString::number(meanbeta)+"    mgamma% "+QString::number(meangamma)+"    mhgamma% "+QString::number(meanhgamma));
-    // "Part "+QString::number(graphcount*hnt->numst+recparts+1)+
+    printtoresultmean("mdelta% "+QString::number(meandelta,'f',2)+"    mtheta% "+QString::number(meantheta,'f',2)+"    malpha% "+QString::number(meanalpha,'f',2)+"    mbeta% "+QString::number(meanbeta,'f',2)+"    mgamma% "+QString::number(meangamma,'f',2)+"    mhgamma% "+QString::number(meanhgamma,'f',2));
     if ((addmodeon) || (playsaved))
-        printtoresultstring("delta%: "+QString::number(delta)+"       theta%: "+QString::number(theta)+"       alpha%: "+QString::number(alpha)+"       beta%: "+QString::number(beta)+"        gamma%: "+QString::number(gamma)+"       highgamma%: "+QString::number(hgamma));
-    else
-        printtoresultstring("delta%: "+QString::number(delta)+"           theta%: "+QString::number(theta)+"           alpha%: "+QString::number(alpha)+"           beta%: "+QString::number(beta)+"            gamma%: "+QString::number(gamma)+"           highgamma%: "+QString::number(hgamma));
+        printtoresultstring("delta%: "+QString::number(delta)+"       theta%: "+QString::number(theta)+"       alpha%: "+QString::number(alpha)+"       beta%: "+QString::number(beta)+"        gamma%: "+QString::number(gamma)+"       highgamma%: "+QString::number(hgamma));    
     //qDebug()<<"delta%: "+QString::number(delta)+"    theta%: "+QString::number(theta)+"    alpha%: "+QString::number(alpha)+"    beta%: "+QString::number(beta)+"     gamma%: "+QString::number(gamma)+"    highgamma%: "+QString::number(hgamma);
 
     // b B g G d D f# E C a
@@ -1911,11 +1748,6 @@ void plotwindow::delay(int temp)
     QTime dieTime = QTime::currentTime().addMSecs(temp);
     while (QTime::currentTime() < dieTime)
         QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
-}
-
-void plotwindow::playdata()
-{
-
 }
 
 void plotwindow::cleareegdata()
@@ -2125,109 +1957,6 @@ int plotwindow::maxabsstim(int pos)
     return maxel;
 }
 
-void plotwindow::maxentropyf(double *input, int length, int degree, double **ar, double *per, double *pef, double *h, double *g)
-{
-    int j,n,nn,jj;
-    double sn,sd;
-    double t1,t2;
-
-    for (j=1; j<=length; j++) {
-        pef[j] = 0;
-        per[j] = 0;
-    }
-
-    for (nn=2; nn<=degree+1; nn++) {
-        n  = nn - 2;
-        sn = 0.0;
-        sd = 0.0;
-        jj = length - n - 1;
-        for (j=1; j<=jj; j++) {
-            t1 = input[j+n] + pef[j];
-            t2 = input[j-1] + per[j];
-            sn -= 2.0 * t1 * t2;
-            sd += (t1 * t1) + (t2 * t2);
-        }
-        g[nn] = sn / sd;
-        t1 = g[nn];
-        if (n != 0) {
-            for (j=2; j<nn; j++)
-                h[j] = g[j] + (t1 * g[n - j + 3]);
-            for (j=2; j<nn; j++)
-                g[j] = h[j];
-            jj--;
-        }
-        for (j=1; j<=jj; j++) {
-            per[j] += (t1 * pef[j]) + (t1 * input[j+nn-2]);
-            pef[j]  = pef[j+1] + (t1 * per[j+1]) + (t1 * input[j]);
-        }
-
-        for (j=2; j<=nn; j++)
-            ar[nn-1][j-1] = g[j];
-    }
-}
-
-void plotwindow::autoregress(double *input, int length, int degree, double *coeffs)
-{
-    double mean;
-    int i, t;
-    double *w=NULL;      // Input series - mean
-    double *h=NULL;
-    double *g=NULL;
-    double *per=NULL;
-    double *pef=NULL;
-    double **ar=NULL;
-
-    w = (double *)malloc(length*sizeof(double));
-    h = (double *)malloc((degree+1)*sizeof(double));
-    g = (double *)malloc((degree+2)*sizeof(double));
-    per = (double *)malloc((length+1)*sizeof(double));
-    pef = (double *)malloc((length+1)*sizeof(double));
-    ar = (double **)malloc((degree+1)*sizeof(double*));
-
-    for (i=0; i<degree+1; i++)
-        ar[i] = (double *)malloc((degree+1)*sizeof(double));
-    mean = 0.0;
-    for (t=0; t<length; t++)
-       mean += input[t];
-    mean /= (double)length;
-    for (t=0; t<length; t++)
-       w[t] = input[t] - mean;
-
-    maxentropyf(input,length,degree,ar,per,pef,h,g);
-    for (i=1; i<=degree; i++)
-        coeffs[i-1] = -ar[degree][i];
-}
-
-void plotwindow::runautoreg(int pos)
-{
-    maxentropy=true; leastsqr=false;
-    double * inp = new double [hnt->imlength];
-    for (int i=0; i<hnt->imlength; i++)
-         inp[i]=arrc.amp1[pos-hnt->imlength+i];
-    autoregress(inp,hnt->imlength,autoregdegree,autoregcoeffs);
-   // for (int i=0; i<autoregdegree; i++)
-   //     qDebug()<<autoregcoeffs[i];
-    double nextpoint=0;
-    for (int i=0; i<autoregdegree; i++)
-        arrc.of2[pos-i]=arrc.amp1[pos-i];
-    for (int i=pos; i<pos+hnt->stlength; i++)
-    {
-        for (int j=0; j<autoregdegree; j++)
-            nextpoint+=autoregcoeffs[j]*arrc.of2[i-j];
-      //  qDebug()<<nextpoint;
-        arrc.of2[i+1]=nextpoint;
-        nextpoint=0;
-    }
-    for (int i=0; i<hnt->imlength; i++)
-        arrc.of2[pos-i]=0;
-  //  ui->widget->graph(2)->setData(arrc.xc, arrc.of2);
-}
-
-void plotwindow::hilbonar(int pos)
-{
-
-}
-
 void plotwindow::getrawdata(int chn, double val)
 {
     if ((chn==chnums-1) && (indexes[chn]==hnt->imlength))
@@ -2246,84 +1975,6 @@ void plotwindow::getrawdata(int chn, double val)
     }
     rawdata[chn][indexes[chn]]=val;
     indexes[chn]++;
-}
-
-void plotwindow::recurbutterf(int order, double sfr, double hpf, double* x, int length)
-{
-    // http://www.exstrom.com/journal/sigproc/ - recursive implementation of Butterworth filter
-    int i;
-    int n = order/2;
-    double s = sfr;
-    double f = hpf;
-    double a = tan(M_PI*f/s);
-    double a2 = a*a;
-    double r;
-    double *A = (double *)malloc(n*sizeof(double));
-    double *d1 = (double *)malloc(n*sizeof(double));
-    double *d2 = (double *)malloc(n*sizeof(double));
-    double *w0 = (double *)calloc(n, sizeof(double));
-    double *w1 = (double *)calloc(n, sizeof(double));
-    double *w2 = (double *)calloc(n, sizeof(double));
-
-   // int length=50;
-   // double x[length];
-   // for (int i=0; i<length; i++)
-   // {
-   //     x[i]=sin(9*2*PI/500*i);
-   //     cout<<x[i]<<" ";
-   // }
-   // cout<<endl<<endl;
-
-    for(i=0; i<n; i++)
-    {
-        r = sin(M_PI*(2.0*i+1.0)/(4.0*n));
-        s = a2 + 2.0*a*r + 1.0;
-        A[i] = a2/s;
-        d1[i] = 2.0*(1-a2)/s;
-        d2[i] = -(a2 - 2.0*a*r + 1.0)/s;   
-    }
-
-    for (int k=0; k<length; k++)
-    {
-        for(i=0; i<n; i++)
-        {
-            w0[i] = d1[i]*w1[i] + d2[i]*w2[i] + x[k];
-            x[k] = A[i]*(w0[i] + 2.0*w1[i] + w2[i]);
-            w2[i] = w1[i];
-            w1[i] = w0[i];
-        }     
-    }  
-}
-
-void plotwindow::recurbutterfilter(int posstim, int length)
-{
-    double t1[length];
-    for (int i=0; i<length; i++)
-         t1[i]=arrc.amp1[posstim+i];
-    recurbutterf(butterord,hnt->srfr,flowpass,t1,length);
-    for (int i=20; i<length; i++)
-         arrc.amp1[posstim+i]=t1[i];
-}
-
-void plotwindow::recurbuttfilt()
-{
-    double t1[hnt->imlength];
-    for (int i=0; i<hnt->imlength; i++)
-         t1[i]=arrc.amp0[i];
-    recurbutterf(butterord,hnt->srfr,flowpass,t1,hnt->imlength);
-    for (int i=0; i<hnt->imlength; i++)
-         arrc.amp0[i]=floor(t1[i]*pow(10.,2)+.5)/pow(10.,2);
-}
-
-void plotwindow::recurbutterfilterar(int posstim, int length)
-{
-    double t1[length];
-    for (int i=0; i<length; i++)
-         t1[i]=arrc.of2[posstim+i];
-    recurbutterf(butterord,hnt->srfr,flowpass,t1,length);
-    for (int i=20; i<length; i++)
-         arrc.of2[posstim+i]=t1[i];
-
 }
 
 // ==== butterfiltcoeffs implementation ==== //
@@ -3120,21 +2771,24 @@ void plotwindow::on_checkBox_4_clicked()
     } else
     {
         if (recparts>0)
-            mindplay=true;
+            mindplay=true;        
         ui->checkBox_5->setVisible(true);
-        ui->pushButton_7->setVisible(true);
-        ui->pushButton_8->setVisible(true);
-        ui->pushButton_9->setVisible(true);
-        ui->pushButton_10->setVisible(true);
-        ui->pushButton_11->setVisible(true);
-        ui->pushButton_12->setVisible(true);
-        ui->pushButton_13->setVisible(true);
-        if ((tank1mode) || (tank2mode))
+        if (!ui->checkBox_5->isChecked())
         {
-            ui->pushButton_14->setVisible(true);
-            ui->pushButton_16->setVisible(true);
+            ui->pushButton_7->setVisible(true);
+            ui->pushButton_8->setVisible(true);
+            ui->pushButton_9->setVisible(true);
+            ui->pushButton_10->setVisible(true);
+            ui->pushButton_11->setVisible(true);
+            ui->pushButton_12->setVisible(true);
+            ui->pushButton_13->setVisible(true);
+            if ((tank1mode) || (tank2mode))
+            {
+                ui->pushButton_14->setVisible(true);
+                ui->pushButton_16->setVisible(true);
+            }
+            ui->pushButton_15->setVisible(true);
         }
-        ui->pushButton_15->setVisible(true);
     }
 
 }
