@@ -6,12 +6,13 @@
 #include <hilbert.h>
 #include "appconnect.h"
 #include "rawsignal.h"
+#include "leftpanel.h"
 
 class plotwindow;
 class appconnect;
 class Settings;
 class paintform;
-class updateplot;
+class leftpanel;
 
 namespace Ui {
 
@@ -32,8 +33,7 @@ public:
     QString daqport;
     QTimer* mindwt;
     QTimer* picfilt;
-    QTimer* simulateEEG;
-    updateplot* updl;    
+    QTimer* simulateEEG;  
     int packetsRead;
     int connectionId;
     int currentsimdata;
@@ -45,6 +45,8 @@ public:
     QPalette palette;
     QString opencvpic;
     bool canchangehue, canchangeoverlay;
+    QVector<QPixmap> imgarray;
+    vector<int> picsarr;
     int deltafr, thetafr, alphafr, betafr, gammafr, hgammafr;
     int deltaphs, thetaphs, alphaphs, betaphs, gammaphs;
     int zdeltaamp, zthetaamp, zalphaamp, zbetaamp, zgammaamp, zhgammaamp;
@@ -67,6 +69,11 @@ public:
     void setattent(int i);
     void setoverlay(int i);
     void checkoverlay();
+    void makeicons();
+    void shuffleiconss();
+    int geticon(int t);
+    int getmainpic();
+    void updatemainpic(int num);
     void setfolderpath(QString fp);
     QImage grabopcvpic();
 
@@ -97,7 +104,7 @@ private slots:
 private:
     Ui::MainWindow *ui;
     plotwindow *plotw;
-    paintform *paintw;
+    paintform *paintw;    
     appconnect *connectWin;
     rawsignal *rs;
 

@@ -12,9 +12,9 @@
 
 // adaptive border for puzzle change
 // saving history of waves
-// hue filter
 
 // DONE:
+// hue filter
 // flow mode: gather the whole pic from 15 fragments of it by focusing or relaxing
 // focus mode: delay for one random graphicscene related with attention level
 // and for all other pics delay is fixed.. when attention>85% change graphic scene on other random
@@ -104,33 +104,46 @@ paintform::paintform(QWidget *parent) :
 
     ui->checkBox_16->setEnabled(false);
 
-    QGraphicsScene* scene2 = new QGraphicsScene();
+    QGraphicsScene* scene2 = new QGraphicsScene();  
     ui->graphicsView_2->setScene(scene2);
     QGraphicsScene* scene3 = new QGraphicsScene();
+    scene3->setSceneRect(QRectF(0,0,puzzlew,puzzleh));
     ui->graphicsView_3->setScene(scene3);
     QGraphicsScene* scene4 = new QGraphicsScene();
+    scene4->setSceneRect(QRectF(0,0,puzzlew,puzzleh));
     ui->graphicsView_4->setScene(scene4);
     QGraphicsScene* scene5 = new QGraphicsScene();
-    ui->graphicsView_5->setScene(scene5);
+    scene5->setSceneRect(QRectF(0,0,puzzlew,puzzleh));
+    ui->graphicsView_5->setScene(scene5);    
     QGraphicsScene* scene6 = new QGraphicsScene();
+    scene6->setSceneRect(QRectF(0,0,puzzlew,puzzleh));
     ui->graphicsView_6->setScene(scene6);
     QGraphicsScene* scene7 = new QGraphicsScene();
+    scene7->setSceneRect(QRectF(0,0,puzzlew,puzzleh));
     ui->graphicsView_7->setScene(scene7);
     QGraphicsScene* scene8 = new QGraphicsScene();
+    scene8->setSceneRect(QRectF(0,0,puzzlew,puzzleh));
     ui->graphicsView_8->setScene(scene8);
     QGraphicsScene* scene9 = new QGraphicsScene();
+    scene9->setSceneRect(QRectF(0,0,puzzlew,puzzleh));
     ui->graphicsView_9->setScene(scene9);
     QGraphicsScene* scene10 = new QGraphicsScene();
+    scene10->setSceneRect(QRectF(0,0,puzzlew,puzzleh));
     ui->graphicsView_10->setScene(scene10);
     QGraphicsScene* scene11 = new QGraphicsScene();
+    scene11->setSceneRect(QRectF(0,0,puzzlew,puzzleh));
     ui->graphicsView_11->setScene(scene11);
     QGraphicsScene* scene12 = new QGraphicsScene();
+    scene12->setSceneRect(QRectF(0,0,puzzlew,puzzleh));
     ui->graphicsView_12->setScene(scene12);
     QGraphicsScene* scene13 = new QGraphicsScene();
+    scene13->setSceneRect(QRectF(0,0,puzzlew,puzzleh));
     ui->graphicsView_13->setScene(scene13);
     QGraphicsScene* scene14 = new QGraphicsScene();
+    scene14->setSceneRect(QRectF(0,0,puzzlew,puzzleh));
     ui->graphicsView_14->setScene(scene14);
     QGraphicsScene* scene15 = new QGraphicsScene();
+    scene15->setSceneRect(QRectF(0,0,puzzlew,puzzleh));
     ui->graphicsView_15->setScene(scene15);
 
     ui->graphicsView_2->setVisible(false);
@@ -528,6 +541,7 @@ paintform::paintform(QWidget *parent) :
     mainpic.load(":/pics/pics/empty.jpg");
     qim.load(":/pics/pics/empty.jpg");
     qimload = true;
+    backloaded = false;
 }
 
 paintform::~paintform()
@@ -2589,8 +2603,8 @@ void paintform::startround()
 void paintform::setbackimage(QPixmap pm)
 {
     pmain=pm;
-    qim=pm.toImage();
-    qimload = true;  
+    qim=pm.toImage();    
+    backloaded = true;
     if (!scene->drawflow)
     {
         scene->clear();
@@ -2689,6 +2703,7 @@ void paintform::on_pushButton_2_clicked()
         pmain.load(filename);
         qim.load(filename);
         currimglist[14]=filename;
+        backloaded = true;
         if (scene->drawflow)
         {
             scene->bkgndimg.load(filename);
@@ -2697,10 +2712,7 @@ void paintform::on_pushButton_2_clicked()
             scene->clear();
             this->repaint();
         } else
-        {
-            qimload = true;
             scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
-        }
 
        // if (puzzlemode)
        //     randompics();
@@ -2795,7 +2807,8 @@ void paintform::on_radioButton_3_clicked()
 
 void paintform::on_pushButton_5_clicked()
 {
-    scene->addPixmap(prevpic.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
+    if (!prevpic.isNull())
+        scene->addPixmap(prevpic.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
 }
 
 void paintform::on_checkBox_3_clicked()
@@ -2865,7 +2878,7 @@ void paintform::on_pushButton_6_clicked()
     scene->bkgndimg.load(filename);
     pmain.load(filename);
     qim.load(filename);
-    qimload = true;
+    backloaded = true;
 
     if (scene->drawflow)
     {
@@ -2875,8 +2888,8 @@ void paintform::on_pushButton_6_clicked()
     } else
     {
         qim=qim.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation);
-        this->repaint();
-        scene->clear();
+      //  this->repaint();
+      //  scene->clear();
         scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
     }
         //qDebug()<<"image loaded";
@@ -2914,7 +2927,7 @@ void paintform::on_checkBox_8_clicked()
         {
             scene->clear();
             scene->addPixmap(onepicarr[7]);
-        }
+        }            
         ui->graphicsView->setGeometry(650,250,300,200);
     }
     else
@@ -2942,11 +2955,9 @@ void paintform::on_checkBox_8_clicked()
 
     if (firstpuzzle)
     {
-        //randompics();
-       // on_pushButton_7_clicked();
-      //  scene->update();
-      //  this->update();
-      //  this->repaint();
+        randompics();
+        if (!backloaded)
+            on_pushButton_6_clicked();
         firstpuzzle=false;
     }
 }
@@ -3121,6 +3132,12 @@ void paintform::on_comboBox_2_currentIndexChanged(int index)
 void paintform::on_pushButton_9_clicked()
 {
     QPixmap pixMap;
+    if (puzzlemode)
+    {
+        pixMap = mainpic;
+        pw->setbackimage(pixMap);
+    }
+    else
     if (!scene->drawflow)
     {
         pixMap = ui->graphicsView->grab();

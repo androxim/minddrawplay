@@ -156,8 +156,6 @@ public:
     void randomtone();
     void letsplay();
 
-    void savedatatofile(QString fname);
-    void loaddatafromfile(QString fname);
     void savescaletofile(QString fname);
     void loadscalefromfile(QString fname);
     void setrandomscale();
@@ -232,6 +230,7 @@ public:
     void applyfilteronback();
     QImage applyEffectToImage(QImage src, QGraphicsEffect *effect, int extent);
     void setbackimage(QPixmap pm);
+    void grabopencv(QString fpath);
 
 private slots:
 

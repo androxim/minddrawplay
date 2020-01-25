@@ -65,7 +65,7 @@ public:
     Qt::AspectRatioMode rationmode;
     int timepics, picsforchange, mainindex,polycount;
     int* currentindexes;
-    bool gamemode, flowmode, puzzlegrabed, updatingpuzzle, canpuzzlechange;
+    bool gamemode, flowmode, puzzlegrabed, updatingpuzzle, canpuzzlechange, backloaded;
     vector<int> randnumb;
     int eegsize, pensize, temppensize;
     int prevpict, prevpuzzle;

@@ -188,6 +188,8 @@ plotwindow::plotwindow(QWidget *parent) :
     resforfilt=QImage(QSize(1500, 800), QImage::Format_ARGB32);
     ptr = new QPainter(&resforfilt);
 
+    splayer.init();
+
     folderpath="D:/PICS";
     fd.setPath(folderpath+"/");
     imglist = fd.entryList(QStringList() << "*.jpg" << "*.JPG",QDir::Files);
@@ -1012,6 +1014,19 @@ QImage plotwindow::applyEffectToImage(QImage src, QGraphicsEffect *effect, int e
     resforfilt.fill(Qt::transparent);
     sceneforfilt.render(ptr, QRectF(), QRectF( -extent, -extent, src.width()+extent*2, src.height()+extent*2 ),Qt::IgnoreAspectRatio);
     return resforfilt;
+}
+
+void plotwindow::grabopencv(QString fpath)
+{
+    backimg.load(fpath);
+    backimg.scaled(1400,700,Qt::IgnoreAspectRatio,Qt::SmoothTransformation);
+    ui->widget->setBackground(backimg,true,Qt::IgnoreAspectRatio);
+    ui->widget->xAxis->grid()->setVisible(false);
+    ui->widget->yAxis->grid()->setVisible(false);
+    ui->widget->replot();
+    ui->checkBox_6->setChecked(false);
+    if (!backimageloaded)
+        backimageloaded=true;
 }
 
 void plotwindow::applyfilteronback()
@@ -1869,11 +1884,6 @@ void plotwindow::setrandomscale()
     ui->spinBox_15->setValue(tvals[9]);
 }
 
-void plotwindow::savedatatofile(QString fname)
-{
-
-}
-
 void plotwindow::savescaletofile(QString fname)
 {
     QFile outputFile(fname);
@@ -1882,11 +1892,6 @@ void plotwindow::savescaletofile(QString fname)
     for (int i=0; i<10; i++)
         fout << tvals[i] << " ";
     outputFile.close();
-}
-
-void plotwindow::loaddatafromfile(QString fname)
-{
-
 }
 
 void plotwindow::loadscalefromfile(QString fname)
@@ -2835,12 +2840,12 @@ void plotwindow::on_pushButton_6_clicked()
     backimageloaded=true;
     int rimg = rand() % imglist.length();
     QString filename=folderpath+"/"+imglist.at(rimg);
-    if (opencvstart)
-    {
+  //  if (opencvstart)
+  //  {
        // QPixmap pxm = ui->widget->grab();
-        mw->setsourceimg(filename);
+    //    mw->setsourceimg(filename);
        // mw->setsourceimgd(pxm.toImage());
-    }
+  //  }
     backimg.load(filename);
     ui->widget->setBackground(backimg,true,Qt::IgnoreAspectRatio);
     ui->widget->xAxis->grid()->setVisible(false);
@@ -3497,8 +3502,8 @@ void plotwindow::on_pushButton_23_clicked()
         ui->widget->replot();
         ui->checkBox_6->setChecked(false);
         backimageloaded=true;
-        if (opencvstart)
-            mw->setsourceimg(filename);
+      //  if (opencvstart)
+      //      mw->setsourceimg(filename);
     }
 }
 

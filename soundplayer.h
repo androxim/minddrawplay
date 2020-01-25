@@ -10,6 +10,7 @@ class soundplayer : public QObject
     Q_OBJECT
 public:
     void setvolume(qreal volume);
+    void init();
     explicit soundplayer(QObject *parent = 0);
 
 signals:

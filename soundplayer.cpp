@@ -32,37 +32,8 @@ void soundplayer::setvolume(qreal volume)
     tone_csh.setVolume(volume);
 }
 
-soundplayer::soundplayer(QObject *parent) : QObject(parent)
+void soundplayer::init()
 {
-    Glow.setSource(QUrl::fromLocalFile(":/sounds/sounds/tank_Glow_.wav"));
-    D3.setSource(QUrl::fromLocalFile(":/sounds/sounds/D3_.wav"));
-    fdiez.setSource(QUrl::fromLocalFile(":/sounds/sounds/tank_fdiez_.wav"));
-    A3.setSource(QUrl::fromLocalFile(":/sounds/sounds/A3_.wav"));
-    Clow.setSource(QUrl::fromLocalFile(":/sounds/sounds/tank_Clow_.wav"));
-    C4.setSource(QUrl::fromLocalFile(":/sounds/sounds/C4_.wav"));
-    atone.setSource(QUrl::fromLocalFile(":/sounds/sounds/tank_a_.wav"));
-    A4.setSource(QUrl::fromLocalFile(":/sounds/sounds/A4_.wav"));
-    Elow.setSource(QUrl::fromLocalFile(":/sounds/sounds/tank_Elow_.wav"));
-    D4.setSource(QUrl::fromLocalFile(":/sounds/sounds/D4_.wav"));
-    dtone.setSource(QUrl::fromLocalFile(":/sounds/sounds/tank_d_.wav"));
-    E4.setSource(QUrl::fromLocalFile(":/sounds/sounds/E4_.wav"));
-    Dlow.setSource(QUrl::fromLocalFile(":/sounds/sounds/tank_Dlow_.wav"));
-    F3.setSource(QUrl::fromLocalFile(":/sounds/sounds/F3_.wav"));
-    btone.setSource(QUrl::fromLocalFile(":/sounds/sounds/tank_b_.wav"));
-    Blow.setSource(QUrl::fromLocalFile(":/sounds/sounds/tank_Blow_.wav"));
-    F4.setSource(QUrl::fromLocalFile(":/sounds/sounds/F4_.wav"));
-    gtone.setSource(QUrl::fromLocalFile(":/sounds/sounds/tank_g_.wav"));
-    tone_Blow.setSource(QUrl::fromLocalFile(":/sounds/sounds/tone_B.wav"));
-    tone_b.setSource(QUrl::fromLocalFile(":/sounds/sounds/tone_b_.wav"));
-    tone_Dlowsh.setSource(QUrl::fromLocalFile(":/sounds/sounds/tone_Dsh.wav"));
-    tone_dsh.setSource(QUrl::fromLocalFile(":/sounds/sounds/tone_dsh_.wav"));
-    tone_Glowsh.setSource(QUrl::fromLocalFile(":/sounds/sounds/tone_Gsh.wav"));
-    tone_gsh.setSource(QUrl::fromLocalFile(":/sounds/sounds/tone_gsh_.wav"));
-    tone_Flowsh.setSource(QUrl::fromLocalFile(":/sounds/sounds/tone_Fsh.wav"));
-    tone_fsh.setSource(QUrl::fromLocalFile(":/sounds/sounds/tone_fsh_.wav"));
-    tone_Clowsh.setSource(QUrl::fromLocalFile(":/sounds/sounds/tone_Csh.wav"));
-    tone_csh.setSource(QUrl::fromLocalFile(":/sounds/sounds/tone_csh_.wav"));
-
     Glow.moveToThread(&m_thread);
     D3.moveToThread(&m_thread);
     fdiez.moveToThread(&m_thread);
@@ -127,3 +98,36 @@ soundplayer::soundplayer(QObject *parent) : QObject(parent)
 
     m_thread.start(); // QThread::exec() will be called for you, making the thread wait for events
 }
+
+soundplayer::soundplayer(QObject *parent) : QObject(parent)
+{
+    Glow.setSource(QUrl::fromLocalFile(":/sounds/sounds/tank_Glow_.wav"));
+    D3.setSource(QUrl::fromLocalFile(":/sounds/sounds/D3_.wav"));
+    fdiez.setSource(QUrl::fromLocalFile(":/sounds/sounds/tank_fdiez_.wav"));
+    A3.setSource(QUrl::fromLocalFile(":/sounds/sounds/A3_.wav"));
+    Clow.setSource(QUrl::fromLocalFile(":/sounds/sounds/tank_Clow_.wav"));
+    C4.setSource(QUrl::fromLocalFile(":/sounds/sounds/C4_.wav"));
+    atone.setSource(QUrl::fromLocalFile(":/sounds/sounds/tank_a_.wav"));
+    A4.setSource(QUrl::fromLocalFile(":/sounds/sounds/A4_.wav"));
+    Elow.setSource(QUrl::fromLocalFile(":/sounds/sounds/tank_Elow_.wav"));
+    D4.setSource(QUrl::fromLocalFile(":/sounds/sounds/D4_.wav"));
+    dtone.setSource(QUrl::fromLocalFile(":/sounds/sounds/tank_d_.wav"));
+    E4.setSource(QUrl::fromLocalFile(":/sounds/sounds/E4_.wav"));
+    Dlow.setSource(QUrl::fromLocalFile(":/sounds/sounds/tank_Dlow_.wav"));
+    F3.setSource(QUrl::fromLocalFile(":/sounds/sounds/F3_.wav"));
+    btone.setSource(QUrl::fromLocalFile(":/sounds/sounds/tank_b_.wav"));
+    Blow.setSource(QUrl::fromLocalFile(":/sounds/sounds/tank_Blow_.wav"));
+    F4.setSource(QUrl::fromLocalFile(":/sounds/sounds/F4_.wav"));
+    gtone.setSource(QUrl::fromLocalFile(":/sounds/sounds/tank_g_.wav"));
+    tone_Blow.setSource(QUrl::fromLocalFile(":/sounds/sounds/tone_B.wav"));
+    tone_b.setSource(QUrl::fromLocalFile(":/sounds/sounds/tone_b_.wav"));
+    tone_Dlowsh.setSource(QUrl::fromLocalFile(":/sounds/sounds/tone_Dsh.wav"));
+    tone_dsh.setSource(QUrl::fromLocalFile(":/sounds/sounds/tone_dsh_.wav"));
+    tone_Glowsh.setSource(QUrl::fromLocalFile(":/sounds/sounds/tone_Gsh.wav"));
+    tone_gsh.setSource(QUrl::fromLocalFile(":/sounds/sounds/tone_gsh_.wav"));
+    tone_Flowsh.setSource(QUrl::fromLocalFile(":/sounds/sounds/tone_Fsh.wav"));
+    tone_fsh.setSource(QUrl::fromLocalFile(":/sounds/sounds/tone_fsh_.wav"));
+    tone_Clowsh.setSource(QUrl::fromLocalFile(":/sounds/sounds/tone_Csh.wav"));
+    tone_csh.setSource(QUrl::fromLocalFile(":/sounds/sounds/tone_csh_.wav"));
+
+   }

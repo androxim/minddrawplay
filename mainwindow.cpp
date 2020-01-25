@@ -26,6 +26,7 @@
 #include <opencv2/core/types.hpp>
 #include <thread>
 
+
 QStringList strList1;
 QStringListModel *strListM1;
 
@@ -41,8 +42,17 @@ void Attent( int, void* );
 void Overlay( int, void* );
 void Border( int, void* );
 void onMouse( int event, int x, int y, int, void* );
+void defineiconsarr();
+void shuffleicons();
 
-Mat src,srccopy,dst,dstcopy,img,image;
+Mat src,srccopy,dst,dstcopy,img,image,tempimg,dstemp;
+
+int currmainpic, curroverpic, prevmainpic = -1;
+vector <int> iconsarr, temparr;
+bool firstrun = true;
+bool estattention = false;
+
+leftpanel *leftpw;
 
 QStringList imglist;
 QString folderpath;
@@ -74,12 +84,21 @@ MainWindow::MainWindow(QWidget *parent) :
     paintw->setFixedSize(1600,970);
 
     plotw->setFixedSize(1600,978);
-    plotw->move(QApplication::desktop()->screen()->rect().center() - plotw->rect().center()-QPoint(0,30));
+    plotw->move(QApplication::desktop()->screen()->rect().center() - plotw->rect().center()-QPoint(10,30));
     plotw->start=false;  
 
+    leftpw = new leftpanel();
+    leftpw->mww = this;
+    leftpw->setFixedSize(148,1030);
+    leftpw->move(QPoint(0,0));
+
     folderpath="D:/PICS";
+    leftpw->picfolder=folderpath;
     QDir fd(folderpath);
     imglist = fd.entryList(QStringList() << "*.jpg" << "*.JPG",QDir::Files);
+    leftpw->imglist = imglist;
+
+    picsarr = vector<int>(imglist.length());
 
     ui->lineEdit->setText(folderpath);
 
@@ -138,11 +157,13 @@ MainWindow::MainWindow(QWidget *parent) :
 
     rs = new rawsignal();
     rs->setFixedSize(1600,80);
-    rs->move(165,0);
+    rs->move(158,0);
 
-    plotw->rws=rs;
+    plotw->rws=rs;    
 
-    ui->label->setVisible(false);
+    ui->label->setVisible(false); 
+
+    makeicons();
 }
 
 MainWindow::~MainWindow()
@@ -195,6 +216,15 @@ QImage Mat2QImage(cv::Mat const& srct)
      return dest;
 }
 
+QImage Mat2QImageRGB(cv::Mat const& srct)
+{
+     cv::Mat temp; // make the same cv::Mat
+     cvtColor(srct,temp,COLOR_BGR2RGB); // cvtColor Makes a copt, that what i need
+     QImage dest((const uchar *) temp.data, temp.cols, temp.rows, temp.step, QImage::Format_RGB888);
+     dest.bits(); // enforce deep copy, see documentation
+     return dest;
+}
+
 void Processing()
 {
     cvtColor(src,img,COLOR_RGB2HSV);
@@ -236,7 +266,10 @@ void Processing()
 void ProcessingMix()
 {
     alphaval = (double) elem5 / 100;
-    addWeighted(image, alphaval, srccopy, 1 - alphaval, 0, dst);
+    if (estattention)
+        addWeighted(image, alphaval, srccopy, 1 - alphaval, 0, dst);
+    else
+        addWeighted(src, alphaval, srccopy, 1 - alphaval, 0, dst);
     imshow("image", dst);
 }
 
@@ -244,8 +277,11 @@ void onMouse( int event, int x, int y, int, void* )
 {
     if (event == EVENT_MBUTTONDOWN)
     {
-        int rimg = qrand() % imglist.length();
-        QString ocvpic=folderpath+"/"+imglist.at(rimg);
+        prevmainpic = currmainpic;
+        currmainpic = iconsarr[qrand() % (imglist.length()-1)];
+        defineiconsarr();
+        leftpw->fillpics();
+        QString ocvpic=folderpath+"/"+imglist.at(currmainpic);
         src = imread(ocvpic.toStdString());
         cv::resize(srccopy, srccopy, cv::Size(src.cols,src.rows), 0, 0, cv::INTER_LINEAR);
         addWeighted(src, alphaval, srccopy, 1 - alphaval, 0, dst);
@@ -253,8 +289,8 @@ void onMouse( int event, int x, int y, int, void* )
     } else
     if (event == EVENT_RBUTTONDOWN)
     {
-        int rimg = qrand() % imglist.length();
-        QString ocvpic=folderpath+"/"+imglist.at(rimg);
+        curroverpic = qrand() % imglist.length();
+        QString ocvpic=folderpath+"/"+imglist.at(curroverpic);
         srccopy = imread(ocvpic.toStdString());
         cv::resize(srccopy, srccopy, cv::Size(src.cols,src.rows), 0, 0, cv::INTER_LINEAR);
         addWeighted(src, alphaval, srccopy, 1 - alphaval, 0, dst);
@@ -267,6 +303,53 @@ void delay(int temp)
     QTime dieTime = QTime::currentTime().addMSecs(temp);
     while (QTime::currentTime() < dieTime)
         QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
+}
+
+void defineiconsarr()
+{
+    temparr.clear();
+    for (int i=0; i<imglist.length(); i++)
+    {
+        if ((firstrun) && (i!=currmainpic))
+            iconsarr.push_back(i);
+        else if ((iconsarr[i]!=currmainpic) && ((iconsarr[i]!=curroverpic)))
+            temparr.push_back(iconsarr[i]);
+    }
+    if (prevmainpic>-1)
+    {
+        temparr.push_back(iconsarr[prevmainpic]);
+        iconsarr=temparr;
+    }
+}
+
+void shuffleicons()
+{
+    random_shuffle(iconsarr.begin(), iconsarr.end());
+}
+
+int MainWindow::geticon(int t)
+{
+    return iconsarr[t];
+}
+
+int MainWindow::getmainpic()
+{
+    return currmainpic;
+}
+
+void MainWindow::updatemainpic(int num)
+{
+    prevmainpic = currmainpic;
+    currmainpic = num;
+    defineiconsarr();
+    leftpw->fillpics();
+    QString ocvpic=folderpath+"/"+imglist.at(currmainpic);
+    src = imread(ocvpic.toStdString());
+    cv::resize(srccopy, srccopy, cv::Size(src.cols,src.rows), 0, 0, cv::INTER_LINEAR);
+    addWeighted(src, alphaval, srccopy, 1 - alphaval, 0, dst);
+    imshow("image", dst);
+ //   if (plotw->start)
+ //       plotw->grabopencv(ocvpic);
 }
 
 void MainWindow::adddata(string s, QString spath)
@@ -307,17 +390,12 @@ void MainWindow::on_pushButton_3_clicked()
     connectWin->ps=paintw->scene;
 
     paintw->scene->init(plotw, this);
-    paintw->move(QApplication::desktop()->screen()->rect().center() - paintw->rect().center()+QPoint(0,-35));
+    paintw->move(QApplication::desktop()->screen()->rect().center() - paintw->rect().center()+QPoint(-10,-35));
     plotw->pssstart=true;
     paintw->scene->clear();
     paintw->show();
     paintw->loadempty();
    // paintw->startpolyt();
-    if (!bciconnect)
-    {
-        rs->starting();
-        rs->show();
-    }
     connectWin->ps=paintw->scene;
     if (plotw->start)
         plotw->pss=paintw->scene;
@@ -352,7 +430,7 @@ void MainWindow::on_pushButton_2_clicked()
             ui->label->setText("Channel number: "+QString::number(channel));
             ui->label->setVisible(true);
             bciconnect = true;
-            ui->pushButton_4->setEnabled(false);
+            ui->pushButton_4->setEnabled(false);            
         } else
             printdata("Connection with BCI2000 not established.. ( ");
     }
@@ -375,8 +453,8 @@ void MainWindow::on_pushButton_4_clicked()
         rs->show();
     }
     connectWin->ps=paintw->scene;
-    if (plotw->start)
-        plotw->pss=paintw->scene;
+    if (plotw->start)    
+        plotw->pss=paintw->scene;    
 }
 
 void MainWindow::OpenDataFile()
@@ -394,8 +472,7 @@ void MainWindow::OpenDataFile()
         plotw->setFixedSize(1450,785);
         plotw->start=false;        
         connectWin->wd=plotw;
-        plotw->appcn=connectWin;   
-        plotw->loaddatafromfile(filename);
+        plotw->appcn=connectWin;           
         adddata(s,filename);
         plotw->show();
         plotw->doplot();
@@ -470,7 +547,9 @@ void MainWindow::mindwaveconnect()
         plotw->simeeg=false;
         rs->starting();
         ui->pushButton_5->setEnabled(false);
-       // updl->starting();
+        if (!estattention)
+            estattention=true;
+        rs->show();
     }
     else
         printdata("Connection with MindWave could not be established! :(");
@@ -512,53 +591,51 @@ void MainWindow::setoverlay(int i)
 
 QImage MainWindow::grabopcvpic()
 {
-     return Mat2QImage(img);
+     return Mat2QImageRGB(dst);
    // cvtColor(dst,dstcopy,COLOR_RGB2HSV);
   //  return Mat2QImage(dstcopy);
 }
 
 void MainWindow::startopencv()
 {
-    namedWindow("image",WINDOW_NORMAL + WINDOW_OPENGL);
-    //Point p(1600,900);
-    //Size sp(p);
-
-
-    createTrackbar("Hue","image",&elem1, max_elem,Hue);
-   // createTrackbar("Saturation","image",&elem2, max_elem,Saturation);
-   // createTrackbar("Value","image",&elem3, max_elem,Value);
-    createTrackbar("Attention","image",&elem4,max_elem2,Attent);
-    createTrackbar("Overlay","image",&elem5,max_elem2,Overlay);
-    createTrackbar("Border","image",&elem6,max_elem2,Border);
-
-    setMouseCallback( "image", onMouse, 0 );    
-
-    int rimg = qrand() % imglist.length();
-    opencvpic=folderpath+"/"+imglist.at(rimg);
-    src = imread(opencvpic.toStdString());
-    image = imread(opencvpic.toStdString());
-
-    rimg = qrand() % imglist.length();
-    QString stp = folderpath+"/"+imglist.at(rimg);
-    srccopy =  imread(stp.toStdString());
-
-    resizeWindow("image",1600,900);
-    resize(1600,900);  
-    moveWindow("image", 160,39);
-    imshow("image", src);
-
-    opencvstart=true;
-    plotw->opencvstart=true;
-    if (plotw->start)
-        plotw->enablehue();
-    picfilt->start();
-
-   /* for (int i=0; i<500; i++)
+    if (!opencvstart)
     {
-        elem1=i;
-        Processing();
-        delay(20);
-    } */
+        namedWindow("image",WINDOW_NORMAL + WINDOW_OPENGL);
+
+        createTrackbar("Hue","image",&elem1, max_elem,Hue);
+        // createTrackbar("Saturation","image",&elem2, max_elem,Saturation);
+        // createTrackbar("Value","image",&elem3, max_elem,Value);
+        createTrackbar("Attention","image",&elem4,max_elem2,Attent);
+        createTrackbar("Overlay","image",&elem5,max_elem2,Overlay);
+        createTrackbar("Border","image",&elem6,max_elem2,Border);
+
+        setMouseCallback( "image", onMouse, 0 );
+
+        currmainpic = qrand() % imglist.length();
+        defineiconsarr();
+        firstrun=false;
+        opencvpic = folderpath+"/"+imglist.at(currmainpic);
+        src = imread(opencvpic.toStdString());
+        image = imread(opencvpic.toStdString());
+
+        curroverpic = qrand() % imglist.length();
+        QString stp = folderpath+"/"+imglist.at(curroverpic);
+        srccopy =  imread(stp.toStdString());
+
+        resizeWindow("image",1600,900);
+        resize(1600,900);
+        moveWindow("image", 150,39);
+        setTrackbarPos("Overlay", "image", elem5);
+        imshow("image", src);
+
+        opencvstart=true;
+        plotw->opencvstart=true;
+        if (plotw->start)
+            plotw->enablehue();
+        picfilt->start();
+
+    } else
+        imshow("image", src);
 }
 
 void MainWindow::simulateEEGUpdate()
@@ -592,15 +669,20 @@ void MainWindow::simulateEEGUpdate()
         plotw->bcidata(currentsimdata);
     if (psstart)
         paintw->scene->getdata(currentsimdata/4);
-    //  qDebug()<<currentsimdata;
+    //  qDebug()<<currentsimdata;       
 }
 
 void MainWindow::checkoverlay()
 {
     if ((elem5>elem6) && (canchangepic))
     {
-        int rimg = qrand() % imglist.length();
-        QString ocvpic=folderpath+"/"+imglist.at(rimg);
+        prevmainpic = currmainpic;
+        currmainpic = curroverpic;
+        leftpw->fillpics();
+        curroverpic = iconsarr[qrand() % (imglist.length()-1)];
+        defineiconsarr();        
+       // leftpw->updateplaypic();
+        QString ocvpic=folderpath+"/"+imglist.at(curroverpic);
         src=srccopy.clone();
         srccopy = imread(ocvpic.toStdString());
         cv::resize(srccopy, srccopy, cv::Size(src.cols,src.rows), 0, 0, cv::INTER_LINEAR);
@@ -610,6 +692,27 @@ void MainWindow::checkoverlay()
     }
     if ((elem5<elem6) && (!canchangepic))
         canchangepic=true;
+}
+
+void MainWindow::makeicons()
+{
+    QString picst;
+    imgarray.resize(imglist.length());
+    for (int i=0; i<imglist.length(); i++)
+    {
+        picst = folderpath+"/"+imglist.at(i);
+        tempimg = imread(picst.toStdString());
+        Size size(138,138);
+        cv::resize(tempimg,dstemp,size);
+        QImage qm = Mat2QImageRGB(dstemp);
+        imgarray[i]=QPixmap::fromImage(qm);
+    }
+
+}
+
+void MainWindow::shuffleiconss()
+{
+    shuffleicons();
 }
 
 void MainWindow::setfolderpath(QString fp)
@@ -697,7 +800,7 @@ void MainWindow::mindwtUpdate()
                     paintw->updateattentionplot(mw_atten);
                     if (opencvstart)
                     {
-                        setattent(paintw->getestattval());
+                        setattent(paintw->getestattval());                       
                     //    if (canchangeoverlay)
                         {
                             curoverl=elem4;
@@ -864,7 +967,12 @@ void MainWindow::picfiltUpdate()
 void MainWindow::on_pushButton_6_clicked()
 {
     if (imglist.length()>0)
+    {
         startopencv();
+        shuffleicons();
+        leftpw->show();
+        leftpw->fillpics();
+    }
     else
     {
         QMessageBox msgBox;
@@ -877,5 +985,8 @@ void MainWindow::on_pushButton_7_clicked()
 {
     QString fPath=QFileDialog::getExistingDirectory(this, "Get Any Folder", "D://");
     if (fPath!="")
+    {
         setfolderpath(fPath);
+        makeicons();
+    }
 }
