@@ -110,18 +110,7 @@ public:
     QElapsedTimer timer;
     QTimer* tim;
     QTimer* scaletim;
-    QTimer* mxttim;
-    QTimer* tn1;
-    QTimer* tn2;
-    QTimer* tn3;
-    QTimer* tn4;
-    QTimer* tn5;
-    QTimer* tn6;
-    QTimer* tn7;
-    QTimer* tn8;
-    QTimer* tn9;
-    QTimer* tn10;
-    QTimer* tryplay;
+    QTimer* mxttim;   
     QTimer* checkstates;
     QTimer* colorchange;
     QByteArray stimarr;
@@ -231,6 +220,7 @@ public:
     QImage applyEffectToImage(QImage src, QGraphicsEffect *effect, int extent);
     void setbackimage(QPixmap pm);
     void grabopencv(QString fpath);
+    void pauseflow();
 
 private slots:
 
@@ -240,17 +230,6 @@ private slots:
 
     void mxttimerUpdate();
 
-    void tn1Update();
-    void tn2Update();
-    void tn3Update();
-    void tn4Update();
-    void tn5Update();
-    void tn6Update();
-    void tn7Update();
-    void tn8Update();
-    void tn9Update();
-    void tn10Update();
-    void playUpdate();
     void checkstatesUpdate();
     void colorchangesUpdate();
 

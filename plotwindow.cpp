@@ -254,9 +254,7 @@ bool plotwindow::eventFilter(QObject *target, QEvent *event)
             {
                 hnt->imlength=ui->spinBox_5->value()/2;
                 hnt->srfr=500;
-            }
-            intlen=(double)hnt->numst/((double)hnt->srfr/hnt->imlength);
-            ui->widget->graph(graphcount)->setName("EEG: ["+QString::number(graphcount*intlen,'g',2)+" "+QString::number((graphcount+1)*intlen,'g',2)+"] secs");
+            }            
 
         }
         if ((mouseEvent->button() == Qt::RightButton) && ((appcn->ready) || (mindwstart) || (simeeg)))
@@ -1029,6 +1027,14 @@ void plotwindow::grabopencv(QString fpath)
         backimageloaded=true;
 }
 
+void plotwindow::pauseflow()
+{
+    if (tim->isActive())
+        tim->stop();
+    else
+        tim->start();
+}
+
 void plotwindow::applyfilteronback()
 {
     //if (!backimg.isNull())
@@ -1258,188 +1264,6 @@ void plotwindow::checkstatesUpdate()
     }
 }
 
-void plotwindow::tn1Update()
-{
-    if ((readyfortones) && (tonenumbers<maxtones))
-    {
-        if ((delta>meandelta+tvals[0]) && (!spacemode) && (!tones.contains("b")) && (!tones.contains("c#")))
-            tonenumbers++;
-        if (tank1mode)
-            tones+="b ";
-        else if (tank2mode)
-            tones+="c# ";
-    }
-}
-
-void plotwindow::tn2Update()
-{
-    if ((readyfortones) && (tonenumbers<maxtones))
-    {
-        if ((delta<meandelta-tvals[1]) && (!tones.contains("B")) && (!tones.contains("F4")))
-        {
-            tonenumbers++;
-            if (tank1mode)
-                tones+="B ";
-            else if (tank2mode)
-                tones+="B ";
-            else
-                tones+="F4 ";
-        }
-    }
-}
-
-void plotwindow::tn3Update()
-{
-    if ((readyfortones) && (tonenumbers<maxtones))
-    {
-        if ((theta>meantheta+tvals[2]) && (!spacemode) && (!tones.contains("g")) && (!tones.contains("b")))
-        {
-            tonenumbers++;
-            if (tank1mode)
-                tones+="g ";
-            else if (tank2mode)
-                tones+="b ";
-        }
-    }
-}
-
-void plotwindow::tn4Update()
-{
-    if ((readyfortones) && (tonenumbers<maxtones))
-    {
-        if ((theta<meantheta-tvals[3]) && (!tones.contains("G")) && (!tones.contains("D#")) && (!tones.contains("D3")))
-        {
-            tonenumbers++;
-            if (tank1mode)
-                tones+="G ";
-            else if (tank2mode)
-                tones+="D# ";
-            else
-                tones+="D3 ";
-        }
-    }
-}
-
-void plotwindow::tn5Update()
-{
-    if ((readyfortones) && (tonenumbers<maxtones))
-    {
-        if ((alpha>meanalpha+tvals[4]) && (!tones.contains("d")) && (!tones.contains("f#")) && (!tones.contains("E4")))
-        {
-            tonenumbers++;
-            if (tank1mode)
-                tones+="d ";
-            else if (tank2mode)
-                tones+="f# ";
-            else
-                tones+="E4 ";
-        }
-    }
-}
-
-void plotwindow::tn6Update()
-{
-    if ((readyfortones) && (tonenumbers<maxtones))
-    {
-        if ((alpha<meanalpha-tvals[5]) && (!tones.contains("D")) && (!tones.contains("C#")) && (!tones.contains("F3")))
-        {
-            tonenumbers++;
-            if (tank1mode)
-                tones+="D ";
-            else if (tank2mode)
-                tones+="C# ";
-            else
-                tones+="F3 ";
-        }
-    }
-}
-
-void plotwindow::tn7Update()
-{
-    if ((readyfortones) && (tonenumbers<maxtones))
-    {
-        if ((beta>meanbeta+tvals[6]) && (!tones.contains("f#")) && (!tones.contains("d#")) && (!tones.contains("A3")))
-        {
-            tonenumbers++;
-            if (tank1mode)
-                tones+="f# ";
-            else if (tank2mode)
-                tones+="d# ";
-            else
-                tones+="A3 ";
-        }
-    }
-}
-
-void plotwindow::tn8Update()
-{
-    if ((readyfortones) && (tonenumbers<maxtones))
-    {
-        if ((gamma<meangamma-tvals[7]) && (!tones.contains("E")) && (!tones.contains("F#")) && (!tones.contains("D4")))
-        {
-            tonenumbers++;
-            if (tank1mode)
-                tones+="E ";
-            else if (tank2mode)
-                tones+="F# ";
-            else
-                tones+="D4 ";
-        }
-    }
-}
-
-void plotwindow::tn9Update()
-{
-    if ((readyfortones) && (tonenumbers<maxtones))
-    {
-        if ((gamma>meangamma+tvals[8]) && (!tones.contains("C")) && (!tones.contains("G#")) && (!tones.contains("C4")))
-        {
-            tonenumbers++;
-            if (tank1mode)
-                tones+="C ";
-            else if (tank2mode)
-                tones+="G# ";
-            else
-                tones+="C4 ";
-        }
-    }
-}
-
-void plotwindow::tn10Update()
-{
-    if ((readyfortones) && (tonenumbers<maxtones))
-    {
-        if ((hgamma>meangamma+tvals[9]) && (!tones.contains("a")) && (!tones.contains("g#")) && (!tones.contains("A4")))
-        {
-            tonenumbers++;
-            if (tank1mode)
-                tones+="a ";
-            else if (tank2mode)
-                tones+="g# ";
-            else
-                tones+="A4 ";
-        }
-    }
-}
-
-void plotwindow::playUpdate()
-{
-    if (addmodeon)
-    {
-        int z=0;
-        if ((antirepeat) && (strLst2.length()>memorylength))
-        {
-            for (int i=0; i<memorylength; i++)
-                if (strLst2.at(i).toLocal8Bit().constData()==tones)
-                    z++;
-            if (z>maxtonerepeats)
-                randomtone();
-        }
-        printtoresultbox(tones);
-       // letsplay();
-        //  readyfortones=false;
-    }
-}
 
 void plotwindow::gettones()
 {
@@ -1701,7 +1525,7 @@ void plotwindow::analysemeandata()
         cleanbuttons(); tonenumbers=0;
         tones="";
 
-        gettones();                   // sequential version
+        gettones();
 
         if ((antirepeat) && (strLst2.length()>memorylength))
         {

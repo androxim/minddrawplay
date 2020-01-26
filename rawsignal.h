@@ -24,6 +24,7 @@ public:
     void starting();
     QTimer* updateplot;
     bool start;
+    void changefsize(bool fl);
     void updatepl();
 
 private:

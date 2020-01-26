@@ -73,6 +73,20 @@ void rawsignal::starting()
     updateplot->start();
 }
 
+void rawsignal::changefsize(bool fl)
+{
+    if (fl)
+    {
+        setWindowOpacity(0.55);
+        ui->plot->setGeometry(0,0,1940,80);
+    }
+    else
+    {
+        setWindowOpacity(0.75);
+        ui->plot->setGeometry(0,0,1600,80);
+    }
+}
+
 void rawsignal::updatepl()
 {
     curpos->start->setCoords(numsmp,-256);

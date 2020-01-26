@@ -164,7 +164,7 @@ MainWindow::MainWindow(QWidget *parent) :
     qsrand((uint)time.msec());
 
     rs = new rawsignal();
-    rs->setFixedSize(1600,80);
+    rs->setGeometry(0,0,1600,80);
     rs->move(158,0);
 
     plotw->rws=rs;    
@@ -995,25 +995,7 @@ void MainWindow::mindwtUpdate()
                 mw_gamma2 = TG_GetValue(connectionId, TG_DATA_GAMMA2);
             //    qDebug()<<alpha1;
             }
-        }
-      /*  if ( TG_GetValueStatus(connectionId, TG_DATA_BLINK_STRENGTH) != 0 ) // Doesn't work
-        {
-            if (TG_GetValue(connectionId, TG_DATA_BLINK_STRENGTH)>0)
-            {
-                qDebug()<<TG_GetValue(connectionId, TG_DATA_BLINK_STRENGTH);
-                INPUT input;
-                POINT cursorPos;
-                GetCursorPos(&cursorPos);
-                int x = (int) cursorPos.x;
-                int y = (int) cursorPos.y;
-                input.type = INPUT_MOUSE;
-                input.mi.mouseData=0;
-                input.mi.dx = x*(65536.0f/GetSystemMetrics(SM_CXSCREEN));//x being coord in pixels
-                input.mi.dy = y*(65536.0f/GetSystemMetrics(SM_CYSCREEN));//y being coord in pixels
-                input.mi.dwFlags = MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE | MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP;
-                SendInput(1,&input,sizeof(input));
-            }
-        } */
+        }       
     }
 }
 
@@ -1028,15 +1010,25 @@ void MainWindow::picfiltUpdate()
     if (key == ' ')
     {
         if (!fullscr)
-        {
+        {            
+            rs->setGeometry(0,0,1940,80);
+            rs->move(0,0);
             cv::setWindowProperty("image",cv::WND_PROP_FULLSCREEN,1);
             fullscr=true;
         }
         else
         {
+            rs->setGeometry(0,0,1600,80);
+            rs->move(158,0);
             cv::setWindowProperty("image",cv::WND_PROP_FULLSCREEN,0);
             fullscr=false;
         }
+        rs->changefsize(fullscr);
+    }
+    if (key == 27)
+    {
+        if (plotw->start)
+            plotw->pauseflow();
     }
     if ((abs(curhue-prevhue)==0) || ((abs(curhue-prevhue)==1)))
         canchangehue=true;
