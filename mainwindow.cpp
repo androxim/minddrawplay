@@ -42,18 +42,21 @@ void Attent( int, void* );
 void Overlay( int, void* );
 void Border( int, void* );
 void onMouse( int event, int x, int y, int, void* );
+
 void defineiconsarr();
-void shuffleicons();
+void define_riconsarr();
+void shuffleicons(bool left);
 
 Mat src,srccopy,dst,dstcopy,img,image,tempimg,dstemp;
 
-int currmainpic, curroverpic, prevmainpic = -1;
-vector <int> iconsarr, temparr;
+int currmainpic, curroverpic, prevmainpic = -1, prevoverpic = -1;
+vector <int> iconsarr, riconsarr;
 bool firstrun = true;
 bool estattention = false;
 
 leftpanel *leftpw;
-
+rightpanel *rightpw;
+bool rchanged, lchanged;
 QStringList imglist;
 QString folderpath;
 
@@ -92,11 +95,16 @@ MainWindow::MainWindow(QWidget *parent) :
     leftpw->setFixedSize(148,1030);
     leftpw->move(QPoint(0,0));
 
+    rightpw = new rightpanel();
+    rightpw->mww = this;
+    rightpw->setFixedSize(148,1030);
+    rightpw->move(QPoint(1769,0));
+
     folderpath="D:/PICS";
-    leftpw->picfolder=folderpath;
     QDir fd(folderpath);
     imglist = fd.entryList(QStringList() << "*.jpg" << "*.JPG",QDir::Files);
-    leftpw->imglist = imglist;
+    leftpw->imgnumber = imglist.length()-2;
+    rightpw->imgnumber = imglist.length()-2;
 
     picsarr = vector<int>(imglist.length());
 
@@ -278,9 +286,13 @@ void onMouse( int event, int x, int y, int, void* )
     if (event == EVENT_MBUTTONDOWN)
     {
         prevmainpic = currmainpic;
-        currmainpic = iconsarr[qrand() % (imglist.length()-1)];
+        currmainpic = iconsarr[qrand() % (imglist.length()-2)];
+        lchanged=true;
+        rchanged=false;
         defineiconsarr();
-        leftpw->fillpics();
+        define_riconsarr();
+        leftpw->fillpics();    
+        rightpw->fillpics();
         QString ocvpic=folderpath+"/"+imglist.at(currmainpic);
         src = imread(ocvpic.toStdString());
         cv::resize(srccopy, srccopy, cv::Size(src.cols,src.rows), 0, 0, cv::INTER_LINEAR);
@@ -289,7 +301,15 @@ void onMouse( int event, int x, int y, int, void* )
     } else
     if (event == EVENT_RBUTTONDOWN)
     {
-        curroverpic = qrand() % imglist.length();
+
+        prevoverpic = curroverpic;
+        curroverpic = riconsarr[qrand() % (imglist.length()-2)];;
+        lchanged=false;
+        rchanged=true;
+        define_riconsarr();
+        defineiconsarr();
+        rightpw->fillpics();
+        leftpw->fillpics();
         QString ocvpic=folderpath+"/"+imglist.at(curroverpic);
         srccopy = imread(ocvpic.toStdString());
         cv::resize(srccopy, srccopy, cv::Size(src.cols,src.rows), 0, 0, cv::INTER_LINEAR);
@@ -307,29 +327,74 @@ void delay(int temp)
 
 void defineiconsarr()
 {
-    temparr.clear();
-    for (int i=0; i<imglist.length(); i++)
+    vector <int> temparr;
+    int tp;
+    if (firstrun)
+        tp = imglist.length();
+    else
+        tp = imglist.length()-2;
+    if ((!firstrun) && (prevmainpic==-1))
+        tp = imglist.length()-1;
+    for (int i=0; i<tp; i++)
     {
         if ((firstrun) && (i!=currmainpic))
             iconsarr.push_back(i);
-        else if ((iconsarr[i]!=currmainpic) && ((iconsarr[i]!=curroverpic)))
+        else if ((!firstrun) && (iconsarr[i]!=currmainpic) && ((iconsarr[i]!=curroverpic)))
             temparr.push_back(iconsarr[i]);
-    }
+    }    
     if (prevmainpic>-1)
     {
-        temparr.push_back(iconsarr[prevmainpic]);
-        iconsarr=temparr;
+        if (lchanged)
+            temparr.push_back(prevmainpic);
     }
+    if ((!lchanged) && (prevoverpic>-1))
+        temparr.push_back(prevoverpic);
+    if (!firstrun)
+        iconsarr=temparr;
 }
 
-void shuffleicons()
+void define_riconsarr()
 {
-    random_shuffle(iconsarr.begin(), iconsarr.end());
+    vector <int> rtemparr;
+    int tp;
+    if (firstrun)
+        tp = imglist.length();
+    else
+        tp = imglist.length()-2;
+    for (int i=0; i<tp; i++)
+    {
+        if ((firstrun) && (i!=currmainpic) && (i!=curroverpic))
+            riconsarr.push_back(i);
+        else if ((!firstrun) && (riconsarr[i]!=currmainpic) && ((riconsarr[i]!=curroverpic)))
+            rtemparr.push_back(riconsarr[i]);
+    }
+    if (prevoverpic>-1)
+    {
+        if ((rchanged) && (!lchanged))
+            rtemparr.push_back(prevoverpic);
+        if ((rchanged) && (lchanged))
+            rtemparr.push_back(prevmainpic);
+    }
+    if ((!rchanged) && (prevmainpic>-1))
+        rtemparr.push_back(prevmainpic);
+    if (!firstrun)
+        riconsarr=rtemparr;
 }
 
-int MainWindow::geticon(int t)
+void shuffleicons(bool left)
 {
-    return iconsarr[t];
+    if (left)
+        random_shuffle(iconsarr.begin(), iconsarr.end());
+    else
+        random_shuffle(riconsarr.begin(), riconsarr.end());
+}
+
+int MainWindow::geticon(int t, bool left)
+{
+    if (left)
+        return iconsarr[t];
+    else
+        return riconsarr[t];
 }
 
 int MainWindow::getmainpic()
@@ -337,19 +402,45 @@ int MainWindow::getmainpic()
     return currmainpic;
 }
 
-void MainWindow::updatemainpic(int num)
+int MainWindow::getoverpic()
 {
+    return curroverpic;
+}
+
+void MainWindow::updatemainpic(int num)
+{           
     prevmainpic = currmainpic;
     currmainpic = num;
+    lchanged=true;
+    rchanged=false;
     defineiconsarr();
+    define_riconsarr();
     leftpw->fillpics();
+    rightpw->fillpics();
     QString ocvpic=folderpath+"/"+imglist.at(currmainpic);
     src = imread(ocvpic.toStdString());
     cv::resize(srccopy, srccopy, cv::Size(src.cols,src.rows), 0, 0, cv::INTER_LINEAR);
     addWeighted(src, alphaval, srccopy, 1 - alphaval, 0, dst);
     imshow("image", dst);
- //   if (plotw->start)
- //       plotw->grabopencv(ocvpic);
+    if (plotw->start)
+        plotw->grabopencv(ocvpic);
+}
+
+void MainWindow::updateoverpic(int num)
+{
+    prevoverpic = curroverpic;
+    curroverpic = num;
+    lchanged=false;
+    rchanged=true;
+    define_riconsarr();
+    defineiconsarr();
+    rightpw->fillpics();
+    leftpw->fillpics();
+    QString ocvpic=folderpath+"/"+imglist.at(curroverpic);
+    srccopy = imread(ocvpic.toStdString());
+    cv::resize(srccopy, srccopy, cv::Size(src.cols,src.rows), 0, 0, cv::INTER_LINEAR);
+    addWeighted(src, alphaval, srccopy, 1 - alphaval, 0, dst);
+    imshow("image", dst);
 }
 
 void MainWindow::adddata(string s, QString spath)
@@ -611,17 +702,22 @@ void MainWindow::startopencv()
 
         setMouseCallback( "image", onMouse, 0 );
 
-        currmainpic = qrand() % imglist.length();
+        currmainpic = qrand() % imglist.length();        
+        lchanged=false;
+        rchanged=false;
         defineiconsarr();
-        firstrun=false;
         opencvpic = folderpath+"/"+imglist.at(currmainpic);
         src = imread(opencvpic.toStdString());
         image = imread(opencvpic.toStdString());
 
-        curroverpic = qrand() % imglist.length();
+
+        curroverpic = iconsarr[qrand() % (imglist.length()-1)];
+        define_riconsarr();
         QString stp = folderpath+"/"+imglist.at(curroverpic);
         srccopy =  imread(stp.toStdString());
 
+        firstrun=false;
+        defineiconsarr();
         resizeWindow("image",1600,900);
         resize(1600,900);
         moveWindow("image", 150,39);
@@ -678,9 +774,14 @@ void MainWindow::checkoverlay()
     {
         prevmainpic = currmainpic;
         currmainpic = curroverpic;
+        prevoverpic = curroverpic;
+        curroverpic = iconsarr[qrand() % (imglist.length()-2)];
+        lchanged=true;
+        rchanged=true;
+        defineiconsarr();
+        define_riconsarr();
         leftpw->fillpics();
-        curroverpic = iconsarr[qrand() % (imglist.length()-1)];
-        defineiconsarr();        
+        rightpw->fillpics();
        // leftpw->updateplaypic();
         QString ocvpic=folderpath+"/"+imglist.at(curroverpic);
         src=srccopy.clone();
@@ -710,9 +811,9 @@ void MainWindow::makeicons()
 
 }
 
-void MainWindow::shuffleiconss()
+void MainWindow::shuffleiconss(bool left)
 {
-    shuffleicons();
+    shuffleicons(left);
 }
 
 void MainWindow::setfolderpath(QString fp)
@@ -968,10 +1069,14 @@ void MainWindow::on_pushButton_6_clicked()
 {
     if (imglist.length()>0)
     {
-        startopencv();
-        shuffleicons();
+
+        startopencv();        
+        shuffleicons(true);
         leftpw->show();
-        leftpw->fillpics();
+        leftpw->fillpics();        
+        shuffleicons(false);
+        rightpw->show();
+        rightpw->fillpics();
     }
     else
     {

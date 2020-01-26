@@ -16,13 +16,13 @@ class leftpanel : public QWidget
 
 public:
     MainWindow* mww;
-    QString picfolder;
-    QStringList imglist;
+    int imgnumber;
     Qt::AspectRatioMode rationmode;
     int imgsize = 138;
+    int currpos = 0;
+    void wheelEvent(QWheelEvent *event);
     bool eventFilter(QObject *target, QEvent *event);
     void fillpics();
-    void updateplaypic();
     explicit leftpanel(QWidget *parent = 0);
     ~leftpanel();
 

@@ -7,12 +7,14 @@
 #include "appconnect.h"
 #include "rawsignal.h"
 #include "leftpanel.h"
+#include "rightpanel.h"
 
 class plotwindow;
 class appconnect;
 class Settings;
 class paintform;
 class leftpanel;
+class rightpanel;
 
 namespace Ui {
 
@@ -70,10 +72,12 @@ public:
     void setoverlay(int i);
     void checkoverlay();
     void makeicons();
-    void shuffleiconss();
-    int geticon(int t);
+    void shuffleiconss(bool left);
+    int geticon(int t, bool left);
     int getmainpic();
+    int getoverpic();
     void updatemainpic(int num);
+    void updateoverpic(int num);
     void setfolderpath(QString fp);
     QImage grabopcvpic();
 

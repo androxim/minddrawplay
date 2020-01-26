@@ -87,40 +87,55 @@ leftpanel::leftpanel(QWidget *parent) :
 
 void leftpanel::fillpics()
 {   
-    ui->graphicsView->scene()->addPixmap(mww->imgarray[mww->geticon(0)]);
-    ui->graphicsView_2->scene()->addPixmap(mww->imgarray[mww->geticon(1)]);
-    ui->graphicsView_3->scene()->addPixmap(mww->imgarray[mww->geticon(2)]);
-    ui->graphicsView_4->scene()->addPixmap(mww->imgarray[mww->geticon(3)]);
-    ui->graphicsView_5->scene()->addPixmap(mww->imgarray[mww->geticon(4)]);
-    ui->graphicsView_6->scene()->addPixmap(mww->imgarray[mww->geticon(5)]);
+    ui->graphicsView->scene()->addPixmap(mww->imgarray[mww->geticon(currpos,true)]);
+    ui->graphicsView_2->scene()->addPixmap(mww->imgarray[mww->geticon(currpos+1,true)]);
+    ui->graphicsView_3->scene()->addPixmap(mww->imgarray[mww->geticon(currpos+2,true)]);
+    ui->graphicsView_4->scene()->addPixmap(mww->imgarray[mww->geticon(currpos+3,true)]);
+    ui->graphicsView_5->scene()->addPixmap(mww->imgarray[mww->geticon(currpos+4,true)]);
+    ui->graphicsView_6->scene()->addPixmap(mww->imgarray[mww->geticon(currpos+5,true)]);
     ui->graphicsView_7->scene()->addPixmap(mww->imgarray[mww->getmainpic()]);
 }
 
-void leftpanel::updateplaypic()
+void leftpanel::wheelEvent(QWheelEvent *event)
 {
-   // if (mww->plotw->start)
-   //     mww->plotw->grabopencv(ocvpic);
+    QPoint numDegrees = event->angleDelta() / 8;
+
+    if (!numDegrees.isNull())
+    {
+        QPoint numSteps = numDegrees / 15;
+        if ((numSteps.ry()==-1) && (currpos<imgnumber-6))
+        {
+            currpos++;
+            fillpics();
+        }
+        else if ((numSteps.ry()==1) && (currpos>0))
+        {
+            currpos--;
+            fillpics();;
+        }
+    }
+    event->accept();
 }
 
 bool leftpanel::eventFilter(QObject *target, QEvent *event)
 {
     if ((target == ui->graphicsView) && (event->type() == QEvent::MouseButtonDblClick))
-        mww->updatemainpic(mww->geticon(0));
+        mww->updatemainpic(mww->geticon(currpos,true));
     if ((target == ui->graphicsView_2) && (event->type() == QEvent::MouseButtonDblClick))
-        mww->updatemainpic(mww->geticon(1));
+        mww->updatemainpic(mww->geticon(currpos+1,true));
     if ((target == ui->graphicsView_3) && (event->type() == QEvent::MouseButtonDblClick))
-        mww->updatemainpic(mww->geticon(2));
+        mww->updatemainpic(mww->geticon(currpos+2,true));
     if ((target == ui->graphicsView_4) && (event->type() == QEvent::MouseButtonDblClick))
-        mww->updatemainpic(mww->geticon(3));
+        mww->updatemainpic(mww->geticon(currpos+3,true));
     if ((target == ui->graphicsView_5) && (event->type() == QEvent::MouseButtonDblClick))
-        mww->updatemainpic(mww->geticon(4));
+        mww->updatemainpic(mww->geticon(currpos+4,true));
     if ((target == ui->graphicsView_6) && (event->type() == QEvent::MouseButtonDblClick))
-        mww->updatemainpic(mww->geticon(5));
+        mww->updatemainpic(mww->geticon(currpos+5,true));
 }
 
 void leftpanel::on_pushButton_clicked()
 {
-    mww->shuffleiconss();
+    mww->shuffleiconss(true);
     fillpics();
 }
 
