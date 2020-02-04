@@ -192,6 +192,8 @@ paintform::paintform(QWidget *parent) :
     borderlevel=77;
     borderpicchange=75;
 
+    showestatt=true;
+
     ui->checkBox_17->setEnabled(false);
 
   //  scene->setSceneRect(ui->graphicsView->rect());
@@ -200,7 +202,8 @@ paintform::paintform(QWidget *parent) :
     ui->pushButton_3->setGeometry(660,865,100,30);
     ui->radioButton_4->setGeometry(740,905,150,20);
     ui->radioButton_5->setGeometry(740,930,150,20);
-    ui->pushButton->setGeometry(780,865,70,30);
+    ui->pushButton->setGeometry(780,865,70,20);
+    ui->pushButton_11->setGeometry(780,885,70,20);
     ui->label_4->setGeometry(850,920,120,20);
     ui->label_5->setGeometry(950,910,70,50);
     ui->pushButton_4->setGeometry(860,865,70,30);
@@ -929,7 +932,7 @@ void paintform::updatemeditation(int t)
                pw->addmodeon=false;
                pw->mindplay=false;
            }
-       }
+       } else
 
        ui->label_24->setStyleSheet("QLabel { color : darkGreen; }");
        ui->radioButton_5->setStyleSheet("QRadioButton { color : darkGreen; }");
@@ -1612,6 +1615,30 @@ bool paintform::eventFilter(QObject *target, QEvent *event)
             ui->spinBox_2->setValue(pensize);
         }
 
+        if (keyEvent->key() == Qt::Key_L)
+        {
+            showestatt=!showestatt;
+            if (showestatt)
+            {
+                ui->widget_2->yAxis->setRange(0,100);
+                ui->widget_2->graph(6)->setVisible(true);
+            } else
+            {
+                ui->widget_2->yAxis->setRange(0,50);
+                ui->widget_2->graph(6)->setVisible(false);
+            }
+        }
+
+        if (keyEvent->key() == Qt::Key_O)
+            on_pushButton_clicked();
+
+        if (keyEvent->key() == Qt::Key_P)
+        {
+            ui->checkBox_12->setChecked(!ui->checkBox_12->isChecked());
+            ui->widget_2->setVisible(ui->checkBox_12->isChecked());
+            ui->widget->setVisible(ui->checkBox_12->isChecked());
+        }
+
         if (keyEvent->key() == Qt::Key_Tab)
         {
             this->hide();
@@ -1712,6 +1739,11 @@ bool paintform::eventFilter(QObject *target, QEvent *event)
             qimload=true;
             scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
             scene->paintf->repaint();
+            int t = qrand() % imglist.length();
+            currentindexes[0]=t;
+            currimglist[0]=folderpath+"/"+imglist.at(t);
+            ui->graphicsView_2->scene()->clear();
+            ui->graphicsView_2->scene()->addPixmap(pmarray[t]);
         }
         if ((mouseEvent->button() == Qt::RightButton) && (!gamemode) && (!flowmode))
         {
@@ -1755,6 +1787,11 @@ bool paintform::eventFilter(QObject *target, QEvent *event)
             qimload=true;
             scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
             scene->paintf->repaint();
+            int t = qrand() % imglist.length();
+            currentindexes[1]=t;
+            currimglist[1]=folderpath+"/"+imglist.at(t);
+            ui->graphicsView_3->scene()->clear();
+            ui->graphicsView_3->scene()->addPixmap(pmarray[t]);
         }
         if ((mouseEvent->button() == Qt::RightButton) && (!gamemode))
         {
@@ -1792,6 +1829,11 @@ bool paintform::eventFilter(QObject *target, QEvent *event)
             qimload=true;
             scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
             scene->paintf->repaint();
+            int t = qrand() % imglist.length();
+            currentindexes[2]=t;
+            currimglist[2]=folderpath+"/"+imglist.at(t);
+            ui->graphicsView_4->scene()->clear();
+            ui->graphicsView_4->scene()->addPixmap(pmarray[t]);
         }
         if ((mouseEvent->button() == Qt::RightButton) && (!gamemode))
         {
@@ -1829,6 +1871,11 @@ bool paintform::eventFilter(QObject *target, QEvent *event)
             qimload=true;
             scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
             scene->paintf->repaint();
+            int t = qrand() % imglist.length();
+            currentindexes[3]=t;
+            currimglist[3]=folderpath+"/"+imglist.at(t);
+            ui->graphicsView_5->scene()->clear();
+            ui->graphicsView_5->scene()->addPixmap(pmarray[t]);
         }
         if ((mouseEvent->button() == Qt::RightButton) && (!gamemode))
         {
@@ -1866,6 +1913,11 @@ bool paintform::eventFilter(QObject *target, QEvent *event)
             qimload=true;
             scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
             scene->paintf->repaint();
+            int t = qrand() % imglist.length();
+            currentindexes[4]=t;
+            currimglist[4]=folderpath+"/"+imglist.at(t);
+            ui->graphicsView_6->scene()->clear();
+            ui->graphicsView_6->scene()->addPixmap(pmarray[t]);
         }
         if ((mouseEvent->button() == Qt::RightButton) && (!gamemode))
         {
@@ -1903,6 +1955,11 @@ bool paintform::eventFilter(QObject *target, QEvent *event)
             qimload=true;
             scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
             scene->paintf->repaint();
+            int t = qrand() % imglist.length();
+            currentindexes[5]=t;
+            currimglist[5]=folderpath+"/"+imglist.at(t);
+            ui->graphicsView_7->scene()->clear();
+            ui->graphicsView_7->scene()->addPixmap(pmarray[t]);
         }
         if ((mouseEvent->button() == Qt::RightButton) && (!gamemode))
         {
@@ -1940,6 +1997,11 @@ bool paintform::eventFilter(QObject *target, QEvent *event)
             qimload=true;
             scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
             scene->paintf->repaint();
+            int t = qrand() % imglist.length();
+            currentindexes[6]=t;
+            currimglist[6]=folderpath+"/"+imglist.at(t);
+            ui->graphicsView_8->scene()->clear();
+            ui->graphicsView_8->scene()->addPixmap(pmarray[t]);
         }
         if ((mouseEvent->button() == Qt::RightButton) && (!gamemode))
         {
@@ -1977,6 +2039,11 @@ bool paintform::eventFilter(QObject *target, QEvent *event)
             qimload=true;
             scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
             scene->paintf->repaint();
+            int t = qrand() % imglist.length();
+            currentindexes[7]=t;
+            currimglist[7]=folderpath+"/"+imglist.at(t);
+            ui->graphicsView_9->scene()->clear();
+            ui->graphicsView_9->scene()->addPixmap(pmarray[t]);
         }
         if ((mouseEvent->button() == Qt::RightButton) && (!gamemode))
         {
@@ -2014,6 +2081,11 @@ bool paintform::eventFilter(QObject *target, QEvent *event)
             qimload=true;
             scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
             scene->paintf->repaint();
+            int t = qrand() % imglist.length();
+            currentindexes[8]=t;
+            currimglist[8]=folderpath+"/"+imglist.at(t);
+            ui->graphicsView_10->scene()->clear();
+            ui->graphicsView_10->scene()->addPixmap(pmarray[t]);
         }
         if ((mouseEvent->button() == Qt::RightButton) && (!gamemode))
         {
@@ -2051,6 +2123,11 @@ bool paintform::eventFilter(QObject *target, QEvent *event)
             qimload=true;
             scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
             scene->paintf->repaint();
+            int t = qrand() % imglist.length();
+            currentindexes[9]=t;
+            currimglist[9]=folderpath+"/"+imglist.at(t);
+            ui->graphicsView_11->scene()->clear();
+            ui->graphicsView_11->scene()->addPixmap(pmarray[t]);
         }
         if ((mouseEvent->button() == Qt::RightButton) && (!gamemode))
         {
@@ -2088,6 +2165,11 @@ bool paintform::eventFilter(QObject *target, QEvent *event)
             qimload=true;
             scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
             scene->paintf->repaint();
+            int t = qrand() % imglist.length();
+            currentindexes[10]=t;
+            currimglist[10]=folderpath+"/"+imglist.at(t);
+            ui->graphicsView_12->scene()->clear();
+            ui->graphicsView_12->scene()->addPixmap(pmarray[t]);
         }
         if ((mouseEvent->button() == Qt::RightButton) && (!gamemode))
         {
@@ -2125,6 +2207,11 @@ bool paintform::eventFilter(QObject *target, QEvent *event)
             qimload=true;
             scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
             scene->paintf->repaint();
+            int t = qrand() % imglist.length();
+            currentindexes[11]=t;
+            currimglist[11]=folderpath+"/"+imglist.at(t);
+            ui->graphicsView_13->scene()->clear();
+            ui->graphicsView_13->scene()->addPixmap(pmarray[t]);
         }
         if ((mouseEvent->button() == Qt::RightButton) && (!gamemode))
         {
@@ -2162,6 +2249,11 @@ bool paintform::eventFilter(QObject *target, QEvent *event)
             qimload=true;
             scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
             scene->paintf->repaint();
+            int t = qrand() % imglist.length();
+            currentindexes[12]=t;
+            currimglist[12]=folderpath+"/"+imglist.at(t);
+            ui->graphicsView_14->scene()->clear();
+            ui->graphicsView_14->scene()->addPixmap(pmarray[t]);
         }
         if ((mouseEvent->button() == Qt::RightButton) && (!gamemode))
         {
@@ -2199,6 +2291,11 @@ bool paintform::eventFilter(QObject *target, QEvent *event)
             qimload=true;
             scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
             scene->paintf->repaint();
+            int t = qrand() % imglist.length();
+            currentindexes[13]=t;
+            currimglist[13]=folderpath+"/"+imglist.at(t);
+            ui->graphicsView_15->scene()->clear();
+            ui->graphicsView_15->scene()->addPixmap(pmarray[t]);
         }
         if ((mouseEvent->button() == Qt::RightButton) && (!gamemode))
         {
@@ -2600,6 +2697,25 @@ void paintform::startround()
     pw->letsplay();
 }
 
+void paintform::setbackimageocv(QString filename)
+{
+    mainpic.load(filename);
+    pmain.load(filename);
+    qim.load(filename);
+    currimglist[14]=filename;
+    backloaded = true;
+    if (scene->drawflow)
+    {
+        scene->bkgndimg.load(filename);
+        qpr.setBrush(QPalette::Background, scene->bkgndimg.scaled(this->size(),rationmode,Qt::SmoothTransformation));
+        this->setPalette(qpr);
+        scene->clear();
+        this->repaint();
+    } else
+        scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
+
+}
+
 void paintform::setbackimage(QPixmap pm)
 {
     pmain=pm;
@@ -2616,7 +2732,6 @@ void paintform::setbackimage(QPixmap pm)
         qpr.setBrush(QPalette::Background, scene->bkgndimg.scaled(this->size(),rationmode,Qt::SmoothTransformation));
         this->setPalette(qpr);
     }
-
 }
 
 void paintform::fitView()
@@ -2692,6 +2807,16 @@ void paintform::on_pushButton_clicked()
   //      centercoord[i][1]=qrand()%800;
   //      poltypearr[i]=3+qrand()%6;
   //  }
+}
+
+int paintform::getgraphicview_width()
+{
+    return ui->graphicsView->width();
+}
+
+int paintform::getgraphicview_height()
+{
+    return ui->graphicsView->height();
 }
 
 void paintform::on_pushButton_2_clicked()
@@ -3087,7 +3212,14 @@ void paintform::on_radioButton_6_clicked()
 void paintform::on_checkBox_15_clicked()
 {
     if (musicactiv)
+    {
         musicactiv=false;
+        pw->addmodeon=false;
+        pw->mindplay=false;
+        mypen.setWidth(1);
+        ui->widget->graph(2)->setPen(mypen);
+        ui->widget->graph(2)->pen().setWidth(1);
+    }
     else
         musicactiv=true;
     ui->spinBox_5->setEnabled(musicactiv);
@@ -3267,4 +3399,26 @@ void paintform::on_checkBox_21_clicked()
 void paintform::on_checkBox_18_clicked()
 {
     updateback=!updateback;
+    if (updateback)
+    {
+        ui->checkBox_8->setEnabled(false);
+        ui->checkBox_16->setEnabled(false);
+        ui->checkBox_17->setEnabled(false);
+    } else
+    {
+        if (minimode)
+        {
+            ui->checkBox_8->setEnabled(true);
+            ui->checkBox_16->setEnabled(true);
+            ui->checkBox_17->setEnabled(true);
+        }
+    }
+}
+
+void paintform::on_pushButton_11_clicked()
+{
+    pmain.load(":/pics/pics/empty.jpg");
+    mainpic.load(":/pics/pics/empty.jpg");
+    qim.load(":/pics/pics/empty.jpg");
+    scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
 }

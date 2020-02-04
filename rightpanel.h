@@ -20,7 +20,6 @@ public:
     Qt::AspectRatioMode rationmode;
     int imgsize = 138;
     int currpos = 0;
-    void wheelEvent(QWheelEvent *event);
     bool eventFilter(QObject *target, QEvent *event);
     void fillpics();
     explicit rightpanel(QWidget *parent = 0);
@@ -28,6 +27,10 @@ public:
 
 private slots:
     void on_pushButton_clicked();
+
+    void on_pushButton_2_clicked();
+
+    void on_pushButton_3_clicked();
 
 private:
     Ui::rightpanel *ui;

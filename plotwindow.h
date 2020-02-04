@@ -148,9 +148,7 @@ public:
     void savescaletofile(QString fname);
     void loadscalefromfile(QString fname);
     void setrandomscale();
-    void refresh();
-    int estimateoptlength(int n, int l1, int l2, int pos);
-    double estimateoptprop(int n, double p1, double p2, int pos);
+    void refresh(); 
     void setaddmode(bool f);  
     int maxabsstim(int pos);
     double offlinevaluation(int pos, int i);    

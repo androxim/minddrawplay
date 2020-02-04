@@ -81,40 +81,29 @@ leftpanel::leftpanel(QWidget *parent) :
     ui->graphicsView_4->installEventFilter(this);
     ui->graphicsView_5->installEventFilter(this);
     ui->graphicsView_6->installEventFilter(this);
+    ui->graphicsView_7->installEventFilter(this);
 
-    ui->pushButton->setGeometry(5,1,138,23);
+    ui->pushButton_3->setGeometry(4,1,68,23);
+    ui->pushButton_2->setGeometry(75,1,68,23);
+    ui->pushButton->setGeometry(5,1005,138,23);
 }
 
 void leftpanel::fillpics()
 {   
+    ui->graphicsView->scene()->clear();
     ui->graphicsView->scene()->addPixmap(mww->imgarray[mww->geticon(currpos,true)]);
+    ui->graphicsView_2->scene()->clear();
     ui->graphicsView_2->scene()->addPixmap(mww->imgarray[mww->geticon(currpos+1,true)]);
+    ui->graphicsView_4->scene()->clear();
     ui->graphicsView_3->scene()->addPixmap(mww->imgarray[mww->geticon(currpos+2,true)]);
+    ui->graphicsView_4->scene()->clear();
     ui->graphicsView_4->scene()->addPixmap(mww->imgarray[mww->geticon(currpos+3,true)]);
+    ui->graphicsView_5->scene()->clear();
     ui->graphicsView_5->scene()->addPixmap(mww->imgarray[mww->geticon(currpos+4,true)]);
+    ui->graphicsView_6->scene()->clear();
     ui->graphicsView_6->scene()->addPixmap(mww->imgarray[mww->geticon(currpos+5,true)]);
+    ui->graphicsView_7->scene()->clear();
     ui->graphicsView_7->scene()->addPixmap(mww->imgarray[mww->getmainpic()]);
-}
-
-void leftpanel::wheelEvent(QWheelEvent *event)
-{
-    QPoint numDegrees = event->angleDelta() / 8;
-
-    if (!numDegrees.isNull())
-    {
-        QPoint numSteps = numDegrees / 15;
-        if ((numSteps.ry()==-1) && (currpos<imgnumber-6))
-        {
-            currpos++;
-            fillpics();
-        }
-        else if ((numSteps.ry()==1) && (currpos>0))
-        {
-            currpos--;
-            fillpics();;
-        }
-    }
-    event->accept();
 }
 
 bool leftpanel::eventFilter(QObject *target, QEvent *event)
@@ -130,7 +119,29 @@ bool leftpanel::eventFilter(QObject *target, QEvent *event)
     if ((target == ui->graphicsView_5) && (event->type() == QEvent::MouseButtonDblClick))
         mww->updatemainpic(mww->geticon(currpos+4,true));
     if ((target == ui->graphicsView_6) && (event->type() == QEvent::MouseButtonDblClick))
-        mww->updatemainpic(mww->geticon(currpos+5,true));
+        mww->updatemainpic(mww->geticon(currpos+5,true));   
+
+    if ((target != ui->graphicsView_7) && (event->type() == QEvent::Wheel))
+    {
+        QWheelEvent* wEvent = static_cast<QWheelEvent*>(event);
+        QPoint numDegrees = wEvent->angleDelta() / 8;
+        if (!numDegrees.isNull())
+        {
+            QPoint numSteps = numDegrees / 15;
+            if ((numSteps.ry()==-1) && (currpos<imgnumber-6))
+            {
+                currpos++;
+                fillpics();
+            }
+            else if ((numSteps.ry()==1) && (currpos>0))
+            {
+                currpos--;
+                fillpics();;
+            }
+        }
+        wEvent->accept();
+    }
+    return false;
 }
 
 void leftpanel::on_pushButton_clicked()
@@ -142,4 +153,22 @@ void leftpanel::on_pushButton_clicked()
 leftpanel::~leftpanel()
 {
     delete ui;
+}
+
+void leftpanel::on_pushButton_2_clicked()
+{
+    if (currpos<imgnumber-6)
+    {
+        currpos++;
+        fillpics();
+    }
+}
+
+void leftpanel::on_pushButton_3_clicked()
+{
+    if (currpos>0)
+    {
+        currpos--;
+        fillpics();;
+    }
 }

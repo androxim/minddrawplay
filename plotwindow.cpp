@@ -243,10 +243,12 @@ bool plotwindow::eventFilter(QObject *target, QEvent *event)
         }
         if (mouseEvent->button() == Qt::MiddleButton)
         {
-            if (tim->isActive())
-                tim->stop();
-            else
-                tim->start();
+          //  if (tim->isActive())
+          //      tim->stop();
+          //  else
+          //      tim->start();
+            mindplay=!mindplay;
+            ui->checkBox_4->setChecked(mindplay);
             hnt->numst=ui->spinBox_7->value();
             if (mindwstart)
                 hnt->imlength=ui->spinBox_5->value()/1.953125;
@@ -459,6 +461,18 @@ bool plotwindow::eventFilter(QObject *target, QEvent *event)
         }
 
         // add yAxis->moveRange on Key_Up and Key_Down
+
+        if (opencvstart)
+        {
+            if (keyEvent->key() == Qt::Key_0)
+                mw->setborder(100);
+            if (keyEvent->key() == Qt::Key_9)
+                mw->setborder(90);
+            if (keyEvent->key() == Qt::Key_8)
+                mw->setborder(80);
+            if (keyEvent->key() == Qt::Key_7)
+                mw->setborder(70);
+        }
 
         if (keyEvent->key() == Qt::Key_Left)
         { double low = ui->widget->xAxis->range().lower;
@@ -1759,17 +1773,6 @@ void plotwindow::slSettings()
    sw->setFixedSize(435,453);
    sw->init();
    sw->show();
-}
-
-int plotwindow::estimateoptlength(int n, int l1, int l2, int pos)
-{
-    return 0;
-}
-
-double plotwindow::estimateoptprop(int n, double p1, double p2, int pos)
-{
-
-    return 0;
 }
 
 void plotwindow::setaddmode(bool f)

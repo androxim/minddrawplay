@@ -26,7 +26,6 @@
 #include <opencv2/core/types.hpp>
 #include <thread>
 
-
 QStringList strList1;
 QStringListModel *strListM1;
 
@@ -41,21 +40,26 @@ void Value( int, void* );
 void Attent( int, void* );
 void Overlay( int, void* );
 void Border( int, void* );
-void onMouse( int event, int x, int y, int, void* );
+void onMouse(int event, int x, int y, int flags, void* );
 
 void defineiconsarr();
 void define_riconsarr();
 void shuffleicons(bool left);
 
-Mat src,srccopy,dst,dstcopy,img,image,tempimg,dstemp;
+Mat src,srccopy,dst,dstcopy,img,image,tempimg,dstemp,srg,srct,dstt;
 
 int currmainpic, curroverpic, prevmainpic = -1, prevoverpic = -1;
+int currfilterarea = 40, currfilterrate = 10;
 vector <int> iconsarr, riconsarr;
 bool firstrun = true;
 bool estattention = false;
+bool fullscr = false;
+bool mwconnected = false;
 
 leftpanel *leftpw;
 rightpanel *rightpw;
+rawsignal *rs;
+
 bool rchanged, lchanged;
 QStringList imglist;
 QString folderpath;
@@ -68,10 +72,13 @@ int elem5 = 50;
 int elem6 = 90;
 
 bool canchangepic = true;
+bool dofiltering = false;
+bool filtmode = false;
 double alphaval = 0.5;
 
 int const max_elem = 500;
 int const max_elem2 = 100;
+int curr_iter = 0;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -84,9 +91,9 @@ MainWindow::MainWindow(QWidget *parent) :
     paintw = new paintform();
     paintw->pw=plotw;
     paintw->mww=this;
-    paintw->setFixedSize(1600,970);
+    paintw->setFixedSize(1560,970);
 
-    plotw->setFixedSize(1600,978);
+    plotw->setFixedSize(1560,978);
     plotw->move(QApplication::desktop()->screen()->rect().center() - plotw->rect().center()-QPoint(10,30));
     plotw->start=false;  
 
@@ -145,7 +152,7 @@ MainWindow::MainWindow(QWidget *parent) :
     simulateEEG->setInterval(2);
   //  simulateEEG->start();
 
-    fullscr=false;
+  //  fullscr=false;
     opencvinterval=20;
     picfilt = new QTimer(this);
     picfilt->connect(picfilt,SIGNAL(timeout()), this, SLOT(picfiltUpdate()));
@@ -264,10 +271,11 @@ void Processing()
 
     cvtColor(img,image,COLOR_HSV2RGB);
 
+  //  dst = image;
     addWeighted(image, alphaval, srccopy, 1 - alphaval, 0, dst);
     imshow("image", dst);
 
-    // imshow( "image", image );
+   //  imshow( "image", image );
 
 }
 
@@ -275,13 +283,19 @@ void ProcessingMix()
 {
     alphaval = (double) elem5 / 100;
     if (estattention)
+    {
+        cv::resize(srccopy, srccopy, cv::Size(image.cols,image.rows), 0, 0, cv::INTER_LINEAR);
         addWeighted(image, alphaval, srccopy, 1 - alphaval, 0, dst);
+    }
     else
+    {
+        cv::resize(srccopy, srccopy, cv::Size(src.cols,src.rows), 0, 0, cv::INTER_LINEAR);
         addWeighted(src, alphaval, srccopy, 1 - alphaval, 0, dst);
+    }
     imshow("image", dst);
 }
 
-void onMouse( int event, int x, int y, int, void* )
+void onMouse( int event, int x, int y, int flags, void* )
 {
     if (event == EVENT_MBUTTONDOWN)
     {
@@ -299,9 +313,8 @@ void onMouse( int event, int x, int y, int, void* )
         addWeighted(src, alphaval, srccopy, 1 - alphaval, 0, dst);
         imshow("image", dst);
     } else
-    if (event == EVENT_RBUTTONDOWN)
+    if ((event == EVENT_RBUTTONDOWN) && (dofiltering))
     {
-
         prevoverpic = curroverpic;
         curroverpic = riconsarr[qrand() % (imglist.length()-2)];;
         lchanged=false;
@@ -315,6 +328,41 @@ void onMouse( int event, int x, int y, int, void* )
         cv::resize(srccopy, srccopy, cv::Size(src.cols,src.rows), 0, 0, cv::INTER_LINEAR);
         addWeighted(src, alphaval, srccopy, 1 - alphaval, 0, dst);
         imshow("image", dst);
+    } else
+    if (event == EVENT_LBUTTONDBLCLK)
+    {
+        if (!fullscr)
+        {
+            rs->setGeometry(0,0,1940,80);
+            rs->move(0,0);
+            cv::setWindowProperty("image",cv::WND_PROP_FULLSCREEN,1);
+            fullscr=true;
+        }
+        else
+        {
+            rs->setGeometry(0,0,1600,80);
+            rs->move(158,0);
+            cv::setWindowProperty("image",cv::WND_PROP_FULLSCREEN,0);
+            fullscr=false;
+        }
+        rs->changefsize(fullscr);
+    }
+    if ((!dofiltering) && (event == EVENT_MOUSEMOVE) && ((flags ==  EVENT_FLAG_LBUTTON) || (filtmode)) && (y<1125-currfilterarea) && (x<2000-currfilterarea))
+    {
+        curr_iter++;
+        if (curr_iter >= currfilterrate)
+        {
+            Rect srcDstRect(x, y, currfilterarea, currfilterarea);
+            dstt = dst(srcDstRect); //src
+            srct = dst(srcDstRect); //src
+            auto dilation_type = MORPH_DILATE;
+            int dilation_size = 2;
+            Mat element = getStructuringElement(dilation_type, Size(2*dilation_size + 1, 2*dilation_size+1 ), Point( dilation_size, dilation_size ) );
+            dilate( srct, dstt, element,Point(-1,-1),1,BORDER_REPLICATE);
+            dstt.copyTo(dst(srcDstRect));
+            imshow("image", dst);
+            curr_iter=0;
+        }
     }
 }
 
@@ -424,6 +472,8 @@ void MainWindow::updatemainpic(int num)
     imshow("image", dst);
     if (plotw->start)
         plotw->grabopencv(ocvpic);
+    if (psstart)
+        paintw->setbackimageocv(ocvpic);
 }
 
 void MainWindow::updateoverpic(int num)
@@ -531,18 +581,12 @@ void MainWindow::on_pushButton_4_clicked()
 {
     on_pushButton_3_clicked();
     //plotw->hide();
-    paintw->scene->init(plotw, this);
-  //  paintw->move(QApplication::desktop()->screen()->rect().center() - paintw->rect().center()+QPoint(0,-55));
+    paintw->scene->init(plotw, this);  
     plotw->pssstart=true;
     paintw->scene->clear();
     paintw->show();
     paintw->loadempty();
    // paintw->startpolyt();
-    if (!bciconnect)
-    {
-        rs->starting();
-        rs->show();
-    }
     connectWin->ps=paintw->scene;
     if (plotw->start)    
         plotw->pss=paintw->scene;    
@@ -641,6 +685,7 @@ void MainWindow::mindwaveconnect()
         if (!estattention)
             estattention=true;
         rs->show();
+        mwconnected=true;
     }
     else
         printdata("Connection with MindWave could not be established! :(");
@@ -680,6 +725,12 @@ void MainWindow::setoverlay(int i)
     checkoverlay();
 }
 
+void MainWindow::setborder(int i)
+{
+    elem6=i;
+    setTrackbarPos("Border","image",elem6);
+}
+
 QImage MainWindow::grabopcvpic()
 {
      return Mat2QImageRGB(dst);
@@ -691,7 +742,8 @@ void MainWindow::startopencv()
 {
     if (!opencvstart)
     {
-        namedWindow("image",WINDOW_NORMAL + WINDOW_OPENGL);
+        startWindowThread();
+        namedWindow("image",WINDOW_NORMAL + WINDOW_FREERATIO);  // WINDOW_OPENGL);
 
         createTrackbar("Hue","image",&elem1, max_elem,Hue);
         // createTrackbar("Saturation","image",&elem2, max_elem,Saturation);
@@ -707,17 +759,16 @@ void MainWindow::startopencv()
         rchanged=false;
         defineiconsarr();
         opencvpic = folderpath+"/"+imglist.at(currmainpic);
-        src = imread(opencvpic.toStdString());
+        src = imread(opencvpic.toStdString());        
         image = imread(opencvpic.toStdString());
-
 
         curroverpic = iconsarr[qrand() % (imglist.length()-1)];
         define_riconsarr();
         QString stp = folderpath+"/"+imglist.at(curroverpic);
         srccopy =  imread(stp.toStdString());
 
-        firstrun=false;
-        defineiconsarr();
+        firstrun=false;    
+        defineiconsarr();        
         resizeWindow("image",1600,900);
         resize(1600,900);
         moveWindow("image", 150,39);
@@ -730,14 +781,31 @@ void MainWindow::startopencv()
             plotw->enablehue();
         picfilt->start();
 
-    } else
+    }
+    else
         imshow("image", src);
+    /* else
+    {
+        cv::destroyWindow("image");
+        src.release();
+        src = image;
+        namedWindow("image",WINDOW_NORMAL + WINDOW_OPENGL);
+        resizeWindow("image",1600,900);
+        resize(1600,900);
+        moveWindow("image", 150,39);
+        createTrackbar("Hue","image",&elem1, max_elem,Hue);
+        createTrackbar("Attention","image",&elem4,max_elem2,Attent);
+        createTrackbar("Overlay","image",&elem5,max_elem2,Overlay);
+        createTrackbar("Border","image",&elem6,max_elem2,Border);
+        setTrackbarPos("Overlay", "image", elem5);
+        imshow("image", src);
+    } */
 }
 
 void MainWindow::simulateEEGUpdate()
 {
-    const double mean = 0.0;
-    const double stddev = 0.5;
+  //  const double mean = 0.0;
+  //  const double stddev = 0.5;
    // std::default_random_engine generator;
    // std::normal_distribution<double> dist(mean, stddev);
   //  double nois = 5*dist(generator);
@@ -801,12 +869,12 @@ void MainWindow::makeicons()
     imgarray.resize(imglist.length());
     for (int i=0; i<imglist.length(); i++)
     {
-        picst = folderpath+"/"+imglist.at(i);
+        picst = folderpath+"/"+imglist.at(i);                                
         tempimg = imread(picst.toStdString());
-        Size size(138,138);
+        Size size(138,138);        
         cv::resize(tempimg,dstemp,size);
         QImage qm = Mat2QImageRGB(dstemp);
-        imgarray[i]=QPixmap::fromImage(qm);
+        imgarray[i]=QPixmap::fromImage(qm);      
     }
 
 }
@@ -822,6 +890,8 @@ void MainWindow::setfolderpath(QString fp)
     QDir fd(folderpath);
     imglist = fd.entryList(QStringList() << "*.jpg" << "*.JPG",QDir::Files);
     ui->lineEdit->setText(folderpath);
+    leftpw->imgnumber = imglist.length()-2;
+    rightpw->imgnumber = imglist.length()-2;
 }
 
 void MainWindow::mindwtUpdate()
@@ -829,33 +899,7 @@ void MainWindow::mindwtUpdate()
     int c=0;
     int errCode = TG_ReadPackets( connectionId,1);
     if( errCode == 1 )
-    {
-       /* packetsRead++; // if get frequencies from device, only once per second
-        if (packetsRead==512)
-        {
-           // allpower = mw_delta + mw_theta + mw_alpha1 + mw_alpha2 + mw_beta1 + mw_beta2 + mw_gamma1 + mw_gamma2;
-            allpower = mw_delta + mw_theta + mw_alpha + mw_beta + mw_gamma1;// + mw_gamma2;
-            p_delta = (double)mw_delta/allpower;
-            p_theta = (double)mw_theta/allpower;
-            p_alpha = (double)mw_alpha/allpower;
-            p_beta = (double)mw_beta/allpower;
-            p_gamma1 = (double)mw_gamma1/allpower;
-          //  p_gamma2 = (double)mw_gamma2/allpower;
-          //  if (psstart)
-          //      paintw->updatefreqarrs(100*p_delta,100*p_theta,100*p_alpha,100*p_alpha,100*p_gamma1);
-          //      paintw->updatefreqarrs(p_delta,p_theta,p_alpha,p_beta,p_gamma1);
-          /*  plotw->delta = 100*p_delta;
-            plotw->theta = 100*p_theta;
-            plotw->alpha = 100*p_alpha;
-            plotw->beta = 100*p_beta;
-            plotw->gamma = 100*p_gamma1;
-            plotw->hgamma = 100*p_gamma2;
-            if (psstart)
-                paintw->updatefreqarrs(100*p_delta,100*p_theta,100*p_alpha,100*p_beta,100*p_gamma1);
-            cout<<fixed<<setprecision(2)<<"Raw: "<<mw_raw<<"  Delta: "<<(double)mw_delta/allpower<<"  Theta: "<<(double)mw_theta/allpower<<"  Alpha1: "<<(double)mw_alpha1/allpower<<"  Alpha2: "<<(double)mw_alpha2/allpower<<"  Beta1: "<<(double)mw_beta1/allpower<<"  Beta2: "<<(double)mw_beta2/allpower<<"  Gamma1: "<<(double)mw_gamma1/allpower<<"  Gamma2: "<<(double)mw_gamma2/allpower<<endl;
-           // cout<<fixed<<setprecision(2)<<"Raw: "<<mw_raw<<"  Theta: "<<p_theta<<"  Alpha: "<<p_alpha<<"  Beta: "<<p_beta<<"  Gamma: "<<p_gamma1<<"  HGamma: "<<p_gamma2<<endl;
-            packetsRead=0;
-        } */
+    {      
         plotw->chnums=1;
         if ( TG_GetValueStatus(connectionId, TG_DATA_RAW) != 0 )
         {
@@ -877,40 +921,20 @@ void MainWindow::mindwtUpdate()
                 mw_atten=TG_GetValue(connectionId, TG_DATA_ATTENTION);
                 if (plotw->start)
                     plotw->update_attention(mw_atten);
-                if (opencvstart)
-                {                   
-                   // setoverlay(mw_atten);
-                   //   setattent(mw_atten);
-                   // elem2 = 210 + mw_atten/2;
-                   // setTrackbarPos("Saturation", "image", elem2);
-                    if (canchangehue)
-                    {
-                        curhue=100+mw_atten*4;
-                        canchangehue=false;
-                    //  setopencvt(50+mw_atten*2);
-                    }
-               //     if (canchangeoverlay)
-               //     {
-               //         curoverl=mw_atten;
-               //         canchangeoverlay=false;
-                    //  setopencvt(50+mw_atten*2);
-                  //  }
+                if ((opencvstart) && (canchangehue))
+                {                                                         
+                    curhue=100+mw_atten*4;
+                    canchangehue=false;
                 }
                 if (psstart)
                 {
                     paintw->updateattentionplot(mw_atten);
                     if (opencvstart)
                     {
-                        setattent(paintw->getestattval());                       
-                    //    if (canchangeoverlay)
-                        {
-                            curoverl=elem4;
-                      //      canchangeoverlay=false;
-                        }
-                    }
-                    //paintw->updateplots(false);
-                    //paintw->bfiltmode;
-                  //      paintw->randompics();
+                        setattent(paintw->getestattval());                                           
+                        curoverl=elem4;
+
+                    }                  
                 }
                 // cout<<"Attention value: "<<mw_atten<<endl;
             }
@@ -1006,30 +1030,33 @@ void MainWindow::on_pushButton_5_clicked()
 
 void MainWindow::picfiltUpdate()
 {    
-    char key = cv::waitKey(10);
+    char key = cv::waitKey(10) % 256;    
     if (key == ' ')
-    {
-        if (!fullscr)
-        {            
-            rs->setGeometry(0,0,1940,80);
-            rs->move(0,0);
-            cv::setWindowProperty("image",cv::WND_PROP_FULLSCREEN,1);
-            fullscr=true;
-        }
-        else
-        {
-            rs->setGeometry(0,0,1600,80);
-            rs->move(158,0);
-            cv::setWindowProperty("image",cv::WND_PROP_FULLSCREEN,0);
-            fullscr=false;
-        }
-        rs->changefsize(fullscr);
-    }
+        filtmode = !filtmode;
+    else
     if (key == 27)
+        dofiltering=!dofiltering;
+    else
+    if (key == '0')
+        setborder(100);
+    else if (key == '9')
+        setborder(90);
+    else if (key == '8')
+        setborder(80);
+    else if (key == '7')
+        setborder(70);
+    else if ((key == '1') && (currfilterarea>10))
+       currfilterarea--;
+    else if ((key == '2')  && (currfilterarea<300))
+        currfilterarea++;
+    else if ((key == '3') && (currfilterrate>0))
+       currfilterrate--;
+    else if ((key == '4')  && (currfilterrate<30))
+        currfilterrate++;
+
+    if (dofiltering)
     {
-        if (plotw->start)
-            plotw->pauseflow();
-    }
+
     if ((abs(curhue-prevhue)==0) || ((abs(curhue-prevhue)==1)))
         canchangehue=true;
     else
@@ -1041,7 +1068,6 @@ void MainWindow::picfiltUpdate()
         elem1=prevhue;
         setTrackbarPos("Hue", "image", elem1);
     }
-
 
     if ((abs(curoverl-prevoverl)==0) || ((abs(curoverl-prevoverl)==1)))
         canchangeoverlay=true;
@@ -1055,13 +1081,14 @@ void MainWindow::picfiltUpdate()
         setTrackbarPos("Overlay", "image", elem5);
     }
     checkoverlay();
+
+    }
 }
 
 void MainWindow::on_pushButton_6_clicked()
 {
     if (imglist.length()>0)
     {
-
         startopencv();        
         shuffleicons(true);
         leftpw->show();
@@ -1085,5 +1112,29 @@ void MainWindow::on_pushButton_7_clicked()
     {
         setfolderpath(fPath);
         makeicons();
+
+        firstrun=true;
+        currmainpic = qrand() % imglist.length();
+        lchanged=false;
+        rchanged=false;
+        prevmainpic = -1;
+        prevoverpic = -1;
+        iconsarr.clear();
+        riconsarr.clear();
+        defineiconsarr();
+        opencvpic = folderpath+"/"+imglist.at(currmainpic);
+        src = imread(opencvpic.toStdString());
+        image = imread(opencvpic.toStdString());
+        curroverpic = iconsarr[qrand() % (imglist.length()-1)];
+        define_riconsarr();
+        QString stp = folderpath+"/"+imglist.at(curroverpic);
+        srccopy =  imread(stp.toStdString());
+        firstrun = false;
+        defineiconsarr();
+        imshow("image", src);
+        shuffleicons(true);
+        leftpw->fillpics();
+        shuffleicons(false);
+        rightpw->fillpics();
     }
 }

@@ -31,7 +31,7 @@ public:
     bool pwstart;
     bool simeeg;
     bool bciconnect;
-    bool opencvstart, fullscr;
+    bool opencvstart;
     QString daqport;
     QTimer* mindwt;
     QTimer* picfilt;
@@ -70,6 +70,7 @@ public:
     void setopencvt(int i);
     void setattent(int i);
     void setoverlay(int i);
+    void setborder(int i);
     void checkoverlay();
     void makeicons();
     void shuffleiconss(bool left);
@@ -109,8 +110,7 @@ private:
     Ui::MainWindow *ui;
     plotwindow *plotw;
     paintform *paintw;    
-    appconnect *connectWin;
-    rawsignal *rs;
+    appconnect *connectWin;  
 
 };
 

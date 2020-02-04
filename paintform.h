@@ -65,7 +65,7 @@ public:
     Qt::AspectRatioMode rationmode;
     int timepics, picsforchange, mainindex,polycount;
     int* currentindexes;
-    bool gamemode, flowmode, puzzlegrabed, updatingpuzzle, canpuzzlechange, backloaded;
+    bool gamemode, flowmode, puzzlegrabed, updatingpuzzle, canpuzzlechange, backloaded, showestatt;
     vector<int> randnumb;
     int eegsize, pensize, temppensize;
     int prevpict, prevpuzzle;
@@ -98,6 +98,9 @@ public:
     void loadempty();
     void setsoundtype(int index);
     double getestattval();
+    void setbackimageocv(QString filename);
+    int getgraphicview_width();
+    int getgraphicview_height();
     ~paintform();
 
 
@@ -197,6 +200,8 @@ private slots:
     void on_checkBox_21_clicked();
 
     void on_checkBox_18_clicked();
+
+    void on_pushButton_11_clicked();
 
 private:
     Ui::paintform *ui;
