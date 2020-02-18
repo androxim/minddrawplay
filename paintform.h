@@ -62,6 +62,7 @@ public:
     QPen mypen;
     QTimer* tpicschange;
     QTimer* polyt;
+    QPixmap pixMap;
     Qt::AspectRatioMode rationmode;
     int timepics, picsforchange, mainindex,polycount;
     int* currentindexes;
@@ -99,6 +100,7 @@ public:
     void setsoundtype(int index);
     double getestattval();
     void setbackimageocv(QString filename);
+    void setbackimageoverlay(QPixmap pmg);
     int getgraphicview_width();
     int getgraphicview_height();
     ~paintform();
@@ -202,6 +204,8 @@ private slots:
     void on_checkBox_18_clicked();
 
     void on_pushButton_11_clicked();
+
+    void on_pushButton_12_clicked();
 
 private:
     Ui::paintform *ui;

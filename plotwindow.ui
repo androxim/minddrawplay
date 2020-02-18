@@ -19,7 +19,7 @@
   <widget class="QCustomPlot" name="widget" native="true">
    <property name="geometry">
     <rect>
-     <x>20</x>
+     <x>10</x>
      <y>30</y>
      <width>1031</width>
      <height>361</height>
@@ -1617,6 +1617,19 @@
    </property>
    <property name="text">
     <string>colorize back img</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="pushButton_2">
+   <property name="geometry">
+    <rect>
+     <x>740</x>
+     <y>500</y>
+     <width>93</width>
+     <height>24</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>to MindOCV</string>
    </property>
   </widget>
  </widget>

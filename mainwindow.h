@@ -8,6 +8,7 @@
 #include "rawsignal.h"
 #include "leftpanel.h"
 #include "rightpanel.h"
+#include "ocvcontrols.h"
 
 class plotwindow;
 class appconnect;
@@ -15,6 +16,7 @@ class Settings;
 class paintform;
 class leftpanel;
 class rightpanel;
+class ocvcontrols;
 
 namespace Ui {
 
@@ -32,10 +34,13 @@ public:
     bool simeeg;
     bool bciconnect;
     bool opencvstart;
+    bool ocvcontrshow;
     QString daqport;
     QTimer* mindwt;
     QTimer* picfilt;
-    QTimer* simulateEEG;  
+    QTimer* simulateEEG;
+    QTimer* puzzling_timer;
+    int puzzlingrate;
     int packetsRead;
     int connectionId;
     int currentsimdata;
@@ -48,7 +53,7 @@ public:
     QString opencvpic;
     bool canchangehue, canchangeoverlay;
     QVector<QPixmap> imgarray;
-    vector<int> picsarr;
+    vector<int> picsarr;    
     int deltafr, thetafr, alphafr, betafr, gammafr, hgammafr;
     int deltaphs, thetaphs, alphaphs, betaphs, gammaphs;
     int zdeltaamp, zthetaamp, zalphaamp, zbetaamp, zgammaamp, zhgammaamp;
@@ -80,6 +85,10 @@ public:
     void updatemainpic(int num);
     void updateoverpic(int num);
     void setfolderpath(QString fp);
+    void updateocvparams();
+    void cancellast();
+    void cancelall();
+    void setdstfromplay(QImage qm);
     QImage grabopcvpic();
 
     ~MainWindow();
@@ -101,6 +110,7 @@ private slots:
     void picfiltUpdate();
     void mindwtUpdate();
     void simulateEEGUpdate();    
+    void puzzling_timerUpdate();
 
     void on_pushButton_6_clicked();
 

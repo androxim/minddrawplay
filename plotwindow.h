@@ -218,6 +218,7 @@ public:
     QImage applyEffectToImage(QImage src, QGraphicsEffect *effect, int extent);
     void setbackimage(QPixmap pm);
     void grabopencv(QString fpath);
+    void graboverlay(QPixmap pmg);
     void pauseflow();
 
 private slots:
@@ -366,6 +367,8 @@ private slots:
     void on_pushButton_25_clicked();
 
     void on_checkBox_14_clicked();
+
+    void on_pushButton_2_clicked();
 
 private:
     Ui::plot *ui;

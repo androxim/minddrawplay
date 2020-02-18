@@ -889,7 +889,7 @@
      <x>700</x>
      <y>560</y>
      <width>81</width>
-     <height>28</height>
+     <height>24</height>
     </rect>
    </property>
    <property name="text">
@@ -1032,6 +1032,19 @@
     <string>Empty</string>
    </property>
   </widget>
+  <widget class="QPushButton" name="pushButton_12">
+   <property name="geometry">
+    <rect>
+     <x>700</x>
+     <y>590</y>
+     <width>81</width>
+     <height>24</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>to MindOCV</string>
+   </property>
+  </widget>
   <zorder>pushButton_5</zorder>
   <zorder>pushButton_8</zorder>
   <zorder>graphicsView</zorder>
@@ -1105,6 +1118,7 @@
   <zorder>checkBox_21</zorder>
   <zorder>checkBox_18</zorder>
   <zorder>pushButton_11</zorder>
+  <zorder>pushButton_12</zorder>
  </widget>
  <customwidgets>
   <customwidget>

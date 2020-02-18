@@ -23,7 +23,8 @@ SOURCES += main.cpp\
     rawsignal.cpp \
     soundplayer.cpp \
     leftpanel.cpp \
-    rightpanel.cpp
+    rightpanel.cpp \
+    ocvcontrols.cpp
 
 HEADERS  += mainwindow.h \
             qcustomplot.h \
@@ -38,7 +39,8 @@ HEADERS  += mainwindow.h \
     rawsignal.h \
     soundplayer.h \
     leftpanel.h \
-    rightpanel.h
+    rightpanel.h \
+    ocvcontrols.h
 
 FORMS    += mainwindow.ui \
             plotwindow.ui \
@@ -46,7 +48,8 @@ FORMS    += mainwindow.ui \
     paintform.ui \
     rawsignal.ui \
     leftpanel.ui \
-    rightpanel.ui
+    rightpanel.ui \
+    ocvcontrols.ui
 
 LIBS += -lwsock32 -lws2_32 -mthreads -L$$PWD/./ -lthinkgear
 

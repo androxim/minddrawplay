@@ -25,6 +25,7 @@
 #include "opencv2/highgui.hpp"
 #include <opencv2/core/types.hpp>
 #include <thread>
+#include "qmath.h"
 
 QStringList strList1;
 QStringListModel *strListM1;
@@ -45,12 +46,28 @@ void onMouse(int event, int x, int y, int flags, void* );
 void defineiconsarr();
 void define_riconsarr();
 void shuffleicons(bool left);
+void dosvdtransform();
+void getsvdimage(int r);
+void applyfilt(int type, Rect rt);
+Mat dilate(Rect srcRect);
+Mat waves(Rect srcRect);
+Mat cartoon(Rect srcRect, int ksize);
 
-Mat src,srccopy,dst,dstcopy,img,image,tempimg,dstemp,srg,srct,dstt;
+Mat src, srccopy, dst, dstcopy, prev_dst, clear_dst, img, image;
+Mat tempimg, dstemp, srg, srct, srwt, dstt, svd_img, gray_element, element;
+Mat trimg[3], resimg[3];
+cv::SVD svdtr;
+Mat svd_w[3], svd_u[3], svd_vt[3], svd_W[3];
+Mat t_W,t_u,t_vt;
 
+int x_box, y_box;
 int currmainpic, curroverpic, prevmainpic = -1, prevoverpic = -1;
-int currfilterarea = 40, currfilterrate = 10;
+int currfilterarea = 150, currfilterrate = 12, kernel_s = 5;
+int sigma_color = 25, sigma_space = 50, wave_freqs = 42, wave_amp = 9, dilation_size = 1, dilation_elem = 2;
+int svdt = 80;
+int currfilttype = 1;
 vector <int> iconsarr, riconsarr;
+bool attmodul_area = false;
 bool firstrun = true;
 bool estattention = false;
 bool fullscr = false;
@@ -59,6 +76,7 @@ bool mwconnected = false;
 leftpanel *leftpw;
 rightpanel *rightpw;
 rawsignal *rs;
+ocvcontrols *ocvform;
 
 bool rchanged, lchanged;
 QStringList imglist;
@@ -107,13 +125,31 @@ MainWindow::MainWindow(QWidget *parent) :
     rightpw->setFixedSize(148,1030);
     rightpw->move(QPoint(1769,0));
 
+    ocvform = new ocvcontrols();
+    ocvform->mww = this;
+    ocvform->setFixedSize(619,130);
+    ocvform->move(QPoint(160,844));
+    ocvform->filtarea = currfilterarea;
+    ocvform->filtrate = currfilterrate;
+    ocvform->filttype = currfilttype-1;
+    ocvform->kernelsize = kernel_s;
+    ocvform->s_color = sigma_color;
+    ocvform->s_space = sigma_space;
+    ocvform->wave_freq = wave_freqs;
+    ocvform->wave_amp = wave_amp;
+    ocvform->dilate_size = dilation_size;
+    ocvform->dilation_el = dilation_elem;
+    ocvform->updatevals();
+
     folderpath="D:/PICS";
     QDir fd(folderpath);
-    imglist = fd.entryList(QStringList() << "*.jpg" << "*.JPG",QDir::Files);
+    imglist = fd.entryList(QStringList() << "*.jpg" << "*.JPG",QDir::Files);    
     leftpw->imgnumber = imglist.length()-2;
-    rightpw->imgnumber = imglist.length()-2;
+    rightpw->imgnumber = imglist.length()-2;    
 
     picsarr = vector<int>(imglist.length());
+
+    ocvcontrshow=true;
 
     ui->lineEdit->setText(folderpath);
 
@@ -158,6 +194,11 @@ MainWindow::MainWindow(QWidget *parent) :
     picfilt->connect(picfilt,SIGNAL(timeout()), this, SLOT(picfiltUpdate()));
     picfilt->setInterval(opencvinterval);    
 
+    puzzlingrate = 50;
+    puzzling_timer = new QTimer(this);
+    puzzling_timer->connect(puzzling_timer,SIGNAL(timeout()), this, SLOT(puzzling_timerUpdate()));
+    puzzling_timer->setInterval(puzzlingrate);
+
   //  QThread* tr = new QThread();
   //  picfilt->moveToThread(tr);
   //  tr->start();
@@ -185,11 +226,32 @@ MainWindow::~MainWindow()
 {
     delete ui;
 }
-
 void MainWindow::setopencvt(int i)
 {
     opencvinterval=i;
     picfilt->setInterval(opencvinterval);
+}
+
+void applyfilt(int type, Rect rt)
+{
+    switch (type)
+    {
+        case 1:
+        {
+            dstt = dilate(rt);
+            break;
+        }
+        case 2:
+        {
+            dstt = waves(rt);
+            break;
+        }
+        case 3:
+        {
+            dstt = cartoon(rt,kernel_s);
+            break;
+        }
+    }
 }
 
 void Hue(int, void *)
@@ -214,6 +276,7 @@ void Border(int, void *)
 
 void Overlay( int, void* )
 {
+   // getsvdimage(elem5);
     ProcessingMix();
 }
 
@@ -297,6 +360,38 @@ void ProcessingMix()
 
 void onMouse( int event, int x, int y, int flags, void* )
 {
+    if ((!dofiltering) && (event == EVENT_MOUSEMOVE) && ((flags ==  EVENT_FLAG_LBUTTON) || (filtmode)) && (y<1125-currfilterarea/2) && (x<2000-currfilterarea/2) && (y>currfilterarea/2) && (x>currfilterarea/2))
+    {
+        curr_iter++;
+        if (curr_iter >= currfilterrate)
+        {
+            Rect srcDstRect(x-currfilterarea/2, y-currfilterarea/2, currfilterarea, currfilterarea);
+            dstt = dst(srcDstRect); // src - back, dst - overlay
+
+            applyfilt(currfilttype,srcDstRect);
+
+            Mat mask_image( dstt.size(), CV_8U, Scalar(0));
+            circle(mask_image, Point(mask_image.rows / 2, mask_image.cols / 2), currfilterarea/2, CV_RGB(255, 255, 255),-1,LINE_AA);
+
+            dstt.copyTo(dst(srcDstRect),mask_image);
+            imshow("image", dst);
+            curr_iter=0;
+        }
+    }
+    if ((!dofiltering) && (event == EVENT_LBUTTONDOWN)  && (y<1125-currfilterarea/2) && (x<2000-currfilterarea/2) && (y>currfilterarea/2) && (x>currfilterarea/2))
+    {
+        Rect srcDstRect(x-currfilterarea/2, y-currfilterarea/2, currfilterarea, currfilterarea);
+        dstt = dst(srcDstRect); // src - back, dst - overlay
+
+        applyfilt(currfilttype,srcDstRect);
+
+        Mat mask_image( dstt.size(), CV_8U, Scalar(0));
+        circle(mask_image, Point(mask_image.rows / 2, mask_image.cols / 2), currfilterarea/2, CV_RGB(255, 255, 255),-1,LINE_AA);
+
+        prev_dst = dst.clone();
+        dstt.copyTo(dst(srcDstRect),mask_image);
+        imshow("image", dst);
+    } else
     if (event == EVENT_MBUTTONDOWN)
     {
         prevmainpic = currmainpic;
@@ -347,23 +442,77 @@ void onMouse( int event, int x, int y, int flags, void* )
         }
         rs->changefsize(fullscr);
     }
-    if ((!dofiltering) && (event == EVENT_MOUSEMOVE) && ((flags ==  EVENT_FLAG_LBUTTON) || (filtmode)) && (y<1125-currfilterarea) && (x<2000-currfilterarea))
-    {
-        curr_iter++;
-        if (curr_iter >= currfilterrate)
+}
+
+Mat waves(Rect srcRect)
+{       
+    Mat dstg = dst(srcRect).clone();
+    Mat dstw = dstg.clone();
+    int offset_x;
+    int offset_y;
+    int bshift = 10;
+    for (int i=bshift; i<dstg.rows-bshift; i++)
+        for (int j=bshift; j<dstg.cols-bshift; j++)
         {
-            Rect srcDstRect(x, y, currfilterarea, currfilterarea);
-            dstt = dst(srcDstRect); //src
-            srct = dst(srcDstRect); //src
-            auto dilation_type = MORPH_DILATE;
-            int dilation_size = 2;
-            Mat element = getStructuringElement(dilation_type, Size(2*dilation_size + 1, 2*dilation_size+1 ), Point( dilation_size, dilation_size ) );
-            dilate( srct, dstt, element,Point(-1,-1),1,BORDER_REPLICATE);
-            dstt.copyTo(dst(srcDstRect));
-            imshow("image", dst);
-            curr_iter=0;
-        }
+            offset_x = int(wave_amp * sin(2 * 3.14 * i / wave_freqs));
+            offset_y = int(wave_amp * cos(2 * 3.14 * j / wave_freqs));
+            if ((i+offset_y < dstg.rows) && (j+offset_x < dstg.cols))
+                dstg.at<Vec3b>(Point(i,j)) = dstw.at<Vec3b>(Point((i+offset_y)%dstg.rows,(j+offset_x)%dstg.cols));
+          //  else
+           //     dstg.at<Vec3b>(Point(i,j)) = 0;
+    }    
+    return dstg;
+}
+
+Mat dilate(Rect srcRect)
+{
+    srct = dst(srcRect);
+    Mat dstg;
+    MorphShapes dilation_type;
+    if (dilation_elem == 1)
+        dilation_type = MORPH_RECT;
+    else if (dilation_elem == 2)
+        dilation_type = MORPH_CROSS;
+    else if (dilation_elem == 3)
+        dilation_type = MORPH_ELLIPSE;
+    element = getStructuringElement(dilation_type, Size(2*dilation_size + 1, 2*dilation_size+1 ), Point( dilation_size, dilation_size ) );
+    dilate( srct, dstg, element,Point(-1,-1),1,BORDER_REPLICATE);    
+    return dstg;
+}
+
+Mat cartoon(Rect srcRect, int ksize)
+{
+    srct = dst(srcRect);
+    int num_repetitions = 1;
+    //int ds_factor = 2;
+    cv::cvtColor(srct,gray_element,COLOR_BGR2GRAY);
+    medianBlur(gray_element,gray_element,7); // Apply median filter to the grayscale image
+    Mat edges, mask, trp;
+    Laplacian(gray_element,edges,CV_8U,ksize); // // Detect edges in the image and threshold it
+    threshold(edges, mask, 100, 255, THRESH_BINARY_INV); // 'mask' is the sketch of the image
+  //  cv::resize(srct, srct, cv::Size(srct.cols/ds_factor,srct.rows/ds_factor), 0, 0, cv::INTER_AREA); //  Resize the image to a smaller size for faster computation
+    for (int i=0; i < num_repetitions; i++) // Apply bilateral filter the image multiple times
+    {
+        bilateralFilter(srct,trp,ksize,sigma_color,sigma_space);
+        srct=trp.clone();
     }
+   // cv::resize(srct, srct, cv::Size(srct.cols*ds_factor,srct.rows*ds_factor), 0, 0, cv::INTER_LINEAR);
+    Mat dstg;
+    bitwise_and(srct,srct,dstg,mask); // Add the thick boundary lines to the image using 'AND' operator
+    //Mat msk;
+    //inRange(dstg, Scalar(0,0,0), Scalar(0,0,0), msk);
+    //dstg.setTo(Scalar(255,255,255), msk);
+    return dstg;
+}
+
+void MainWindow::puzzling_timerUpdate()
+{
+    int x = qrand() % (2000-currfilterarea);
+    int y = qrand() % (1125-currfilterarea);
+    Rect srcDstRect(x, y, currfilterarea, currfilterarea);
+    dstt = src(srcDstRect);
+    dstt.copyTo(dst(srcDstRect));
+    imshow("image", dst);
 }
 
 void delay(int temp)
@@ -435,6 +584,103 @@ void shuffleicons(bool left)
         random_shuffle(iconsarr.begin(), iconsarr.end());
     else
         random_shuffle(riconsarr.begin(), riconsarr.end());
+}
+
+void MainWindow::cancellast()
+{
+    dst=prev_dst;
+    imshow("image", dst);
+}
+
+void MainWindow::cancelall()
+{
+    dst=clear_dst.clone();
+    imshow("image", dst);
+}
+
+inline cv::Mat QImageToCvMat( const QImage &inImage, bool inCloneImageData = true )
+   {
+      switch ( inImage.format() )
+      {
+         // 8-bit, 4 channel
+         case QImage::Format_ARGB32:
+         case QImage::Format_ARGB32_Premultiplied:
+         {          
+            cv::Mat  mat( inImage.height(), inImage.width(),
+                          CV_8UC4,
+                          const_cast<uchar*>(inImage.bits()),
+                          static_cast<size_t>(inImage.bytesPerLine())
+                          );
+
+            return (inCloneImageData ? mat.clone() : mat);
+         }
+
+         // 8-bit, 3 channel
+         case QImage::Format_RGB32:
+         {
+            if ( !inCloneImageData )
+            {
+               qWarning() << "ASM::QImageToCvMat() - Conversion requires cloning so we don't modify the original QImage data";
+            }
+
+            cv::Mat  mat( inImage.height(), inImage.width(),
+                          CV_8UC4,
+                          const_cast<uchar*>(inImage.bits()),
+                          static_cast<size_t>(inImage.bytesPerLine())
+                          );
+
+            cv::Mat  matNoAlpha;
+
+            cv::cvtColor( mat, matNoAlpha, cv::COLOR_BGRA2BGR );   // drop the all-white alpha channel
+
+
+            return matNoAlpha;
+         }
+
+         // 8-bit, 3 channel
+         case QImage::Format_RGB888:
+         {
+            if ( !inCloneImageData )
+            {
+               qWarning() << "ASM::QImageToCvMat() - Conversion requires cloning so we don't modify the original QImage data";
+            }
+
+            QImage   swapped = inImage.rgbSwapped();
+
+            return cv::Mat( swapped.height(), swapped.width(),
+                            CV_8UC3,
+                            const_cast<uchar*>(swapped.bits()),
+                            static_cast<size_t>(swapped.bytesPerLine())
+                            ).clone();            
+         }
+
+         // 8-bit, 1 channel
+         case QImage::Format_Indexed8:
+         {
+            cv::Mat  mat( inImage.height(), inImage.width(),
+                          CV_8UC1,
+                          const_cast<uchar*>(inImage.bits()),
+                          static_cast<size_t>(inImage.bytesPerLine())
+                          );
+            return (inCloneImageData ? mat.clone() : mat);
+         }
+
+         default:
+            qWarning() << "ASM::QImageToCvMat() - QImage format not handled in switch:" << inImage.format();
+            break;
+      }
+
+      return cv::Mat();
+   }
+
+void MainWindow::setdstfromplay(QImage qm)
+{
+    Mat dsnt = QImageToCvMat(qm);
+    cv::resize(dsnt, dsnt, cv::Size(dst.cols,dst.rows), 0, 0, cv::INTER_LINEAR);
+    cvtColor(dsnt,dsnt,COLOR_BGRA2BGR);
+    clear_dst = dsnt.clone();
+    dst = dsnt.clone();
+    imshow("image", dst);
 }
 
 int MainWindow::geticon(int t, bool left)
@@ -713,8 +959,16 @@ void MainWindow::sethue(int i)
 
 void MainWindow::setattent(int i)
 {
-    elem4=i;
+    elem4=i;           
     setTrackbarPos("Attention","image",elem4);
+    if ((attmodul_area) && (!dofiltering))
+    {
+        if (elem4<10)
+            elem4=10;
+        currfilterarea=elem4*5;
+        ocvform->filtarea=currfilterarea;
+        ocvform->updatevals();
+    }
 }
 
 void MainWindow::setoverlay(int i)
@@ -761,6 +1015,8 @@ void MainWindow::startopencv()
         opencvpic = folderpath+"/"+imglist.at(currmainpic);
         src = imread(opencvpic.toStdString());        
         image = imread(opencvpic.toStdString());
+        dst = imread(opencvpic.toStdString());
+        clear_dst = imread(opencvpic.toStdString());
 
         curroverpic = iconsarr[qrand() % (imglist.length()-1)];
         define_riconsarr();
@@ -784,22 +1040,6 @@ void MainWindow::startopencv()
     }
     else
         imshow("image", src);
-    /* else
-    {
-        cv::destroyWindow("image");
-        src.release();
-        src = image;
-        namedWindow("image",WINDOW_NORMAL + WINDOW_OPENGL);
-        resizeWindow("image",1600,900);
-        resize(1600,900);
-        moveWindow("image", 150,39);
-        createTrackbar("Hue","image",&elem1, max_elem,Hue);
-        createTrackbar("Attention","image",&elem4,max_elem2,Attent);
-        createTrackbar("Overlay","image",&elem5,max_elem2,Overlay);
-        createTrackbar("Border","image",&elem6,max_elem2,Border);
-        setTrackbarPos("Overlay", "image", elem5);
-        imshow("image", src);
-    } */
 }
 
 void MainWindow::simulateEEGUpdate()
@@ -894,6 +1134,21 @@ void MainWindow::setfolderpath(QString fp)
     rightpw->imgnumber = imglist.length()-2;
 }
 
+void MainWindow::updateocvparams()
+{
+    currfilterarea = ocvform->filtarea;
+    currfilterrate = ocvform->filtrate;
+    currfilttype = ocvform->filttype+1;
+    kernel_s = ocvform->kernelsize;
+    sigma_color = ocvform->s_color;
+    sigma_space = ocvform->s_space;
+    wave_freqs = ocvform->wave_freq;
+    wave_amp = ocvform->wave_amp;
+    dilation_size = ocvform->dilate_size;
+    dilation_elem = ocvform->dilation_el;
+    attmodul_area = ocvform->attmodulation;
+}
+
 void MainWindow::mindwtUpdate()
 {
     int c=0;
@@ -931,9 +1186,8 @@ void MainWindow::mindwtUpdate()
                     paintw->updateattentionplot(mw_atten);
                     if (opencvstart)
                     {
-                        setattent(paintw->getestattval());                                           
+                        setattent(paintw->getestattval());
                         curoverl=elem4;
-
                     }                  
                 }
                 // cout<<"Attention value: "<<mw_atten<<endl;
@@ -1028,14 +1282,88 @@ void MainWindow::on_pushButton_5_clicked()
     mindwaveconnect();
 }
 
+void getsvdimage(int r)
+{
+    // get image compressed to rank r
+    for (int k=0; k<3; k++)
+    {
+
+        t_W=svd_W[k](Range(0,r),Range(0,r));
+        t_u=svd_u[k](Range::all(),Range(0,r));
+        t_u.convertTo(t_u,CV_32FC1);
+        t_vt=svd_vt[k](Range(0,r),Range::all());
+        t_vt.convertTo(t_vt,CV_32FC1);
+        resimg[k]=t_u*t_W*t_vt;
+    }
+
+    vector<Mat> channels;
+    channels.push_back(resimg[0]);
+    channels.push_back(resimg[1]);
+    channels.push_back(resimg[2]);
+    merge(channels, svd_img);
+    imshow("image", svd_img);
+}
+
+void dosvdtransform()
+{
+    // compute SVD vectors for each color channel
+    Mat tt;
+    src.convertTo(tt, CV_32FC3, 1.0/255);
+    split(tt,trimg);
+
+    for (int k=0; k<3; k++)
+    {
+        svdtr.compute(trimg[k],svd_w[k],svd_u[k],svd_vt[k]);
+        svd_W[k] = Mat::zeros(svd_w[k].rows,svd_w[k].rows,CV_32FC1);
+        for(int i=0; i<svd_w[k].rows; i++)
+            svd_W[k].at<float>(i,i)=svd_w[k].at<float>(i);
+    }
+
+}
+
 void MainWindow::picfiltUpdate()
 {    
     char key = cv::waitKey(10) % 256;    
     if (key == ' ')
-        filtmode = !filtmode;
+    {
+        if (!dofiltering)
+            filtmode = !filtmode;        
+    } else if (key == 'c')
+    {
+        if (plotw->start)
+        {
+            QPixmap pm = QPixmap::fromImage(Mat2QImageRGB(dst));
+            plotw->graboverlay(pm);
+        }
+        if (psstart)
+        {
+            QPixmap pm = QPixmap::fromImage(Mat2QImageRGB(dst));
+            paintw->setbackimageoverlay(pm);
+        }
+    } else if (key == 'v')
+    {
+        if (ocvcontrshow)
+            ocvform->hide();
+        else
+            ocvform->show();
+        ocvcontrshow=!ocvcontrshow;
+    }
     else
     if (key == 27)
+    {
         dofiltering=!dofiltering;
+        if (dofiltering)
+        {
+            ocvform->hide();
+            ocvcontrshow=false;
+        }
+        else
+        {
+            clear_dst = dst.clone();
+            ocvform->show();
+            ocvcontrshow=true;
+        }
+    }
     else
     if (key == '0')
         setborder(100);
@@ -1045,43 +1373,89 @@ void MainWindow::picfiltUpdate()
         setborder(80);
     else if (key == '7')
         setborder(70);
-    else if ((key == '1') && (currfilterarea>10))
-       currfilterarea--;
-    else if ((key == '2')  && (currfilterarea<300))
-        currfilterarea++;
-    else if ((key == '3') && (currfilterrate>0))
-       currfilterrate--;
-    else if ((key == '4')  && (currfilterrate<30))
+    else if ((key == '1') && (currfilterarea>50)) // && (svdt>2))
+    {
+      //  svdt--;
+      //  getsvdimage(svdt);
+        currfilterarea-=10;
+        ocvform->filtarea = currfilterarea;
+        ocvform->updatevals();
+    }
+    else if ((key == '2') && (currfilterarea<800)) // && (svdt<100))//
+    {
+      //  svdt++;
+      //  getsvdimage(svdt);
+        currfilterarea+=10;
+        ocvform->filtarea = currfilterarea;
+        ocvform->updatevals();
+    }
+    else if ((key == '3') && (currfilterrate>2))
+    {
+        currfilterrate--;
+        ocvform->filtrate = currfilterrate;
+        ocvform->updatevals();
+    }
+    else if ((key == '4')  && (currfilterrate<20))
+    {
         currfilterrate++;
+        ocvform->filtrate = currfilterrate;
+        ocvform->updatevals();
+    }
+    else if (key == '5')
+    {
+        if (!puzzling_timer->isActive())
+            puzzling_timer->start();
+        else
+            puzzling_timer->stop();
+    }// else if (key == '6')
+     //   dosvdtransform();
+    else if ((key == 'z') && (!dofiltering))
+    {
+        if (currfilttype==1)
+            currfilttype=3;
+        else
+            currfilttype--;
+        ocvform->filttype=currfilttype-1;
+        ocvform->updatevals();
+    }
+    else if ((key == 'x') && (!dofiltering))
+    {
+        if (currfilttype==3)
+            currfilttype=1;
+        else
+            currfilttype++;
+        ocvform->filttype=currfilttype-1;
+        ocvform->updatevals();
+    }
 
     if (dofiltering)
     {
 
-    if ((abs(curhue-prevhue)==0) || ((abs(curhue-prevhue)==1)))
-        canchangehue=true;
-    else
-    {
-        if (curhue<prevhue)
-            prevhue-=2;
+        if ((abs(curhue-prevhue)==0) || ((abs(curhue-prevhue)==1)))
+            canchangehue=true;
         else
-            prevhue+=2;
-        elem1=prevhue;
-        setTrackbarPos("Hue", "image", elem1);
-    }
+        {
+            if (curhue<prevhue)
+                prevhue-=2;
+            else
+                prevhue+=2;
+            elem1=prevhue;
+            setTrackbarPos("Hue", "image", elem1);
+        }
 
-    if ((abs(curoverl-prevoverl)==0) || ((abs(curoverl-prevoverl)==1)))
-        canchangeoverlay=true;
-    else
-    {
-        if (curoverl<prevoverl)
-            prevoverl-=2;
+        if ((abs(curoverl-prevoverl)==0) || ((abs(curoverl-prevoverl)==1)))
+            canchangeoverlay=true;
         else
-            prevoverl+=2;
-        elem5=prevoverl;
-        setTrackbarPos("Overlay", "image", elem5);
-    }
-    checkoverlay();
+        {
+            if (curoverl<prevoverl)
+                prevoverl-=2;
+            else
+                prevoverl+=2;
+            elem5=prevoverl;
+            setTrackbarPos("Overlay", "image", elem5);
+        }
 
+        checkoverlay();
     }
 }
 
@@ -1096,6 +1470,7 @@ void MainWindow::on_pushButton_6_clicked()
         shuffleicons(false);
         rightpw->show();
         rightpw->fillpics();
+        ocvform->show();
     }
     else
     {
@@ -1131,7 +1506,6 @@ void MainWindow::on_pushButton_7_clicked()
         srccopy =  imread(stp.toStdString());
         firstrun = false;
         defineiconsarr();
-        imshow("image", src);
         shuffleicons(true);
         leftpw->fillpics();
         shuffleicons(false);

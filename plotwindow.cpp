@@ -598,7 +598,7 @@ void plotwindow::printtoresultmean(QString str)
 
 void plotwindow::doplot()
 {           
-    ui->widget->setGeometry(50,50,1500,750);// ->setFixedSize(1500,570);
+    ui->widget->setGeometry(30,50,1500,750);// ->setFixedSize(1500,570);
 
     QPalette* palette1 = new QPalette();
     palette1->setColor(QPalette::ButtonText,Qt::blue);
@@ -727,8 +727,8 @@ void plotwindow::doplot()
     ui->spinBox_6->setVisible(false);
     ui->checkBox_3->setGeometry(800,810,100,25);
     ui->pushButton_24->setGeometry(920,810,90,25);
-    ui->pushButton_4->setGeometry(1040,810,70,25);
-
+    ui->pushButton_4->setGeometry(1140,810,70,25);
+    ui->pushButton_2->setGeometry(1020,810,90,25);
     ui->spinBox_7->setGeometry(610,810,50,25);
     ui->spinBox_7->setEnabled(false);
 
@@ -1031,6 +1031,19 @@ QImage plotwindow::applyEffectToImage(QImage src, QGraphicsEffect *effect, int e
 void plotwindow::grabopencv(QString fpath)
 {
     backimg.load(fpath);
+    backimg.scaled(1400,700,Qt::IgnoreAspectRatio,Qt::SmoothTransformation);
+    ui->widget->setBackground(backimg,true,Qt::IgnoreAspectRatio);
+    ui->widget->xAxis->grid()->setVisible(false);
+    ui->widget->yAxis->grid()->setVisible(false);
+    ui->widget->replot();
+    ui->checkBox_6->setChecked(false);
+    if (!backimageloaded)
+        backimageloaded=true;
+}
+
+void plotwindow::graboverlay(QPixmap pmg)
+{
+    backimg=pmg;
     backimg.scaled(1400,700,Qt::IgnoreAspectRatio,Qt::SmoothTransformation);
     ui->widget->setBackground(backimg,true,Qt::IgnoreAspectRatio);
     ui->widget->xAxis->grid()->setVisible(false);
@@ -1497,7 +1510,7 @@ void plotwindow::analysemeandata()
         pss->paintf->updatefreqarrs(delta,theta,alpha,beta,gamma,hgamma);
        // if (opencvstart)
            // mw->setoverlay(pss->paintf->getestattval());
-         //   mw->setattent(pss->paintf->getestattval());
+           // mw->setattent(pss->paintf->getestattval());
     }
 
     if ((pssstart) && (bfiltmode) && (!pss->paintf->gamemode) && (!pss->paintf->flowmode))
@@ -3400,4 +3413,13 @@ void plotwindow::on_checkBox_14_clicked()
     colorizeback=!colorizeback;
     if (opencvstart)
         ui->checkBox_11->setEnabled(!ui->checkBox_14->isChecked());
+}
+
+void plotwindow::on_pushButton_2_clicked()
+{
+    if (opencvstart)
+    {
+        pmx = ui->widget->grab();        
+        mw->setdstfromplay(pmx.toImage());
+    }
 }

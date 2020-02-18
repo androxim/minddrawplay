@@ -86,7 +86,7 @@ paintform::paintform(QWidget *parent) :
     ui->graphicsView_15->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     ui->graphicsView->setFrameStyle(0);
-    ui->graphicsView->setStyleSheet("background: transparent");
+   // ui->graphicsView->setStyleSheet("background: transparent");
     ui->graphicsView_2->setFrameStyle(0);
     ui->graphicsView_3->setFrameStyle(0);
     ui->graphicsView_4->setFrameStyle(0);
@@ -207,7 +207,8 @@ paintform::paintform(QWidget *parent) :
     ui->label_4->setGeometry(850,920,120,20);
     ui->label_5->setGeometry(950,910,70,50);
     ui->pushButton_4->setGeometry(860,865,70,30);
-    ui->pushButton_9->setGeometry(940,865,80,30);
+    ui->pushButton_9->setGeometry(940,865,80,24);
+    ui->pushButton_12->setGeometry(940,891,80,24);
     ui->checkBox_8->setGeometry(1070,905,100,20);
     ui->checkBox_8->setEnabled(false);
     ui->verticalSlider->setGeometry(1038,820,20,150);
@@ -2697,6 +2698,25 @@ void paintform::startround()
     pw->letsplay();
 }
 
+void paintform::setbackimageoverlay(QPixmap pmg)
+{
+    mainpic = pmg;
+    pmain = pmg;
+    qim = pmg.toImage();
+   // currimglist[14]=filename;
+    backloaded = true;
+    if (scene->drawflow)
+    {
+        scene->bkgndimg = pmg;
+        qpr.setBrush(QPalette::Background, scene->bkgndimg.scaled(this->size(),rationmode,Qt::SmoothTransformation));
+        this->setPalette(qpr);
+        scene->clear();
+        this->repaint();
+    } else
+        scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
+
+}
+
 void paintform::setbackimageocv(QString filename)
 {
     mainpic.load(filename);
@@ -3263,23 +3283,14 @@ void paintform::on_comboBox_2_currentIndexChanged(int index)
 
 void paintform::on_pushButton_9_clicked()
 {
-    QPixmap pixMap;
-    if (puzzlemode)
-    {
-        pixMap = mainpic;
-        pw->setbackimage(pixMap);
-    }
+    if (puzzlemode)    
+        pixMap = mainpic;        
     else
-    if (!scene->drawflow)
-    {
-        pixMap = ui->graphicsView->grab();
-        pw->setbackimage(pixMap);
-    }
-    else
-    {
-        pixMap = scene->bkgndimg;
-        pw->setbackimage(pixMap);
-    }
+    if (!scene->drawflow)    
+        pixMap = ui->graphicsView->grab();            
+    else    
+        pixMap = scene->bkgndimg; 
+    pw->setbackimage(pixMap);
     this->hide();
     pw->show();
     pw->setFocus();
@@ -3421,4 +3432,18 @@ void paintform::on_pushButton_11_clicked()
     mainpic.load(":/pics/pics/empty.jpg");
     qim.load(":/pics/pics/empty.jpg");
     scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
+}
+
+void paintform::on_pushButton_12_clicked()
+{
+    if (mww->opencvstart)
+    {
+        if (puzzlemode)
+            pixMap = mainpic;
+        else if (!scene->drawflow)
+            pixMap = ui->graphicsView->grab();
+        else
+            pixMap = scene->bkgndimg;
+        mww->setdstfromplay(pixMap.toImage());
+    }
 }
