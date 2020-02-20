@@ -3,7 +3,6 @@
 #include "ui_plotwindow.h"
 #include <iostream>
 #include <QShortcut>
-#include <hilbert.h>
 #include <QFileDialog>
 #include <settings.h>
 #include <math.h>
@@ -104,8 +103,8 @@ plotwindow::plotwindow(QWidget *parent) :
     arrc.of4 = QVector<double>(NMAX);
     for (int j=0; j<NMAX; j++)
     {
-        arrc.xc[j]=0;
         arrc.amp1[j]=0;
+        arrc.xc[j] = j;
     }
     ui->setupUi(this);    
     ui->widget->installEventFilter(this);
@@ -143,7 +142,14 @@ plotwindow::plotwindow(QWidget *parent) :
     corrprednumb=0;
     recordstarted=false;
     setaddmode(false);
-    nums=1;
+    nums = 1;
+    numst = 8;
+    srfr = 512;
+    imlength = srfr/2;
+    posstim = 0;
+    stlength = imlength;
+    stampl = 1; osfr = 10;
+
     delta=0; theta=0; alpha=0; beta=0; gamma=0; sgamma=0;
    // sdelta=13; stheta=25; salpha=25; sbeta=25; sgamma=8; shgamma=4;
     sdelta=0; stheta=0; salpha=0; sbeta=0; sgamma=0; shgamma=0;
@@ -230,15 +236,15 @@ bool plotwindow::eventFilter(QObject *target, QEvent *event)
         if (mouseEvent->button() == Qt::LeftButton)
         {           
             ui->widget->setFocus();
-            hnt->numst=ui->spinBox_7->value();
+            numst=ui->spinBox_7->value();
             if (mindwstart)
-                hnt->imlength=ui->spinBox_5->value()/1.953125;
+                imlength=ui->spinBox_5->value()/1.953125;
             else if (simeeg)
             {
-                hnt->imlength=ui->spinBox_5->value()/2;
-                hnt->srfr=500;
+                imlength=ui->spinBox_5->value()/2;
+                srfr=500;
             }
-            intlen=(double)hnt->numst/((double)hnt->srfr/hnt->imlength);
+            intlen=(double)numst/((double)srfr/imlength);
             ui->widget->graph(graphcount)->setName("EEG: ["+QString::number(graphcount*intlen,'g',2)+" "+QString::number((graphcount+1)*intlen,'g',2)+"] secs");
         }
         if (mouseEvent->button() == Qt::MiddleButton)
@@ -249,27 +255,27 @@ bool plotwindow::eventFilter(QObject *target, QEvent *event)
           //      tim->start();
             mindplay=!mindplay;
             ui->checkBox_4->setChecked(mindplay);
-            hnt->numst=ui->spinBox_7->value();
+            numst=ui->spinBox_7->value();
             if (mindwstart)
-                hnt->imlength=ui->spinBox_5->value()/1.953125;
+                imlength=ui->spinBox_5->value()/1.953125;
             else if (simeeg)
             {
-                hnt->imlength=ui->spinBox_5->value()/2;
-                hnt->srfr=500;
+                imlength=ui->spinBox_5->value()/2;
+                srfr=500;
             }            
 
         }
         if ((mouseEvent->button() == Qt::RightButton) && ((appcn->ready) || (mindwstart) || (simeeg)))
         {
-            hnt->numst=ui->spinBox_7->value();
+            numst=ui->spinBox_7->value();
             if (mindwstart)
-                hnt->imlength=ui->spinBox_5->value()/1.953125;
+                imlength=ui->spinBox_5->value()/1.953125;
             else if (simeeg)
             {
-                hnt->srfr=500;
-                hnt->imlength=ui->spinBox_5->value()/2;
+                srfr=500;
+                imlength=ui->spinBox_5->value()/2;
             }
-            intlen=(double)hnt->numst/((double)hnt->srfr/hnt->imlength);
+            intlen=(double)numst/((double)srfr/imlength);
             ui->widget->graph(graphcount)->setName("EEG: ["+QString::number(graphcount*intlen,'g',2)+" "+QString::number((graphcount+1)*intlen,'g',2)+"] secs");
             if ((addmode) && (addmodeon))
             {
@@ -281,25 +287,25 @@ bool plotwindow::eventFilter(QObject *target, QEvent *event)
             {
                 recparts=0;
                 eegintervals=ui->spinBox_6->value();
-                hnt->numst=ui->spinBox_7->value();
-               // mw->setintlength(hnt->imlength);
-                recnumb=hnt->numst;
+                numst=ui->spinBox_7->value();
+               // mw->setintlength(imlength);
+                recnumb=numst;
                 startpos=(int)ui->widget->xAxis->pixelToCoord(mouseEvent->pos().x());                
                 addmodeon=true;
                 if (ui->checkBox_4->isChecked())
                     mindplay=true;                
                 printtoresultstring("");
-                printtoresultstring("Start of recording:    samlping rate "+QString::number(hnt->srfr)+"    part length "+QString::number(hnt->imlength));
+                printtoresultstring("Start of recording:    samlping rate "+QString::number(srfr)+"    part length "+QString::number(imlength));
             }
             else           
             {
               /*  startpos=(int)ui->widget->xAxis->pixelToCoord(mouseEvent->pos().x());
-                hnt->imlength=ui->spinBox_5->value();
-                hnt->imstprop=ui->doubleSpinBox_3->value();
-                hnt->stlength=hnt->imlength*hnt->imstprop;
+                imlength=ui->spinBox_5->value();
+                imstprop=ui->doubleSpinBox_3->value();
+                stlength=imlength*imstprop;
                 stims=0;
-                cleareeg(startpos,startpos+(hnt->imlength+hnt->stlength)*hnt->numst);
-                clearstim(startpos,(hnt->imlength+hnt->stlength)*hnt->numst);
+                cleareeg(startpos,startpos+(imlength+stlength)*numst);
+                clearstim(startpos,(imlength+stlength)*numst);
               //  ui->widget->graph(0)->setData(arrc.xc, arrc.amp1);
                // ui->widget->graph(3)->setData(arrc.xc, arrc.of1);
                // ui->widget->replot();
@@ -761,7 +767,7 @@ void plotwindow::doplot()
     ui->checkBox_7->setChecked(blink);
     ui->widget->setFocus();
     ui->spinBox_6->setValue(eegintervals);
-    ui->spinBox_7->setValue(hnt->numst);
+    ui->spinBox_7->setValue(numst);
     ui->checkBox_3->setChecked(usefiltering);
     ui->lcdNumber->setGeometry(100,35,70,25);
     ui->lcdNumber_2->setGeometry(190,35,70,25);
@@ -789,9 +795,9 @@ void plotwindow::doplot()
     ui->label_6->setGeometry(285,810,140,25);
     ui->horizontalSlider->setGeometry(285,830,120,12);
     if (mindwstart)
-        ui->horizontalSlider->setValue(hnt->imlength*1.953125);
+        ui->horizontalSlider->setValue(imlength*1.953125);
     else if (simeeg)
-        ui->horizontalSlider->setValue(hnt->imlength*2);
+        ui->horizontalSlider->setValue(imlength*2);
     ui->horizontalSlider->setTickInterval(50);
     ui->horizontalSlider->setSingleStep(50);
     ui->spinBox_5->setGeometry(425,810,50,25);
@@ -800,17 +806,17 @@ void plotwindow::doplot()
     ui->label_18->setGeometry(50,835,140,25);
     ui->label_10->setGeometry(115,70,140,25);
     ui->spinBox_8->setValue(maxtones);
-    ui->lcdNumber_4->display(hnt->srfr/hnt->osfr);
+    ui->lcdNumber_4->display(srfr/osfr);
     ui->lcdNumber_4->hide();
     ui->lcdNumber_2->hide();
     ui->lcdNumber->hide();
     ui->label_10->hide();
     stepsPerPress = 10;
-    startpos=hnt->posstim;
+    startpos=posstim;
     if (mindwstart)
-        ui->spinBox_5->setValue(hnt->imlength*1.953125);
+        ui->spinBox_5->setValue(imlength*1.953125);
     else if (simeeg)
-        ui->spinBox_5->setValue(hnt->imlength*2);
+        ui->spinBox_5->setValue(imlength*2);
   //  ui->widget->xAxis->grid()->setVisible(false);
   //  ui->widget->yAxis->grid()->setVisible(false);
   //  ui->widget->replot();
@@ -844,7 +850,7 @@ void plotwindow::plot(QCustomPlot *customPlot)
    // cleareeg(0,NMAX);
    // qDebug()<<"1";
     customPlot->graph(0)->setPen(QPen(Qt::green));
-    intlen=(double)hnt->numst/((double)hnt->srfr/hnt->imlength);
+    intlen=(double)numst/((double)srfr/imlength);
     customPlot->graph(0)->setName("EEG: [0 "+QString::number(intlen,'g',2)+"] secs");
     customPlot->graph(0)->setData(arrc.xc, arrc.amp1);
     graphcount=0;
@@ -853,13 +859,13 @@ void plotwindow::plot(QCustomPlot *customPlot)
     customPlot->xAxis->setLabel("x");
     customPlot->yAxis->setLabel("y");    
     customPlot->rescaleAxes();
-    customPlot->xAxis->setRange(150, hnt->imlength * 22);
+    customPlot->xAxis->setRange(150, imlength * 22);
     customPlot->yAxis->setRange(-1600, 0);
-    customPlot->xAxis->moveRange(hnt->posstim - hnt->srfr / 2);
+    customPlot->xAxis->moveRange(posstim - srfr / 2);
     customPlot->setInteraction(QCP::iRangeDrag, true);
     customPlot->setInteraction(QCP::iRangeZoom, true);
     customPlot->axisRect()->setRangeZoom(Qt::Vertical);
-    zerophaseinit(lcutoff,hcutoff,butterord,hnt->srfr);
+    zerophaseinit(lcutoff,hcutoff,butterord,srfr);
     start=true;
 }
 
@@ -917,7 +923,7 @@ void plotwindow::updatedata(int start)
         start=pos;
     }
 
-    for (int i=0; i<hnt->imlength; i++)
+    for (int i=0; i<imlength; i++)
         eegdata[graphcount][start+i]=drawshift+arrc.amp0[i];
 }
 
@@ -1439,22 +1445,41 @@ void plotwindow::randomtone()
     gettones();
 }
 
+void fft(CArray& x)
+{
+    const size_t N = x.size();
+    if (N <= 1) return;
+    // divide
+    CArray even = x[std::slice(0, N / 2, 2)];
+    CArray  odd = x[std::slice(1, N / 2, 2)];
+    // conquer
+    fft(even);
+    fft(odd);
+    // combine
+    for (size_t k = 0; k < N / 2; ++k)
+    {
+        Complex t = std::polar(1.0, -2 * M_PI * k / N) * odd[k];
+        x[k] = even[k] + t;
+        x[k + N / 2] = even[k] - t;
+    }
+}
+
 void plotwindow::analysemeandata()
 {
     deltanum=0; thetanum=0; alphanum=0; betanum=0; gammanum=0; hgammanum=0;
 
     int length = 2048; int bordfreq=70;
-    for (int i=0; i<hnt->imlength; i++)
+    for (int i=0; i<imlength; i++)
         t[i].real(arrc.amp0[i]);
 
-    for (int i=hnt->imlength; i<length; i++)  // zero-padding
+    for (int i=imlength; i<length; i++)  // zero-padding
         t[i].real(0);
 
     for (int i=0; i<length; i++)
         t[i].imag(0);
 
     cdata = CArray(t,length);
-    hnt->fft(cdata);
+    fft(cdata);
     double deltafr, thetafr, alphafr, betafr, gammafr, hgammafr, totalpow, temppow;
     deltafr=0; thetafr=0; alphafr=0; betafr=0; gammafr=0; hgammafr=0; totalpow=0;
     for (int i=1; i<bordfreq*4; i++)
@@ -1634,11 +1659,11 @@ void plotwindow::analysepart()
 {
     if ((addmodeon) && (addmoderec))
     {        
-        updatedata(recparts*hnt->imlength);        
+        updatedata(recparts*imlength);
         ui->widget->graph(graphcount)->setData(arrc.xc, eegdata[graphcount]);
         ui->widget->replot();
         recparts++;           
-        if (recparts >= hnt->numst)
+        if (recparts >= numst)
         {
             recparts=0;
             if (graphcount>eegintervals+2)
@@ -1658,18 +1683,18 @@ void plotwindow::analysepart()
             if (adaptivenumparts)
             {                
                 if (attent<20)
-                    hnt->numst = qrand() % 12 + 4;
+                    numst = qrand() % 12 + 4;
                 else if ((attent>20) && (attent<40))
-                    hnt->numst = qrand() % 10 + 4;
+                    numst = qrand() % 10 + 4;
                 else if ((attent>40) && (attent<60))
-                    hnt->numst = qrand() % 8 + 4;
+                    numst = qrand() % 8 + 4;
                 else if ((attent>60) && (attent<80))
-                    hnt->numst = qrand() % 6 + 4;
+                    numst = qrand() % 6 + 4;
                 else if (attent>80)
-                    hnt->numst = qrand() % 4 + 4;
+                    numst = qrand() % 4 + 4;
             }
 
-         //   hnt->numst = qrand() % 16;
+         //   numst = qrand() % 16;
         }
 
     }
@@ -1678,10 +1703,10 @@ void plotwindow::analysepart()
 void plotwindow::timerUpdate()
 {
      // check if new fragment ready
-     if (counter>=hnt->imlength)
+     if (counter>=imlength)
      {        
          if (usefiltering)
-             zerophasefilt(0,hnt->imlength);
+             zerophasefilt(0,imlength);
            //  recurbuttfilt();
          if (!playsaved)
          {
@@ -1694,17 +1719,17 @@ void plotwindow::timerUpdate()
                 else
                     curmodval = meditt;
                 if (curmodval<20)
-                    hnt->imlength=100;
+                    imlength=100;
                 else if ((curmodval>20) && (curmodval<40))
-                    hnt->imlength=150;
+                    imlength=150;
                 else if ((curmodval>40) && (curmodval<60))
-                    hnt->imlength=250;
+                    imlength=250;
                 else if ((curmodval>60) && (curmodval<80))
-                    hnt->imlength=400;
+                    imlength=400;
                 else if (curmodval>80)
-                    hnt->imlength=600;
-                ui->spinBox_5->setValue(hnt->imlength*2);
-                ui->horizontalSlider->setValue(hnt->imlength*2);
+                    imlength=600;
+                ui->spinBox_5->setValue(imlength*2);
+                ui->horizontalSlider->setValue(imlength*2);
             }
          }
          counter=0;
@@ -1774,10 +1799,10 @@ void plotwindow::loadscalefromfile(QString fname)
 void plotwindow::refresh()
 {
     if (mindwstart)
-        ui->spinBox_5->setValue(hnt->imlength*1.953125);
+        ui->spinBox_5->setValue(imlength*1.953125);
     else if (simeeg)
-        ui->spinBox_5->setValue(hnt->imlength*2);
-    ui->spinBox_7->setValue(hnt->numst);
+        ui->spinBox_5->setValue(imlength*2);
+    ui->spinBox_7->setValue(numst);
 }
 
 void plotwindow::slSettings()
@@ -1796,7 +1821,7 @@ void plotwindow::setaddmode(bool f)
 int plotwindow::maxabsstim(int pos)
 {
     int maxel=0;
-    for (int j=pos; j<pos+hnt->stlength; j++)
+    for (int j=pos; j<pos+stlength; j++)
         if (abs(arrc.of1[j])>maxel)
             maxel=abs(arrc.of1[j])+1;
     return maxel;
@@ -1804,7 +1829,7 @@ int plotwindow::maxabsstim(int pos)
 
 void plotwindow::getrawdata(int chn, double val)
 {
-    if ((chn==chnums-1) && (indexes[chn]==hnt->imlength))
+    if ((chn==chnums-1) && (indexes[chn]==imlength))
     {
       /*  cout<<endl;
         for (int j=0; j<chnums; j++)
@@ -1945,8 +1970,8 @@ double* plotwindow::ComputeNumCoeffs(int FilterOrder, double Lcutoff, double Ucu
     NumCoeffs[2*FilterOrder] = TCoeffs[FilterOrder];
     double cp[2];
     double Wn;
-    cp[0] = 2*2.0*tan(PI * Lcutoff / 2.0);
-    cp[1] = 2*2.0*tan(PI * Ucutoff / 2.0);
+    cp[0] = 2*2.0*tan(M_PI * Lcutoff / 2.0);
+    cp[1] = 2*2.0*tan(M_PI * Ucutoff / 2.0);
     //double Bw;
    // Bw = cp[1] - cp[0];
     //center frequency
@@ -1992,8 +2017,8 @@ double* plotwindow::ComputeDenCoeffs( int FilterOrder, double Lcutoff, double Uc
     double CosPoleAngle;     // cosine of pole angle
     double a;         // workspace variables
 
-    cp = cos(PI * (Ucutoff + Lcutoff) / 2.0);
-    theta = PI * (Ucutoff - Lcutoff) / 2.0;
+    cp = cos(M_PI * (Ucutoff + Lcutoff) / 2.0);
+    theta = M_PI * (Ucutoff - Lcutoff) / 2.0;
     st = sin(theta);
     ct = cos(theta);
     s2t = 2.0*st*ct;        // sine of 2*theta
@@ -2004,7 +2029,7 @@ double* plotwindow::ComputeDenCoeffs( int FilterOrder, double Lcutoff, double Uc
 
     for( k = 0; k < FilterOrder; ++k )
     {
-        PoleAngle = PI * (double)(2*k+1)/(double)(2*FilterOrder);
+        PoleAngle = M_PI * (double)(2*k+1)/(double)(2*FilterOrder);
         SinPoleAngle = sin(PoleAngle);
         CosPoleAngle = cos(PoleAngle);
         a = 1.0 + s2t*SinPoleAngle;
@@ -2589,7 +2614,7 @@ void plotwindow::on_checkBox_3_clicked()
 
 void plotwindow::on_widget_destroyed()
 {
-    delete hnt;
+
 }
 
 void plotwindow::on_pushButton_4_clicked()
@@ -2641,28 +2666,28 @@ void plotwindow::on_checkBox_4_clicked()
 void plotwindow::on_spinBox_7_valueChanged(int arg1)
 {
     //if (!tim->isActive())
-    hnt->numst=arg1;
+    numst=arg1;
 }
 
 void plotwindow::on_spinBox_5_valueChanged(int arg1)
 {
     if (mindwstart)
     {
-        hnt->imlength=arg1/1.953125;
+        imlength=arg1/1.953125;
        // tryplay->setInterval(arg1);
         ui->horizontalSlider->setValue(arg1);
     } else
     if (simeeg)
     {
-       hnt->imlength=arg1/2;
+       imlength=arg1/2;
        ui->horizontalSlider->setValue(arg1);
     }
-   // qDebug()<<hnt->imlength;
+   // qDebug()<<imlength;
 }
 
 void plotwindow::on_spinBox_6_valueChanged(int arg1)
 {
-    hnt->stampl=arg1;
+    stampl=arg1;
 }
 
 void plotwindow::on_spinBox_8_valueChanged(int arg1)
@@ -2751,16 +2776,16 @@ void plotwindow::on_pushButton_7_clicked()
 
 void plotwindow::on_spinBox_7_editingFinished()
 {
-    ui->widget->graph(0)->setName("EEG: [0 "+QString::number((double)hnt->numst/((double)hnt->srfr/hnt->imlength),'g',2)+"] secs");
-    intlen=(double)hnt->numst/((double)hnt->srfr/hnt->imlength);
-  //  ui->widget->xAxis->setRange(145, hnt->imlength * 12);
+    ui->widget->graph(0)->setName("EEG: [0 "+QString::number((double)numst/((double)srfr/imlength),'g',2)+"] secs");
+    intlen=(double)numst/((double)srfr/imlength);
+  //  ui->widget->xAxis->setRange(145, imlength * 12);
   //  ui->widget->replot();
 }
 
 void plotwindow::on_spinBox_5_editingFinished()
 {
-    ui->widget->graph(0)->setName("EEG: [0 "+QString::number((double)hnt->numst/((double)hnt->srfr/hnt->imlength),'g',2)+"] secs");
-    intlen=(double)hnt->numst/((double)hnt->srfr/hnt->imlength);
+    ui->widget->graph(0)->setName("EEG: [0 "+QString::number((double)numst/((double)srfr/imlength),'g',2)+"] secs");
+    intlen=(double)numst/((double)srfr/imlength);
 }
 
 void plotwindow::on_checkBox_5_clicked()

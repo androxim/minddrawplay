@@ -19,6 +19,8 @@ namespace Ui {
 class paintform;
 }
 
+using namespace std;
+
 class paintform : public QWidget
 {
     Q_OBJECT

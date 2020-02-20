@@ -3,7 +3,6 @@
 
 #include <QWidget>
 #include <qcustomplot.h>
-#include <hilbert.h>
 #include <vector>
 #include "mainwindow.h"
 #include "omp.h"
@@ -16,6 +15,13 @@
 #include "QMediaPlayer"
 #include "rawsignal.h"
 #include "soundplayer.h"
+#include <valarray>
+#include "complex"
+
+#define NMAX 15360  // 15360 5 min for 512 s.r.
+#define PMAX 32000
+#define LMAX  10000
+#define LMFILT 1024
 
 namespace Ui {
 class plot;
@@ -25,6 +31,8 @@ using namespace Eigen;
 
 typedef std::vector<int> vectori;
 typedef std::vector<double> vectord;
+typedef complex<double> Complex;
+typedef valarray<Complex> CArray;
 
 struct coords {
     QVector<double> xc,amp0,amp1,amp2,of1,of2,of3,of4;
@@ -47,6 +55,7 @@ class plotwindow : public QWidget
     Q_OBJECT       
 
 public:  
+    int srfr, numst, imlength, stlength, posstim, osfr, stampl;
     int stepsPerPress, drawshift, graphcount, recnumb, baseshift, scaletimeout, tonenumbers, maxtones, chorddelay, mxttimeout, curmodval;
     int counter, stims, startpos, tscale, ampval, corrprednumb, recparts, daqscalevalue, transdelay, flength, chnums, sampleblock, exch, sourcech;
     QString daqport;
@@ -114,7 +123,6 @@ public:
     QTimer* checkstates;
     QTimer* colorchange;
     QByteArray stimarr;
-    hilbert* hnt;
     coords arrc;
     appconnect* appcn;
     Complex t[2048];

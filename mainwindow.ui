@@ -14,7 +14,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>ClosedLoop Beta 1.05</string>
+   <string>MindDrawPlay beta 2.4</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <widget class="QPushButton" name="pushButton">
@@ -147,7 +147,7 @@
       <x>200</x>
       <y>60</y>
       <width>411</width>
-      <height>221</height>
+      <height>181</height>
      </rect>
     </property>
    </widget>
@@ -170,6 +170,42 @@
      <bool>true</bool>
     </property>
    </widget>
+   <widget class="QLabel" name="label_4">
+    <property name="geometry">
+     <rect>
+      <x>210</x>
+      <y>260</y>
+      <width>71</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>PICS folder:</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit">
+    <property name="geometry">
+     <rect>
+      <x>290</x>
+      <y>258</y>
+      <width>211</width>
+      <height>22</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_7">
+    <property name="geometry">
+     <rect>
+      <x>520</x>
+      <y>256</y>
+      <width>93</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Set folder..</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
@@ -184,7 +220,6 @@
     <property name="title">
      <string>Menu</string>
     </property>
-    <addaction name="actionOpen_Data_File"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">

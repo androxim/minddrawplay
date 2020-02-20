@@ -2,8 +2,9 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <vector>
+#include "string.h"
 #include <plotwindow.h>
-#include <hilbert.h>
 #include "appconnect.h"
 #include "rawsignal.h"
 #include "leftpanel.h"
@@ -18,6 +19,8 @@ class leftpanel;
 class rightpanel;
 class ocvcontrols;
 
+using namespace std;
+
 namespace Ui {
 
 class MainWindow;
@@ -28,7 +31,6 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:  
-    hilbert* ht;
     bool psstart;
     bool pwstart;
     bool simeeg;
@@ -61,7 +63,6 @@ public:
     double allpower, p_delta, p_theta, p_alpha, p_beta, p_gamma1, p_gamma2;
     int mw_raw, mw_atten, mw_medit, mw_delta, mw_theta, mw_alpha1, mw_alpha2, mw_alpha, mw_beta1, mw_beta2, mw_beta, mw_gamma1, mw_gamma2;
     explicit MainWindow(QWidget *parent = 0);      
-    void adddata(string s, QString fpath);
     void printdata(QString str);
     void mindwaveconnect();
     void museconnect();
@@ -102,8 +103,6 @@ private slots:
     void on_pushButton_2_clicked();
 
     void on_pushButton_4_clicked();
-
-    void OpenDataFile();
 
     void on_pushButton_5_clicked();
 

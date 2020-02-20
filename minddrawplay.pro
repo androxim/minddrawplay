@@ -14,7 +14,6 @@ SOURCES += main.cpp\
            mainwindow.cpp \
            qcustomplot.cpp \
            plotwindow.cpp \
-    hilbert.cpp \      
     sockstream.cpp \
     appconnect.cpp \    
     settings.cpp \
@@ -29,7 +28,6 @@ SOURCES += main.cpp\
 HEADERS  += mainwindow.h \
             qcustomplot.h \
             plotwindow.h \
-    hilbert.h \        
     sockstream.h \
     appconnect.h \
     settings.h \

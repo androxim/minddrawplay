@@ -13,13 +13,6 @@
 // adaptive border for puzzle change
 // saving history of waves
 
-// DONE:
-// hue filter
-// flow mode: gather the whole pic from 15 fragments of it by focusing or relaxing
-// focus mode: delay for one random graphicscene related with attention level
-// and for all other pics delay is fixed.. when attention>85% change graphic scene on other random
-
-
 paintform::paintform(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::paintform)

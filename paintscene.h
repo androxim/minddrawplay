@@ -7,13 +7,20 @@
 #include <QDebug>
 #include <plotwindow.h>
 #include <QSound>
+#include <valarray>
 #include "paintform.h"
+#include <complex>
 
 const int TMAX=1024;
 
 class plotwindow;
 class MainWindow;
 class paintform;
+
+using namespace std;
+
+typedef complex<double> Complex;
+typedef valarray<Complex> CArray;
 
 class paintScene : public QGraphicsScene
 {

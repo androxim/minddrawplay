@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MindDrawPlay beta 2.24 | MindDraw</string>
+   <string>MindDrawPlay beta 2.4 | MindDraw</string>
   </property>
   <widget class="QGraphicsView" name="graphicsView">
    <property name="geometry">
