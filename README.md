@@ -16,8 +16,8 @@ It has been grown on a base of a research work in the direction of Brain-Compute
 Combining both latest technology advances – such as mobile EEG devices and musical knowledge – 
 such as pentatonic scales, it allows everyone literally to see, to hear his brain activity 
 represented by set of sounds and to use brain waves as a brush for drawing, as parameters 
-for image filtering or changes in a graphical flow and in a simple puzzle gathering 
-and identical pictures recognition games. 
+for image filtering, attention modulated overlay pictures flow and in a puzzle gathering 
+and identical pictures recognition games.
 
 broader overview with screenshots in "about.pdf" 
 
