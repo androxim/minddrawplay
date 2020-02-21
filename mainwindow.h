@@ -37,9 +37,11 @@ public:
     bool bciconnect;
     bool opencvstart;
     bool ocvcontrshow;
+    bool camerainp;
     QString daqport;
     QTimer* mindwt;
     QTimer* picfilt;
+    QTimer* transfert;
     QTimer* simulateEEG;
     QTimer* puzzling_timer;
     int puzzlingrate;
@@ -48,9 +50,9 @@ public:
     int currentsimdata;
     int currentel;
     int srfr;
-    int opencvinterval;
+    int opencvinterval, transfert_interval;
     int curhue, prevhue, curoverl, prevoverl;
-    QPixmap bkgnd;
+    QPixmap bkgnd, transferpm;
     QPalette palette;
     QString opencvpic;
     bool canchangehue, canchangeoverlay;
@@ -91,6 +93,7 @@ public:
     void cancelall();
     void setdstfromplay(QImage qm);
     QImage grabopcvpic();
+    void Webcamsource();
 
     ~MainWindow();
 
@@ -110,6 +113,7 @@ private slots:
     void mindwtUpdate();
     void simulateEEGUpdate();    
     void puzzling_timerUpdate();
+    void transfert_Update();
 
     void on_pushButton_6_clicked();
 

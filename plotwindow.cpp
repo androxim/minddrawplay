@@ -21,6 +21,11 @@
 #include <bits/stdc++.h>
 #include <windows.h>
 #include "QThread"
+#include "opencv2/core.hpp"
+#include "opencv2/opencv.hpp"
+#include "opencv2/imgproc.hpp"
+#include "opencv2/highgui.hpp"
+#include <opencv2/core/types.hpp>
 
 // TO DO:
 
@@ -1051,9 +1056,7 @@ void plotwindow::graboverlay(QPixmap pmg)
 {
     backimg=pmg;
     backimg.scaled(1400,700,Qt::IgnoreAspectRatio,Qt::SmoothTransformation);
-    ui->widget->setBackground(backimg,true,Qt::IgnoreAspectRatio);
-    ui->widget->xAxis->grid()->setVisible(false);
-    ui->widget->yAxis->grid()->setVisible(false);
+    ui->widget->setBackground(backimg,true,Qt::IgnoreAspectRatio);    
     ui->widget->replot();
     ui->checkBox_6->setChecked(false);
     if (!backimageloaded)
@@ -1461,6 +1464,15 @@ void fft(CArray& x)
         Complex t = std::polar(1.0, -2 * M_PI * k / N) * odd[k];
         x[k] = even[k] + t;
         x[k + N / 2] = even[k] - t;
+    }
+}
+
+void plotwindow::setbackfromcamera()
+{
+    if (opencvstart)
+    {
+        qimj = mw->grabopcvpic();
+        graboverlay(QPixmap::fromImage(qimj));
     }
 }
 

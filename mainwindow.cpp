@@ -67,6 +67,8 @@ bool estattention = false;  // if attention is streaming from MindWave device
 bool fullscr = false;
 bool mwconnected = false;
 
+VideoCapture cam(0);
+
 int elem1 = 255;  // HUE variable
 int elem2 = 255;  // Saturation
 int elem3 = 255;  // Value
@@ -214,6 +216,11 @@ MainWindow::MainWindow(QWidget *parent) :
     picfilt->connect(picfilt,SIGNAL(timeout()), this, SLOT(picfiltUpdate()));
     picfilt->setInterval(opencvinterval);    
 
+    transfert_interval = 50;      // timer for openCV transitions in HUE, overlay flow
+    transfert = new QTimer(this);
+    transfert->connect(transfert,SIGNAL(timeout()), this, SLOT(transfert_Update()));
+    transfert->setInterval(transfert_interval);
+
     puzzlingrate = 50;        // timer for puzzling mode, when new picture appears by fragments
     puzzling_timer = new QTimer(this);
     puzzling_timer->connect(puzzling_timer,SIGNAL(timeout()), this, SLOT(puzzling_timerUpdate()));
@@ -221,6 +228,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     QTime time = QTime::currentTime();
     qsrand((uint)time.msec());      
+
+    camerainp = false;
 
     makeicons(); // function for making icons of picturs
 }
@@ -579,6 +588,19 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::Webcamsource() // grab video from camera
+{    
+   // while (!cam.isOpened())
+   // {
+   //     cout << "Failed to connect to camera.. ( " << endl;
+   //     cam.open(0);
+   // }
+    char key = 'o';
+    camerainp = true;
+    cam>>dst;
+    imshow("image", dst);
+}
+
 void MainWindow::setopencvt(int i)  // change openCV timer interval
 {
     opencvinterval=i;
@@ -605,6 +627,12 @@ void MainWindow::puzzling_timerUpdate() // timer for puzzling mode, when new pic
     dstt = src(srcDstRect);
     dstt.copyTo(dst(srcDstRect));
     imshow("image", dst);
+}
+
+void MainWindow::transfert_Update() // streams pic from camera to MindPlay window
+{
+    Webcamsource();
+    plotw->setbackfromcamera();
 }
 
 inline cv::Mat QImageToCvMat( const QImage &inImage, bool inCloneImageData = true )
@@ -1353,7 +1381,11 @@ void MainWindow::picfiltUpdate() // function for MindOCV window actions and flow
             currfilttype++;
         ocvform->filttype=currfilttype-1;
         ocvform->updatevals();
-    }
+    } else if ((key == 'r') && (!activeflow))
+        transfert->start();
+    else if ((key=='s') && (!activeflow))
+        transfert->stop();
+
 
     if (activeflow)
     {

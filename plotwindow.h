@@ -116,6 +116,7 @@ public:
     MainWindow* mw;
     Settings* sw;
     paintScene* pss;
+    QImage qimj;
     QElapsedTimer timer;
     QTimer* tim;
     QTimer* scaletim;
@@ -227,6 +228,7 @@ public:
     void setbackimage(QPixmap pm);
     void grabopencv(QString fpath);
     void graboverlay(QPixmap pmg);
+    void setbackfromcamera();
     void pauseflow();
 
 private slots:

@@ -57,7 +57,9 @@ LIBS += C:\OpenCV\OpenCV_bin\bin\libopencv_core412.dll \
         C:\OpenCV\OpenCV_bin\bin\libopencv_highgui412.dll \
         C:\OpenCV\OpenCV_bin\bin\libopencv_imgcodecs412.dll \
         C:\OpenCV\OpenCV_bin\bin\libopencv_imgproc412.dll \
-        C:\OpenCV\OpenCV_bin\bin\libopencv_calib3d412.dll
+        C:\OpenCV\OpenCV_bin\bin\libopencv_calib3d412.dll \
+        C:\OpenCV\OpenCV_bin\bin\libopencv_video412.dll \
+        C:\OpenCV\OpenCV_bin\bin\libopencv_videoio412.dll
 
 
 
