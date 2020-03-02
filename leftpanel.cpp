@@ -91,17 +91,17 @@ leftpanel::leftpanel(QWidget *parent) :
 void leftpanel::fillpics()
 {   
     ui->graphicsView->scene()->clear();
-    ui->graphicsView->scene()->addPixmap(mww->imgarray[mww->geticon(currpos,true)]);
+    ui->graphicsView->scene()->addPixmap(mww->imgarray[mww->geticonnum(currpos,true)]);
     ui->graphicsView_2->scene()->clear();
-    ui->graphicsView_2->scene()->addPixmap(mww->imgarray[mww->geticon(currpos+1,true)]);
+    ui->graphicsView_2->scene()->addPixmap(mww->imgarray[mww->geticonnum(currpos+1,true)]);
     ui->graphicsView_4->scene()->clear();
-    ui->graphicsView_3->scene()->addPixmap(mww->imgarray[mww->geticon(currpos+2,true)]);
+    ui->graphicsView_3->scene()->addPixmap(mww->imgarray[mww->geticonnum(currpos+2,true)]);
     ui->graphicsView_4->scene()->clear();
-    ui->graphicsView_4->scene()->addPixmap(mww->imgarray[mww->geticon(currpos+3,true)]);
+    ui->graphicsView_4->scene()->addPixmap(mww->imgarray[mww->geticonnum(currpos+3,true)]);
     ui->graphicsView_5->scene()->clear();
-    ui->graphicsView_5->scene()->addPixmap(mww->imgarray[mww->geticon(currpos+4,true)]);
+    ui->graphicsView_5->scene()->addPixmap(mww->imgarray[mww->geticonnum(currpos+4,true)]);
     ui->graphicsView_6->scene()->clear();
-    ui->graphicsView_6->scene()->addPixmap(mww->imgarray[mww->geticon(currpos+5,true)]);
+    ui->graphicsView_6->scene()->addPixmap(mww->imgarray[mww->geticonnum(currpos+5,true)]);
     ui->graphicsView_7->scene()->clear();
     ui->graphicsView_7->scene()->addPixmap(mww->imgarray[mww->getmainpic()]);
 }
@@ -109,17 +109,17 @@ void leftpanel::fillpics()
 bool leftpanel::eventFilter(QObject *target, QEvent *event)
 {
     if ((target == ui->graphicsView) && (event->type() == QEvent::MouseButtonDblClick))
-        mww->updatemainpic(mww->geticon(currpos,true));
+        mww->updatemainpic(mww->geticonnum(currpos,true));
     if ((target == ui->graphicsView_2) && (event->type() == QEvent::MouseButtonDblClick))
-        mww->updatemainpic(mww->geticon(currpos+1,true));
+        mww->updatemainpic(mww->geticonnum(currpos+1,true));
     if ((target == ui->graphicsView_3) && (event->type() == QEvent::MouseButtonDblClick))
-        mww->updatemainpic(mww->geticon(currpos+2,true));
+        mww->updatemainpic(mww->geticonnum(currpos+2,true));
     if ((target == ui->graphicsView_4) && (event->type() == QEvent::MouseButtonDblClick))
-        mww->updatemainpic(mww->geticon(currpos+3,true));
+        mww->updatemainpic(mww->geticonnum(currpos+3,true));
     if ((target == ui->graphicsView_5) && (event->type() == QEvent::MouseButtonDblClick))
-        mww->updatemainpic(mww->geticon(currpos+4,true));
+        mww->updatemainpic(mww->geticonnum(currpos+4,true));
     if ((target == ui->graphicsView_6) && (event->type() == QEvent::MouseButtonDblClick))
-        mww->updatemainpic(mww->geticon(currpos+5,true));   
+        mww->updatemainpic(mww->geticonnum(currpos+5,true));   
 
     if ((target != ui->graphicsView_7) && (event->type() == QEvent::Wheel))
     {

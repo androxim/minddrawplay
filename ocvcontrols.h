@@ -3,11 +3,16 @@
 
 #include <QWidget>
 #include "mainwindow.h"
+#include "opencv2/core.hpp"
+#include "opencv2/opencv.hpp"
+
+using namespace cv;
 
 namespace Ui {
 class ocvcontrols;
 }
 
+class leftpanel;
 class MainWindow;
 
 class ocvcontrols : public QWidget
@@ -15,11 +20,19 @@ class ocvcontrols : public QWidget
     Q_OBJECT
 
 public:
-    int filtarea, filtrate, filttype;
-    int kernelsize, s_color, s_space, wave_freq, wave_amp, dilate_size, dilation_el;
-    bool attmodulation;
+    int currfilterarea = 250, currfilterrate = 12, currfilttype = 5, totalfilts = 5;
+    int sigma_color = 25, sigma_space = 50, kernel_s = 5;                       // cartoonize params
+    int wave_freqs = 42, wave_amp = 9;                                          // waves params
+    int dilation_size = 1, dilation_elem = 2;                                   // dilate params
+    int nfeatures = 200, nlevels = 6, edgetreshold = 20; float scalef = 1.1;    // ORB params
+    int mixtype = 1, transp = 80, randpicn; bool changerandpic_byclick = false; // mixer params
+    bool attmodul_area = false;                                 // attention modulated filter area
+    Mat randpic;
+
+    leftpanel* leftpan;
     MainWindow* mww;
-    updatevals();
+    void updateformvals();
+    void changerandpic();
     explicit ocvcontrols(QWidget *parent = 0);
     ~ocvcontrols();
 
@@ -53,6 +66,26 @@ private slots:
     void on_pushButton_clicked();
 
     void on_pushButton_2_clicked();
+
+    void on_spinBox_9_valueChanged(int arg1);
+
+    void on_spinBox_10_valueChanged(int arg1);
+
+    void on_spinBox_11_valueChanged(int arg1);
+
+    void on_doubleSpinBox_valueChanged(double arg1);
+
+    void on_spinBox_12_valueChanged(int arg1);
+
+    void on_radioButton_4_clicked();
+
+    void on_radioButton_5_clicked();
+
+    void on_radioButton_6_clicked();
+
+    void on_pushButton_3_clicked();
+
+    void on_checkBox_2_clicked();
 
 private:
     Ui::ocvcontrols *ui;

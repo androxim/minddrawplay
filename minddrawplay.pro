@@ -59,9 +59,8 @@ LIBS += C:\OpenCV\OpenCV_bin\bin\libopencv_core412.dll \
         C:\OpenCV\OpenCV_bin\bin\libopencv_imgproc412.dll \
         C:\OpenCV\OpenCV_bin\bin\libopencv_calib3d412.dll \
         C:\OpenCV\OpenCV_bin\bin\libopencv_video412.dll \
-        C:\OpenCV\OpenCV_bin\bin\libopencv_videoio412.dll
-
-
+        C:\OpenCV\OpenCV_bin\bin\libopencv_videoio412.dll \
+        C:\OpenCV\OpenCV_bin\bin\libopencv_features2d412.dll
 
 INCLUDEPATH += $$PWD/.
 DEPENDPATH += $$PWD/.

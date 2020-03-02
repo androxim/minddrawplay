@@ -19,8 +19,8 @@ class paintform;
 
 using namespace std;
 
-typedef complex<double> Complex;
-typedef valarray<Complex> CArray;
+typedef complex<double> ComplexM;
+typedef valarray<ComplexM> CArray;
 
 class paintScene : public QGraphicsScene
 {
@@ -47,7 +47,7 @@ public:
     int* linelengths;
     QPixmap bkgndimg;
     double sumd, meand, angle;
-    Complex t[TMAX];
+    ComplexM t[TMAX];
     CArray cdata;
     QPalette qptr;
     QPolygonF polygon;

@@ -97,17 +97,17 @@ rightpanel::~rightpanel()
 bool rightpanel::eventFilter(QObject *target, QEvent *event)
 {
     if ((target == ui->graphicsView) && (event->type() == QEvent::MouseButtonDblClick))
-        mww->updateoverpic(mww->geticon(currpos,false));
+        mww->updateoverpic(mww->geticonnum(currpos,false));
     if ((target == ui->graphicsView_2) && (event->type() == QEvent::MouseButtonDblClick))
-        mww->updateoverpic(mww->geticon(currpos+1,false));
+        mww->updateoverpic(mww->geticonnum(currpos+1,false));
     if ((target == ui->graphicsView_3) && (event->type() == QEvent::MouseButtonDblClick))
-        mww->updateoverpic(mww->geticon(currpos+2,false));
+        mww->updateoverpic(mww->geticonnum(currpos+2,false));
     if ((target == ui->graphicsView_4) && (event->type() == QEvent::MouseButtonDblClick))
-        mww->updateoverpic(mww->geticon(currpos+3,false));
+        mww->updateoverpic(mww->geticonnum(currpos+3,false));
     if ((target == ui->graphicsView_5) && (event->type() == QEvent::MouseButtonDblClick))
-        mww->updateoverpic(mww->geticon(currpos+4,false));
+        mww->updateoverpic(mww->geticonnum(currpos+4,false));
     if ((target == ui->graphicsView_6) && (event->type() == QEvent::MouseButtonDblClick))
-        mww->updateoverpic(mww->geticon(currpos+5,false));
+        mww->updateoverpic(mww->geticonnum(currpos+5,false));
 
     if ((target != ui->graphicsView_7) && (event->type() == QEvent::Wheel))
     {
@@ -135,17 +135,17 @@ bool rightpanel::eventFilter(QObject *target, QEvent *event)
 void rightpanel::fillpics()
 {
     ui->graphicsView->scene()->clear();
-    ui->graphicsView->scene()->addPixmap(mww->imgarray[mww->geticon(currpos,false)]);
+    ui->graphicsView->scene()->addPixmap(mww->imgarray[mww->geticonnum(currpos,false)]);
     ui->graphicsView_2->scene()->clear();
-    ui->graphicsView_2->scene()->addPixmap(mww->imgarray[mww->geticon(currpos+1,false)]);
+    ui->graphicsView_2->scene()->addPixmap(mww->imgarray[mww->geticonnum(currpos+1,false)]);
     ui->graphicsView_4->scene()->clear();
-    ui->graphicsView_3->scene()->addPixmap(mww->imgarray[mww->geticon(currpos+2,false)]);
+    ui->graphicsView_3->scene()->addPixmap(mww->imgarray[mww->geticonnum(currpos+2,false)]);
     ui->graphicsView_4->scene()->clear();
-    ui->graphicsView_4->scene()->addPixmap(mww->imgarray[mww->geticon(currpos+3,false)]);
+    ui->graphicsView_4->scene()->addPixmap(mww->imgarray[mww->geticonnum(currpos+3,false)]);
     ui->graphicsView_5->scene()->clear();
-    ui->graphicsView_5->scene()->addPixmap(mww->imgarray[mww->geticon(currpos+4,false)]);
+    ui->graphicsView_5->scene()->addPixmap(mww->imgarray[mww->geticonnum(currpos+4,false)]);
     ui->graphicsView_6->scene()->clear();
-    ui->graphicsView_6->scene()->addPixmap(mww->imgarray[mww->geticon(currpos+5,false)]);
+    ui->graphicsView_6->scene()->addPixmap(mww->imgarray[mww->geticonnum(currpos+5,false)]);
     ui->graphicsView_7->scene()->clear();
     ui->graphicsView_7->scene()->addPixmap(mww->imgarray[mww->getoverpic()]);
 }

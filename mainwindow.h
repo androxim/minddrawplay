@@ -38,10 +38,11 @@ public:
     bool opencvstart;
     bool ocvcontrshow;
     bool camerainp;
+    bool storymode;
     QString daqport;
     QTimer* mindwt;
     QTimer* picfilt;
-    QTimer* transfert;
+    QTimer* cameraflow;
     QTimer* simulateEEG;
     QTimer* puzzling_timer;
     int puzzlingrate;
@@ -82,7 +83,7 @@ public:
     void checkoverlay();
     void makeicons();
     void shuffleiconss(bool left);
-    int geticon(int t, bool left);
+    int geticonnum(int t, bool left);
     int getmainpic();
     int getoverpic();
     void updatemainpic(int num);
@@ -92,7 +93,9 @@ public:
     void cancellast();
     void cancelall();
     void setdstfromplay(QImage qm);
+    void save_and_add_overlaypic();
     QImage grabopcvpic();
+    QString getimagepath(int t);
     void Webcamsource();
 
     ~MainWindow();

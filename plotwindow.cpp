@@ -1461,7 +1461,7 @@ void fft(CArray& x)
     // combine
     for (size_t k = 0; k < N / 2; ++k)
     {
-        Complex t = std::polar(1.0, -2 * M_PI * k / N) * odd[k];
+        ComplexM t = std::polar(1.0, -2 * M_PI * k / N) * odd[k];
         x[k] = even[k] + t;
         x[k + N / 2] = even[k] - t;
     }

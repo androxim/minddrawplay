@@ -31,8 +31,8 @@ using namespace Eigen;
 
 typedef std::vector<int> vectori;
 typedef std::vector<double> vectord;
-typedef complex<double> Complex;
-typedef valarray<Complex> CArray;
+typedef complex<double> ComplexM;
+typedef valarray<ComplexM> CArray;
 
 struct coords {
     QVector<double> xc,amp0,amp1,amp2,of1,of2,of3,of4;
@@ -126,7 +126,7 @@ public:
     QByteArray stimarr;
     coords arrc;
     appconnect* appcn;
-    Complex t[2048];
+    ComplexM t[2048];
     QSound* Bells;
     QString tones;
     QString lasttones;

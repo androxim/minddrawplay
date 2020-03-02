@@ -400,11 +400,10 @@ paintform::paintform(QWidget *parent) :
      ui->widget->graph(2)->setData(xc, border_arr);
 
   /*  ui->widget->setPalette(Qt::transparent);
-    ui->widget->setWindowOpacity(0);
+    ui->widget->setWindowOpacity(0.3);
     ui->widget->setAttribute(Qt::WA_NoSystemBackground);
     ui->widget->setAttribute(Qt::WA_TranslucentBackground);
     ui->widget->setAttribute(Qt::WA_PaintOnScreen); */
-
 
     ui->widget_2->legend->setVisible(true);
     ui->widget_2->setInteraction(QCP::iSelectPlottables, true);
@@ -704,9 +703,14 @@ void paintform::updatefreqarrs(double deltat, double thetat, double alphat, doub
     }
     if (estattn<0) estattn=0;
     if (estattn>100) estattn=100;
-    estatt_arr[numfrsamples]=estattn;
-
+    estatt_arr[numfrsamples]=estattn;    
     fxc[numfrsamples]=numfrsamples;
+
+  /*  if ((bfiltmode) || (!canpuzzlechange))
+    {
+        setdflowtime(estattn);
+        setflowspace(estattn);
+    } */
 
     ui->widget_2->graph(0)->setData(fxc, delta_arr);
     ui->widget_2->graph(1)->setData(fxc, theta_arr);
@@ -814,10 +818,10 @@ void paintform::updateattention(int t)
         ui->verticalSlider->setValue(t);
 
        if ((bfiltmode) || (!canpuzzlechange))
+       {
            setdflowtime(t);
-
-       if ((bfiltmode) || (!canpuzzlechange))
            setflowspace(t);
+       }
 
        if ((numsamples-laststop>lenofinterval) && (adaptivebord))
        {
@@ -889,10 +893,10 @@ void paintform::updatemeditation(int t)
        ui->verticalSlider->setValue(t);
 
        if ((bfiltmode) || (!canpuzzlechange))
+       {
            setdflowtime(t);
-
-       if ((bfiltmode) || (!canpuzzlechange))
            setflowspace(t);
+       }
 
        if ((numsamples-laststop>lenofinterval) && (adaptivebord))
        {
