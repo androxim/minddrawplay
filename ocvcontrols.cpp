@@ -19,32 +19,16 @@ ocvcontrols::ocvcontrols(QWidget *parent) :
 void ocvcontrols::updateformvals()
 {
     ui->spinBox->setValue(currfilterarea);
-    ui->spinBox_2->setValue(currfilterrate);
-    ui->spinBox_3->setValue(kernel_s);
-    ui->spinBox_4->setValue(sigma_color);
-    ui->spinBox_5->setValue(sigma_space);
-    ui->spinBox_6->setValue(wave_freqs);
-    ui->spinBox_7->setValue(wave_amp);
-    ui->spinBox_8->setValue(dilation_size);
-    ui->spinBox_9->setValue(nfeatures);
-    ui->spinBox_10->setValue(nlevels);
-    ui->spinBox_11->setValue(edgetreshold);
-    ui->doubleSpinBox->setValue(scalef);
-
-    if (dilation_elem==1)
-        ui->radioButton->setChecked(true);
-    else if (dilation_elem==2)
-        ui->radioButton_2->setChecked(true);
-    else if (dilation_elem==3)
-        ui->radioButton_3->setChecked(true);
-
+    ui->spinBox_2->setValue(currfilterrate);  
+    ui->spinBox_12->setValue(transp);
+    ui->tabWidget->setCurrentIndex(currfilttype-1);
     if (mixtype==1)
         ui->radioButton_4->setChecked(true);
     else if (mixtype==2)
         ui->radioButton_5->setChecked(true);
-
-    ui->spinBox_12->setValue(transp);
-    ui->tabWidget->setCurrentIndex(currfilttype-1);
+    else
+        ui->radioButton_6->setChecked(true);
+    ui->spinBox_13->setValue(dreamflowrate);
 }
 
 ocvcontrols::~ocvcontrols()
@@ -116,6 +100,10 @@ void ocvcontrols::on_radioButton_3_clicked()
 void ocvcontrols::on_checkBox_clicked()
 {
     attmodul_area=!attmodul_area;
+    if (attmodul_area)
+        ui->spinBox->setStyleSheet("QSpinBox { background-color: yellow; }");
+    else
+        ui->spinBox->setStyleSheet("QSpinBox { background-color: white; }");
 }
 
 void ocvcontrols::on_pushButton_clicked()
@@ -156,17 +144,20 @@ void ocvcontrols::on_spinBox_12_valueChanged(int arg1)
 void ocvcontrols::on_radioButton_4_clicked()
 {
     mixtype = 1;
+    ui->checkBox_4->setEnabled(false);
 }
 
 void ocvcontrols::on_radioButton_5_clicked()
 {
     mixtype = 2;
+    ui->checkBox_4->setEnabled(false);
 }
 
 void ocvcontrols::on_radioButton_6_clicked()
 {
     mixtype = 3;
     changerandpic();  
+    ui->checkBox_4->setEnabled(true);
 }
 
 void ocvcontrols::changerandpic()
@@ -177,6 +168,18 @@ void ocvcontrols::changerandpic()
     randpic = imread(rpic.toStdString());
     // cv::resize(randpic, randpic, cv::Size(src.cols,src.rows), 0, 0, cv::INTER_LINEAR);
 }
+
+void ocvcontrols::stopdreamflow()
+{
+    if (attent_modulated_dreams)
+    {
+        on_checkBox_6_clicked();
+        ui->checkBox_6->setChecked(false);
+    }
+    on_checkBox_5_clicked();
+    ui->checkBox_5->setChecked(false);
+}
+
 void ocvcontrols::on_pushButton_3_clicked()
 {
     changerandpic();
@@ -185,4 +188,54 @@ void ocvcontrols::on_pushButton_3_clicked()
 void ocvcontrols::on_checkBox_2_clicked()
 {
     changerandpic_byclick = !changerandpic_byclick;  
+}
+
+void ocvcontrols::on_pushButton_4_clicked()
+{
+    fcolor = QColorDialog::getColor(Qt::white, this, "Select Color", QColorDialog::DontUseNativeDialog);
+}
+
+void ocvcontrols::on_checkBox_3_clicked()
+{
+    randfcolor=!randfcolor;
+}
+
+void ocvcontrols::on_checkBox_4_clicked()
+{
+    dreamflowmode=!dreamflowmode;
+    if (!dreamflowmode)
+    {
+        autodreamflow = false;
+        ui->checkBox_5->setChecked(false);
+    }
+    ui->checkBox_5->setEnabled(dreamflowmode);
+}
+
+void ocvcontrols::on_checkBox_5_clicked()
+{
+    autodreamflow=!autodreamflow;
+    if (autodreamflow)
+    {
+        mww->dreamflow_timer->start();
+        ui->checkBox_6->setEnabled(true);
+    }
+    else
+    {
+        mww->dreamflow_timer->stop();
+        ui->checkBox_6->setEnabled(false);
+    }
+}
+
+void ocvcontrols::on_spinBox_13_valueChanged(int arg1)
+{
+    dreamflowrate=arg1;
+}
+
+void ocvcontrols::on_checkBox_6_clicked()
+{
+    attent_modulated_dreams=!attent_modulated_dreams;
+    if (attent_modulated_dreams)
+        ui->spinBox_13->setStyleSheet("QSpinBox { background-color: yellow; }");
+    else
+        ui->spinBox_13->setStyleSheet("QSpinBox { background-color: white; }");
 }

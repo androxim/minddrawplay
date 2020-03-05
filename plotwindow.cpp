@@ -1642,7 +1642,7 @@ void plotwindow::scaletimerUpdate()
 
 void plotwindow::mxttimerUpdate()
 {
-    maxtones= 1 + qrand()%3;
+    maxtones = 1 + qrand()%2;
     ui->spinBox_8->setValue(maxtones);
 }
 

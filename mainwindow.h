@@ -44,8 +44,7 @@ public:
     QTimer* picfilt;
     QTimer* cameraflow;
     QTimer* simulateEEG;
-    QTimer* puzzling_timer;
-    int puzzlingrate;
+    QTimer* dreamflow_timer;
     int packetsRead;
     int connectionId;
     int currentsimdata;
@@ -115,7 +114,7 @@ private slots:
     void picfiltUpdate();
     void mindwtUpdate();
     void simulateEEGUpdate();    
-    void puzzling_timerUpdate();
+    void dreamflow_Update();
     void transfert_Update();
 
     void on_pushButton_6_clicked();

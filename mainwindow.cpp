@@ -28,6 +28,9 @@
 #include "qmath.h"
 #include <QDate>
 
+// TO DO:
+
+
 using namespace cv;
 
 // ==== openCV functions ====
@@ -145,7 +148,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ocvform = new ocvcontrols();    // openCV filters controls form
     ocvform->mww = this;
     ocvform->setFixedSize(619,130);
-    ocvform->move(QPoint(160,844));   
+    ocvform->move(QPoint(278,844));
     ocvform->leftpan = leftpw;
 
     folderpath="D:/PICS";       // default path for pictures
@@ -200,20 +203,19 @@ MainWindow::MainWindow(QWidget *parent) :
     curhue = prevhue = 255;
     curoverl = prevoverl = 50;   
 
-    opencvinterval = 20;      // timer for openCV transitions in HUE, overlay flow
+    opencvinterval = 25;      // timer for openCV transitions in HUE, overlay flow
     picfilt = new QTimer(this);
     picfilt->connect(picfilt,SIGNAL(timeout()), this, SLOT(picfiltUpdate()));
     picfilt->setInterval(opencvinterval);    
 
-    transfert_interval = 50;      // timer for openCV transitions in HUE, overlay flow
+    transfert_interval = 50;      // timer for camera flow
     cameraflow = new QTimer(this);
     cameraflow->connect(cameraflow,SIGNAL(timeout()), this, SLOT(transfert_Update()));
     cameraflow->setInterval(transfert_interval);
 
-    puzzlingrate = 50;        // timer for puzzling mode, when new picture appears by fragments
-    puzzling_timer = new QTimer(this);
-    puzzling_timer->connect(puzzling_timer,SIGNAL(timeout()), this, SLOT(puzzling_timerUpdate()));
-    puzzling_timer->setInterval(puzzlingrate);    
+    dreamflow_timer = new QTimer(this);     // timer for auto dreamflow mode, when new picture appears by fragments
+    dreamflow_timer->connect(dreamflow_timer,SIGNAL(timeout()), this, SLOT(dreamflow_Update()));
+    dreamflow_timer->setInterval(ocvform->dreamflowrate);
 
     QTime time = QTime::currentTime();
     qsrand((uint)time.msec());      
@@ -351,7 +353,10 @@ void ProcessingMix() // processing of overlay changes, alphaval - transparency
     if (estattention)   // if MindWave connected and attention values are streaming
     {
         cv::resize(srccopy, srccopy, cv::Size(image.cols,image.rows), 0, 0, cv::INTER_LINEAR);
-        addWeighted(image, alphaval, srccopy, 1 - alphaval, 0, dst);
+        if (activeflow)
+            addWeighted(image, alphaval, srccopy, 1 - alphaval, 0, dst);
+        else
+            addWeighted(src, alphaval, srccopy, 1 - alphaval, 0, dst);
     }
     else
     {
@@ -468,7 +473,7 @@ void onMouse( int event, int x, int y, int flags, void* )   // Mouse clicks and 
         {
             rs->setGeometry(0,0,1600,80);
             rs->move(158,0);
-            ocvform->move(QPoint(160,844));
+            ocvform->move(QPoint(278,844));
             cv::setWindowProperty("image",cv::WND_PROP_FULLSCREEN,0);
             fullscr=false;
         }
@@ -539,6 +544,13 @@ Mat cartoon(Rect srcRect, int ksize) // cartoonize filter
     return dstg;
 }
 
+Scalar qcolor2scalar(QColor color)
+{
+    int r,g,b;
+    color.getRgb(&r, &g, &b);
+    return cv::Scalar(b,g,r);
+}
+
 Mat orbdetect(Rect srcRect) // ORB features detector
 {
     srct = dst(srcRect);
@@ -548,7 +560,10 @@ Mat orbdetect(Rect srcRect) // ORB features detector
     orbdet->detect(gray_element,kpts);
     dstg.release();
     dstg = srct.clone();
-    cv::drawKeypoints(srct,kpts,dstg,Scalar(qrand()%256,qrand()%256,qrand()%256));
+    if (ocvform->randfcolor)
+        cv::drawKeypoints(srct,kpts,dstg,Scalar(qrand()%256,qrand()%256,qrand()%256));
+    else
+        cv::drawKeypoints(srct,kpts,dstg,qcolor2scalar(ocvform->fcolor));
     return dstg;
 }
 
@@ -686,13 +701,19 @@ void MainWindow::cancelall()    // cancel all filtering actions
     imshow("image", dst);
 }
 
-void MainWindow::puzzling_timerUpdate() // timer for puzzling mode, when new pic appears by random fragment over old
+void MainWindow::dreamflow_Update() // timer for puzzling mode, when new pic appears by random fragment over old
 {
-    int x = qrand() % (dst.cols-ocvform->currfilterarea);
-    int y = qrand() % (dst.rows-ocvform->currfilterarea);
-    Rect srcDstRect(x, y, ocvform->currfilterarea, ocvform->currfilterarea);
-    dstt = src(srcDstRect);
-    dstt.copyTo(dst(srcDstRect));
+    int x = ocvform->currfilterarea/2 + qrand() % (dst.cols-ocvform->currfilterarea);
+    int y = ocvform->currfilterarea/2 + qrand() % (dst.rows-ocvform->currfilterarea);
+
+    Rect srcDstRect(x-ocvform->currfilterarea/2, y-ocvform->currfilterarea/2, ocvform->currfilterarea, ocvform->currfilterarea);
+    dstt = dst(srcDstRect);
+    dstt = mixfilt(srcDstRect);
+    Mat mask_image( dstt.size(), CV_8U, Scalar(0));
+    circle(mask_image, Point(mask_image.rows / 2, mask_image.cols / 2), ocvform->currfilterarea/2, CV_RGB(255, 255, 255),-1,LINE_AA);
+    addWeighted(dst(srcDstRect), (double)ocvform->transp / 100, dstt, 1 - (double)ocvform->transp / 100, 0, dstt);
+    dstt.copyTo(dst(srcDstRect),mask_image);
+
     imshow("image", dst);
 }
 
@@ -1012,10 +1033,21 @@ void MainWindow::setattent(int i)
     if ((ocvform->attmodul_area) && (!activeflow))
     {
         // attention modulated filter area with minimum area value, only not activeflow mode
-        if (elem4<10)
-            elem4=10;
+        if (elem4<20)
+            elem4=20;
         ocvform->currfilterarea=elem4*5;
         ocvform->updateformvals(); // updating values on openCV filter control form
+    }
+    if ((!activeflow) && (ocvform->currfilttype==5) && (ocvform->mixtype==3) && (ocvform->dreamflowmode))
+    {
+        if (elem4>elem6)
+            ocvform->changerandpic();
+        if ((ocvform->autodreamflow) && (ocvform->attent_modulated_dreams))
+        {
+            ocvform->dreamflowrate=110-elem4;
+            dreamflow_timer->setInterval(ocvform->dreamflowrate);
+            ocvform->updateformvals();
+        }
     }
 }
 
@@ -1258,16 +1290,21 @@ void MainWindow::mindwtUpdate() // processing data from MindWave device
                 {                                                         
                     curhue=100+mw_atten*4;
                     canchangehue=false;
-                }
+                }                
                 if (psstart)
                 {
                     paintw->updateattentionplot(mw_atten);
-                    if (opencvstart)
+                    if (opencvstart)        // update attention by estimated value, but 1 per sec
                     {
                         setattent(paintw->getestattval());
                         curoverl=elem4;
-                    }                  
+                    }
                 }
+              //  if (opencvstart)        // update attention by device value, but 1 per sec
+              //  {
+              //      setattent(mw_atten);
+              //      curoverl=elem4;
+              //  }
                 // cout<<"Attention value: "<<mw_atten<<endl;
             }
         }
@@ -1405,7 +1442,7 @@ void MainWindow::picfiltUpdate() // function for MindOCV window actions and flow
             ocvform->show();
         ocvcontrshow=!ocvcontrshow;
     }
-    else if (key == 27)  // 'ESC' press start/stop overlay-hue flow
+    else if (key == 27)  // 'ESC' press start/stop overlay-hue flow / dreamflow
     {
         activeflow=!activeflow;
         if (activeflow)
@@ -1413,6 +1450,8 @@ void MainWindow::picfiltUpdate() // function for MindOCV window actions and flow
             ocvform->hide();
             ocvcontrshow=false;
             keepfiltering=false;
+            if (ocvform->autodreamflow)
+                ocvform->stopdreamflow();
         }
         else
         {
@@ -1455,12 +1494,9 @@ void MainWindow::picfiltUpdate() // function for MindOCV window actions and flow
         ocvform->currfilterrate++;
         ocvform->updateformvals();
     }
-    else if (key == '5')            // activate puzzling mode
+    else if (key == '5')            // free slot
     {
-        if (!puzzling_timer->isActive())
-            puzzling_timer->start();
-        else
-            puzzling_timer->stop();
+
     }// else if (key == '6')        // make SVD transform (very slow!)
      //   dosvdtransform();
     else if ((key == 'z') && (!activeflow))     // change filter on the left one
@@ -1532,7 +1568,8 @@ void MainWindow::picfiltUpdate() // function for MindOCV window actions and flow
         }
 
         // change of overlay values untill previous ~ new one, then can change previous overlay
-        if ((abs(curoverl-prevoverl)==0) || ((abs(curoverl-prevoverl)==1)))
+        //if ((abs(curoverl-prevoverl)==0) || ((abs(curoverl-prevoverl)==1)))
+        if (abs(curoverl-prevoverl)<2)
             canchangeoverlay=true;
         else
         {

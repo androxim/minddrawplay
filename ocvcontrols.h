@@ -24,15 +24,19 @@ public:
     int sigma_color = 25, sigma_space = 50, kernel_s = 5;                       // cartoonize params
     int wave_freqs = 42, wave_amp = 9;                                          // waves params
     int dilation_size = 1, dilation_elem = 2;                                   // dilate params
-    int nfeatures = 200, nlevels = 6, edgetreshold = 20; float scalef = 1.1;    // ORB params
-    int mixtype = 1, transp = 80, randpicn; bool changerandpic_byclick = false; // mixer params
-    bool attmodul_area = false;                                 // attention modulated filter area
+    int nfeatures = 100, nlevels = 6, edgetreshold = 20; float scalef = 1.1;    // ORB params
+    QColor fcolor = QColor(255,255,255); bool randfcolor=false;                 // ORB params
+    int mixtype = 1, transp = 80, randpicn;                                     // mixer params
+    bool changerandpic_byclick = false; bool dreamflowmode = false;             // mixer params
+    bool autodreamflow = false; int dreamflowrate = 77;                         // mixer params
+    bool attmodul_area = false; bool attent_modulated_dreams = false;           // attention modulated filter area
     Mat randpic;
 
     leftpanel* leftpan;
     MainWindow* mww;
     void updateformvals();
     void changerandpic();
+    void stopdreamflow();
     explicit ocvcontrols(QWidget *parent = 0);
     ~ocvcontrols();
 
@@ -86,6 +90,18 @@ private slots:
     void on_pushButton_3_clicked();
 
     void on_checkBox_2_clicked();
+
+    void on_pushButton_4_clicked();
+
+    void on_checkBox_3_clicked();
+
+    void on_checkBox_4_clicked();
+
+    void on_checkBox_5_clicked();
+
+    void on_spinBox_13_valueChanged(int arg1);
+
+    void on_checkBox_6_clicked();
 
 private:
     Ui::ocvcontrols *ui;
