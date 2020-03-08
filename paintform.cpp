@@ -38,48 +38,48 @@ paintform::paintform(QWidget *parent) :
     ui->graphicsView_2->setAlignment(Qt::AlignCenter);
     ui->graphicsView_2->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->graphicsView_2->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-     ui->graphicsView_3->setAlignment(Qt::AlignCenter);
+    ui->graphicsView_3->setAlignment(Qt::AlignCenter);
     ui->graphicsView_3->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->graphicsView_3->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-     ui->graphicsView_4->setAlignment(Qt::AlignCenter);
+    ui->graphicsView_4->setAlignment(Qt::AlignCenter);
     ui->graphicsView_4->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->graphicsView_4->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-     ui->graphicsView_5->setAlignment(Qt::AlignCenter);
+    ui->graphicsView_5->setAlignment(Qt::AlignCenter);
     ui->graphicsView_5->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->graphicsView_5->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-     ui->graphicsView_6->setAlignment(Qt::AlignCenter);
+    ui->graphicsView_6->setAlignment(Qt::AlignCenter);
     ui->graphicsView_6->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->graphicsView_6->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->graphicsView_7->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-     ui->graphicsView_7->setAlignment(Qt::AlignCenter);
+    ui->graphicsView_7->setAlignment(Qt::AlignCenter);
     ui->graphicsView_7->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->graphicsView_8->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-     ui->graphicsView_8->setAlignment(Qt::AlignCenter);
+    ui->graphicsView_8->setAlignment(Qt::AlignCenter);
     ui->graphicsView_8->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->graphicsView_9->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-     ui->graphicsView_9->setAlignment(Qt::AlignCenter);
+    ui->graphicsView_9->setAlignment(Qt::AlignCenter);
     ui->graphicsView_9->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->graphicsView_10->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-     ui->graphicsView_10->setAlignment(Qt::AlignCenter);
+    ui->graphicsView_10->setAlignment(Qt::AlignCenter);
     ui->graphicsView_10->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->graphicsView_11->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-     ui->graphicsView_11->setAlignment(Qt::AlignCenter);
+    ui->graphicsView_11->setAlignment(Qt::AlignCenter);
     ui->graphicsView_11->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->graphicsView_12->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-     ui->graphicsView_12->setAlignment(Qt::AlignCenter);
+    ui->graphicsView_12->setAlignment(Qt::AlignCenter);
     ui->graphicsView_12->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->graphicsView_13->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-     ui->graphicsView_13->setAlignment(Qt::AlignCenter);
+    ui->graphicsView_13->setAlignment(Qt::AlignCenter);
     ui->graphicsView_13->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->graphicsView_14->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-     ui->graphicsView_14->setAlignment(Qt::AlignCenter);
+    ui->graphicsView_14->setAlignment(Qt::AlignCenter);
     ui->graphicsView_14->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->graphicsView_15->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-     ui->graphicsView_15->setAlignment(Qt::AlignCenter);
+    ui->graphicsView_15->setAlignment(Qt::AlignCenter);
     ui->graphicsView_15->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     ui->graphicsView->setFrameStyle(0);
-   // ui->graphicsView->setStyleSheet("background: transparent");
+    ui->graphicsView->setStyleSheet("background: transparent");
     ui->graphicsView_2->setFrameStyle(0);
     ui->graphicsView_3->setFrameStyle(0);
     ui->graphicsView_4->setFrameStyle(0);
@@ -97,62 +97,6 @@ paintform::paintform(QWidget *parent) :
 
     ui->checkBox_16->setEnabled(false);
 
-    QGraphicsScene* scene2 = new QGraphicsScene();  
-    ui->graphicsView_2->setScene(scene2);
-    QGraphicsScene* scene3 = new QGraphicsScene();
-    scene3->setSceneRect(QRectF(0,0,puzzlew,puzzleh));
-    ui->graphicsView_3->setScene(scene3);
-    QGraphicsScene* scene4 = new QGraphicsScene();
-    scene4->setSceneRect(QRectF(0,0,puzzlew,puzzleh));
-    ui->graphicsView_4->setScene(scene4);
-    QGraphicsScene* scene5 = new QGraphicsScene();
-    scene5->setSceneRect(QRectF(0,0,puzzlew,puzzleh));
-    ui->graphicsView_5->setScene(scene5);    
-    QGraphicsScene* scene6 = new QGraphicsScene();
-    scene6->setSceneRect(QRectF(0,0,puzzlew,puzzleh));
-    ui->graphicsView_6->setScene(scene6);
-    QGraphicsScene* scene7 = new QGraphicsScene();
-    scene7->setSceneRect(QRectF(0,0,puzzlew,puzzleh));
-    ui->graphicsView_7->setScene(scene7);
-    QGraphicsScene* scene8 = new QGraphicsScene();
-    scene8->setSceneRect(QRectF(0,0,puzzlew,puzzleh));
-    ui->graphicsView_8->setScene(scene8);
-    QGraphicsScene* scene9 = new QGraphicsScene();
-    scene9->setSceneRect(QRectF(0,0,puzzlew,puzzleh));
-    ui->graphicsView_9->setScene(scene9);
-    QGraphicsScene* scene10 = new QGraphicsScene();
-    scene10->setSceneRect(QRectF(0,0,puzzlew,puzzleh));
-    ui->graphicsView_10->setScene(scene10);
-    QGraphicsScene* scene11 = new QGraphicsScene();
-    scene11->setSceneRect(QRectF(0,0,puzzlew,puzzleh));
-    ui->graphicsView_11->setScene(scene11);
-    QGraphicsScene* scene12 = new QGraphicsScene();
-    scene12->setSceneRect(QRectF(0,0,puzzlew,puzzleh));
-    ui->graphicsView_12->setScene(scene12);
-    QGraphicsScene* scene13 = new QGraphicsScene();
-    scene13->setSceneRect(QRectF(0,0,puzzlew,puzzleh));
-    ui->graphicsView_13->setScene(scene13);
-    QGraphicsScene* scene14 = new QGraphicsScene();
-    scene14->setSceneRect(QRectF(0,0,puzzlew,puzzleh));
-    ui->graphicsView_14->setScene(scene14);
-    QGraphicsScene* scene15 = new QGraphicsScene();
-    scene15->setSceneRect(QRectF(0,0,puzzlew,puzzleh));
-    ui->graphicsView_15->setScene(scene15);
-
-    ui->graphicsView_2->setVisible(false);
-    ui->graphicsView_3->setVisible(false);
-    ui->graphicsView_4->setVisible(false);
-    ui->graphicsView_5->setVisible(false);
-    ui->graphicsView_6->setVisible(false);
-    ui->graphicsView_7->setVisible(false);
-    ui->graphicsView_8->setVisible(false);
-    ui->graphicsView_9->setVisible(false);
-    ui->graphicsView_10->setVisible(false);
-    ui->graphicsView_11->setVisible(false);
-    ui->graphicsView_12->setVisible(false);
-    ui->graphicsView_13->setVisible(false);
-    ui->graphicsView_14->setVisible(false);
-    ui->graphicsView_15->setVisible(false);
     ui->graphicsView_6->setGeometry(50,50,300,200);
     ui->graphicsView_7->setGeometry(350,50,300,200);
     ui->graphicsView_8->setGeometry(650,50,300,200);
@@ -169,6 +113,66 @@ paintform::paintform(QWidget *parent) :
     ui->graphicsView_13->setGeometry(650,450,300,200);
     ui->graphicsView_14->setGeometry(950,450,300,200);
     ui->graphicsView_15->setGeometry(1250,450,300,200);
+
+    scene->setSceneRect(ui->graphicsView->rect());
+    ui->graphicsView->setScene(scene);
+    scene2 = new QGraphicsScene();
+    ui->graphicsView_2->setScene(scene2);
+    scene3 = new QGraphicsScene();
+    scene3->setSceneRect(ui->graphicsView_3->rect());
+    ui->graphicsView_3->setScene(scene3);
+    scene4 = new QGraphicsScene();
+    scene4->setSceneRect(ui->graphicsView_4->rect());
+    ui->graphicsView_4->setScene(scene4);
+    scene5 = new QGraphicsScene();
+    scene5->setSceneRect(ui->graphicsView_5->rect());
+    ui->graphicsView_5->setScene(scene5);    
+    scene6 = new QGraphicsScene();
+    scene6->setSceneRect(ui->graphicsView_6->rect());
+    ui->graphicsView_6->setScene(scene6);
+    scene7 = new QGraphicsScene();
+    scene7->setSceneRect(ui->graphicsView_7->rect());
+    ui->graphicsView_7->setScene(scene7);
+    scene8 = new QGraphicsScene();
+    scene8->setSceneRect(ui->graphicsView_8->rect());
+    ui->graphicsView_8->setScene(scene8);
+    scene9 = new QGraphicsScene();
+    scene9->setSceneRect(ui->graphicsView_9->rect());
+    ui->graphicsView_9->setScene(scene9);
+    scene10 = new QGraphicsScene();
+    scene10->setSceneRect(ui->graphicsView_10->rect());
+    ui->graphicsView_10->setScene(scene10);
+    scene11 = new QGraphicsScene();
+    scene11->setSceneRect(ui->graphicsView_11->rect());
+    ui->graphicsView_11->setScene(scene11);
+    scene12 = new QGraphicsScene();
+    scene12->setSceneRect(ui->graphicsView_12->rect());
+    ui->graphicsView_12->setScene(scene12);
+    scene13 = new QGraphicsScene();
+    scene13->setSceneRect(ui->graphicsView_13->rect());
+    ui->graphicsView_13->setScene(scene13);
+    scene14 = new QGraphicsScene();
+    scene14->setSceneRect(ui->graphicsView_14->rect());
+    ui->graphicsView_14->setScene(scene14);
+    scene15 = new QGraphicsScene();
+    scene15->setSceneRect(ui->graphicsView_15->rect());
+    ui->graphicsView_15->setScene(scene15);
+
+    ui->graphicsView_2->setVisible(false);
+    ui->graphicsView_3->setVisible(false);
+    ui->graphicsView_4->setVisible(false);
+    ui->graphicsView_5->setVisible(false);
+    ui->graphicsView_6->setVisible(false);
+    ui->graphicsView_7->setVisible(false);
+    ui->graphicsView_8->setVisible(false);
+    ui->graphicsView_9->setVisible(false);
+    ui->graphicsView_10->setVisible(false);
+    ui->graphicsView_11->setVisible(false);
+    ui->graphicsView_12->setVisible(false);
+    ui->graphicsView_13->setVisible(false);
+    ui->graphicsView_14->setVisible(false);
+    ui->graphicsView_15->setVisible(false);
+
     scene->randfixcolor=true;
     ui->radioButton_6->setChecked(true);
 
@@ -188,10 +192,6 @@ paintform::paintform(QWidget *parent) :
     showestatt=true;
 
     ui->checkBox_17->setEnabled(false);
-
-  //  scene->setSceneRect(ui->graphicsView->rect());
-    scene->setSceneRect(QRectF(0,0, ui->graphicsView->width(), ui->graphicsView->height()));
-    ui->graphicsView->setScene(scene);
     ui->pushButton_3->setGeometry(660,865,100,30);
     ui->radioButton_4->setGeometry(740,905,150,20);
     ui->radioButton_5->setGeometry(740,930,150,20);
@@ -484,10 +484,11 @@ paintform::paintform(QWidget *parent) :
     fd.setPath(folderpath);
     imglist = fd.entryList(QStringList() << "*.jpg" << "*.JPG",QDir::Files);
     randnumb = vector<int>(imglist.length());
+    randnumb.resize(imglist.length());
     iota(randnumb.begin(), randnumb.end(), 0);
     random_shuffle(randnumb.begin(), randnumb.end());
 
-    minimode=false;
+    iconsready=false;
     pmarray.resize(imglist.length());
     onepicarr.resize(15);
 
@@ -701,7 +702,7 @@ void paintform::updatefreqarrs(double deltat, double thetat, double alphat, doub
         bet/=pt;
         estattn=((1-thet/bet)-0.4)/0.4*100;
     }
-    if (estattn<0) estattn=0;
+    if (estattn<5) estattn=5;
     if (estattn>100) estattn=100;
     estatt_arr[numfrsamples]=estattn;    
     fxc[numfrsamples]=numfrsamples;
@@ -757,20 +758,18 @@ void paintform::initpics()
     ui->graphicsView_2->setVisible(true);
     if ((puzzlemode) && (setloaded))
         temp = ui->graphicsView_2->grab(ui->graphicsView_2->sceneRect().toRect());
-    ui->graphicsView_2->grab(ui->graphicsView_2->sceneRect().toRect());
     for (int i=0; i<imglist.length(); i++)
     {
         filename=folderpath+"/"+imglist.at(i);
         pm.load(filename);
        // ui->graphicsView_2->setStyleSheet("border: 0px");
        // ui->graphicsView_2->setContentsMargins(0,0,0,0);
-        ui->graphicsView_2->scene()->clear();
-        ui->graphicsView_2->setAlignment(Qt::AlignCenter);
-        ui->graphicsView_2->scene()->addPixmap(pm.scaled(puzzlew,puzzleh,rationmode,Qt::SmoothTransformation));
-       // ui->graphicsView_2->setAlignment(Qt::AlignCenter);
+        ui->graphicsView_2->scene()->clear();  
+        ui->graphicsView_2->scene()->addPixmap(pm.scaled(puzzlew,puzzleh,rationmode,Qt::SmoothTransformation));       
         pmarray[i] = ui->graphicsView_2->grab(ui->graphicsView_2->sceneRect().toRect());
     }
-    minimode=true;
+    iconsready=true;
+    firstpuzzle=true;
     ui->graphicsView_2->scene()->clear();
     if ((puzzlemode) && (setloaded))
         ui->graphicsView_2->scene()->addPixmap(temp.scaled(puzzlew,puzzleh,rationmode,Qt::SmoothTransformation));
@@ -943,14 +942,527 @@ void paintform::updatemeditation(int t)
     }
 }
 
+void paintform::updateset_withlimitpics()
+{
+    ui->graphicsView_2->scene()->clear();
+    ui->graphicsView_2->scene()->addPixmap(pmarray[currentindexes[0]]);
+    currimglist[0]=folderpath+"/"+imglist.at(currentindexes[0]);
+
+    ui->graphicsView_3->scene()->clear();
+    ui->graphicsView_3->scene()->addPixmap(pmarray[currentindexes[1]]);
+    currimglist[1]=folderpath+"/"+imglist.at(currentindexes[1]);
+
+    ui->graphicsView_4->scene()->clear();
+    ui->graphicsView_4->scene()->addPixmap(pmarray[currentindexes[2]]);
+    currimglist[2]=folderpath+"/"+imglist.at(currentindexes[2]);
+
+    ui->graphicsView_5->scene()->clear();
+    ui->graphicsView_5->scene()->addPixmap(pmarray[currentindexes[3]]);
+    currimglist[3]=folderpath+"/"+imglist.at(currentindexes[3]);
+
+    ui->graphicsView_6->scene()->clear();
+    ui->graphicsView_6->scene()->addPixmap(pmarray[currentindexes[4]]);
+    currimglist[4]=folderpath+"/"+imglist.at(currentindexes[4]);
+
+    ui->graphicsView_7->scene()->clear();
+    ui->graphicsView_7->scene()->addPixmap(pmarray[currentindexes[5]]);
+    currimglist[5]=folderpath+"/"+imglist.at(currentindexes[5]);
+
+    ui->graphicsView_8->scene()->clear();
+    ui->graphicsView_8->scene()->addPixmap(pmarray[currentindexes[6]]);
+    currimglist[6]=folderpath+"/"+imglist.at(currentindexes[6]);
+
+    ui->graphicsView_9->scene()->clear();
+    ui->graphicsView_9->scene()->addPixmap(pmarray[currentindexes[7]]);
+    currimglist[7]=folderpath+"/"+imglist.at(currentindexes[7]);
+
+    ui->graphicsView_10->scene()->clear();
+    ui->graphicsView_10->scene()->addPixmap(pmarray[currentindexes[8]]);
+    currimglist[8]=folderpath+"/"+imglist.at(currentindexes[8]);
+
+    ui->graphicsView_11->scene()->clear();
+    ui->graphicsView_11->scene()->addPixmap(pmarray[currentindexes[9]]);
+    currimglist[9]=folderpath+"/"+imglist.at(currentindexes[9]);
+
+    ui->graphicsView_12->scene()->clear();
+    ui->graphicsView_12->scene()->addPixmap(pmarray[currentindexes[10]]);
+    currimglist[10]=folderpath+"/"+imglist.at(currentindexes[10]);
+
+    ui->graphicsView_13->scene()->clear();
+    ui->graphicsView_13->scene()->addPixmap(pmarray[currentindexes[11]]);
+    currimglist[11]=folderpath+"/"+imglist.at(currentindexes[11]);
+
+    ui->graphicsView_14->scene()->clear();
+    ui->graphicsView_14->scene()->addPixmap(pmarray[currentindexes[12]]);
+    currimglist[12]=folderpath+"/"+imglist.at(currentindexes[12]);
+
+    ui->graphicsView_15->scene()->clear();
+    ui->graphicsView_15->scene()->addPixmap(pmarray[currentindexes[13]]);
+    currimglist[13]=folderpath+"/"+imglist.at(currentindexes[13]);
+}
+
+void paintform::updateset_allpics()
+{
+    ui->graphicsView_2->scene()->clear();
+    ui->graphicsView_2->scene()->addPixmap(pmarray[randnumb[0]]);
+    currimglist[0]=folderpath+"/"+imglist.at(randnumb[0]);
+
+    ui->graphicsView_3->scene()->clear();
+    ui->graphicsView_3->scene()->addPixmap(pmarray[randnumb[1]]);
+    currimglist[1]=folderpath+"/"+imglist.at(randnumb[1]);
+
+    ui->graphicsView_4->scene()->clear();
+    ui->graphicsView_4->scene()->addPixmap(pmarray[randnumb[2]]);
+    currimglist[2]=folderpath+"/"+imglist.at(randnumb[2]);
+
+    ui->graphicsView_5->scene()->clear();
+    ui->graphicsView_5->scene()->addPixmap(pmarray[randnumb[3]]);
+    currimglist[3]=folderpath+"/"+imglist.at(randnumb[3]);
+
+    ui->graphicsView_6->scene()->clear();
+    ui->graphicsView_6->scene()->addPixmap(pmarray[randnumb[4]]);
+    currimglist[4]=folderpath+"/"+imglist.at(randnumb[4]);
+
+    ui->graphicsView_7->scene()->clear();
+    ui->graphicsView_7->scene()->addPixmap(pmarray[randnumb[5]]);
+    currimglist[5]=folderpath+"/"+imglist.at(randnumb[5]);
+
+    ui->graphicsView_8->scene()->clear();
+    ui->graphicsView_8->scene()->addPixmap(pmarray[randnumb[6]]);
+    currimglist[6]=folderpath+"/"+imglist.at(randnumb[6]);
+
+    ui->graphicsView_9->scene()->clear();
+    ui->graphicsView_9->scene()->addPixmap(pmarray[randnumb[7]]);
+    currimglist[7]=folderpath+"/"+imglist.at(randnumb[7]);
+
+    ui->graphicsView_10->scene()->clear();
+    ui->graphicsView_10->scene()->addPixmap(pmarray[randnumb[8]]);
+    currimglist[8]=folderpath+"/"+imglist.at(randnumb[8]);
+
+    ui->graphicsView_11->scene()->clear();
+    ui->graphicsView_11->scene()->addPixmap(pmarray[randnumb[9]]);
+    currimglist[9]=folderpath+"/"+imglist.at(randnumb[9]);
+
+    ui->graphicsView_12->scene()->clear();
+    ui->graphicsView_12->scene()->addPixmap(pmarray[randnumb[10]]);
+    currimglist[10]=folderpath+"/"+imglist.at(randnumb[10]);
+
+    ui->graphicsView_13->scene()->clear();
+    ui->graphicsView_13->scene()->addPixmap(pmarray[randnumb[11]]);
+    currimglist[11]=folderpath+"/"+imglist.at(randnumb[11]);
+
+    ui->graphicsView_14->scene()->clear();
+    ui->graphicsView_14->scene()->addPixmap(pmarray[randnumb[12]]);
+    currimglist[12]=folderpath+"/"+imglist.at(randnumb[12]);
+
+    ui->graphicsView_15->scene()->clear();
+    ui->graphicsView_15->scene()->addPixmap(pmarray[randnumb[13]]);
+    currimglist[13]=folderpath+"/"+imglist.at(randnumb[13]);
+}
+
+void paintform::updateset_singlepuzzle()
+{
+    random_shuffle(randpuzzlelocs.begin(), randpuzzlelocs.end());
+
+    ui->graphicsView_2->scene()->clear();
+    ui->graphicsView_2->scene()->addPixmap(onepicarr[randpuzzlelocs[0]]);
+
+    ui->graphicsView_3->scene()->clear();
+    ui->graphicsView_3->scene()->addPixmap(onepicarr[randpuzzlelocs[1]]);
+
+    ui->graphicsView_4->scene()->clear();
+    ui->graphicsView_4->scene()->addPixmap(onepicarr[randpuzzlelocs[2]]);
+
+    ui->graphicsView_5->scene()->clear();
+    ui->graphicsView_5->scene()->addPixmap(onepicarr[randpuzzlelocs[3]]);
+
+    ui->graphicsView_6->scene()->clear();
+    ui->graphicsView_6->scene()->addPixmap(onepicarr[randpuzzlelocs[4]]);
+
+    ui->graphicsView_7->scene()->clear();
+    ui->graphicsView_7->scene()->addPixmap(onepicarr[randpuzzlelocs[5]]);
+
+    ui->graphicsView_8->scene()->clear();
+    ui->graphicsView_8->scene()->addPixmap(onepicarr[randpuzzlelocs[6]]);
+
+    ui->graphicsView_9->scene()->clear();
+    ui->graphicsView_9->scene()->addPixmap(onepicarr[randpuzzlelocs[7]]);
+
+    ui->graphicsView_10->scene()->clear();
+    ui->graphicsView_10->scene()->addPixmap(onepicarr[randpuzzlelocs[8]]);
+
+    ui->graphicsView_11->scene()->clear();
+    ui->graphicsView_11->scene()->addPixmap(onepicarr[randpuzzlelocs[9]]);
+
+    ui->graphicsView_12->scene()->clear();
+    ui->graphicsView_12->scene()->addPixmap(onepicarr[randpuzzlelocs[10]]);
+
+    ui->graphicsView_13->scene()->clear();
+    ui->graphicsView_13->scene()->addPixmap(onepicarr[randpuzzlelocs[11]]);
+
+    ui->graphicsView_14->scene()->clear();
+    ui->graphicsView_14->scene()->addPixmap(onepicarr[randpuzzlelocs[12]]);
+
+    ui->graphicsView_15->scene()->clear();
+    ui->graphicsView_15->scene()->addPixmap(onepicarr[randpuzzlelocs[13]]);
+
+    scene->clear();
+    scene->addPixmap(onepicarr[randpuzzlelocs[14]]);
+}
+
+void paintform::updateset_fillcorrectpuzzles()
+{
+    stpic0.clear();
+    for (int i=0; i<picsrestored; i++)
+    {
+        stpic0.insert(puzzlelocs[i]);
+        //   int t = qrand() % 15;
+        switch (puzzlelocs[i])
+        {
+        case 0:
+        {
+            if (collectiveflow)
+            {
+                pmtemp = scene->filterpuzzle(onepicarr[0],scene->attentt,theta_arr[numsamples-1],beta_arr[numsamples-1],gamma_arr[numsamples-1],alpha_arr[numsamples-1]);
+                ui->graphicsView_6->scene()->addPixmap(pmtemp.scaled(300,200));//pmarray[randnumb[i]]);
+            } else
+            {
+                ui->graphicsView_6->scene()->clear();
+                ui->graphicsView_6->scene()->addPixmap(onepicarr[0]);
+            }
+            break;
+        }
+        case 1:
+        {
+            if (collectiveflow)
+            {
+                pmtemp = scene->filterpuzzle(onepicarr[1],scene->attentt,theta_arr[numsamples-1],beta_arr[numsamples-1],gamma_arr[numsamples-1],alpha_arr[numsamples-1]);
+                ui->graphicsView_7->scene()->addPixmap(pmtemp.scaled(300,200));
+            }
+            else
+            {
+                ui->graphicsView_7->scene()->clear();
+                ui->graphicsView_7->scene()->addPixmap(onepicarr[1]);
+            }
+            break;
+        }
+        case 2:
+        {
+            if (collectiveflow)
+            {
+                pmtemp = scene->filterpuzzle(onepicarr[2],scene->attentt,theta_arr[numsamples-1],beta_arr[numsamples-1],gamma_arr[numsamples-1],alpha_arr[numsamples-1]);
+                ui->graphicsView_8->scene()->addPixmap(pmtemp.scaled(300,200));
+            }
+            else
+            {
+                ui->graphicsView_8->scene()->clear();
+                ui->graphicsView_8->scene()->addPixmap(onepicarr[2]);
+            }
+            break;
+        }
+        case 3:
+        {
+            if (collectiveflow)
+            {
+                pmtemp = scene->filterpuzzle(onepicarr[3],scene->attentt,theta_arr[numsamples-1],beta_arr[numsamples-1],gamma_arr[numsamples-1],alpha_arr[numsamples-1]);
+                ui->graphicsView_9->scene()->addPixmap(pmtemp.scaled(300,200));
+            }
+            else
+            {
+                ui->graphicsView_9->scene()->clear();
+                ui->graphicsView_9->scene()->addPixmap(onepicarr[3]);
+            }
+            break;
+        }
+        case 4:
+        {
+            if (collectiveflow)
+            {
+                pmtemp = scene->filterpuzzle(onepicarr[4],scene->attentt,theta_arr[numsamples-1],beta_arr[numsamples-1],gamma_arr[numsamples-1],alpha_arr[numsamples-1]);
+                ui->graphicsView_10->scene()->addPixmap(pmtemp.scaled(300,200));
+            }
+            else
+            {
+                ui->graphicsView_10->scene()->clear();
+                ui->graphicsView_10->scene()->addPixmap(onepicarr[4]);
+            }
+            break;
+        }
+        case 5:
+        {
+            if (collectiveflow)
+            {
+                pmtemp = scene->filterpuzzle(onepicarr[5],scene->attentt,theta_arr[numsamples-1],beta_arr[numsamples-1],gamma_arr[numsamples-1],alpha_arr[numsamples-1]);
+                ui->graphicsView_3->scene()->addPixmap(pmtemp.scaled(300,200));
+            }
+            else
+            {
+                ui->graphicsView_3->scene()->clear();
+                ui->graphicsView_3->scene()->addPixmap(onepicarr[5]);
+            }
+            break;
+        }
+        case 6:
+        {
+            if (collectiveflow)
+            {
+                pmtemp = scene->filterpuzzle(onepicarr[6],scene->attentt,theta_arr[numsamples-1],beta_arr[numsamples-1],gamma_arr[numsamples-1],alpha_arr[numsamples-1]);
+                ui->graphicsView_2->scene()->addPixmap(pmtemp.scaled(300,200));
+            }
+            else
+            {
+                ui->graphicsView_2->scene()->clear();
+                ui->graphicsView_2->scene()->addPixmap(onepicarr[6]);
+            }
+            break;
+        }
+        case 7:
+        {
+            if (collectiveflow)
+            {
+                pmtemp = scene->filterpuzzle(onepicarr[7],scene->attentt,theta_arr[numsamples-1],beta_arr[numsamples-1],gamma_arr[numsamples-1],alpha_arr[numsamples-1]);
+                scene->addPixmap(pmtemp.scaled(300,200));
+            }
+            else
+            {
+                scene->clear();
+                scene->addPixmap(onepicarr[7]);
+            }
+            break;
+        }
+        case 8:
+        {
+            if (collectiveflow)
+            {
+                pmtemp = scene->filterpuzzle(onepicarr[8],scene->attentt,theta_arr[numsamples-1],beta_arr[numsamples-1],gamma_arr[numsamples-1],alpha_arr[numsamples-1]);
+                ui->graphicsView_4->scene()->addPixmap(pmtemp.scaled(300,200));
+            }
+            else
+            {
+                ui->graphicsView_4->scene()->clear();
+                ui->graphicsView_4->scene()->addPixmap(onepicarr[8]);
+            }
+            break;
+        }
+        case 9:
+        {
+            if (collectiveflow)
+            {
+                pmtemp = scene->filterpuzzle(onepicarr[9],scene->attentt,theta_arr[numsamples-1],beta_arr[numsamples-1],gamma_arr[numsamples-1],alpha_arr[numsamples-1]);
+                ui->graphicsView_5->scene()->addPixmap(pmtemp.scaled(300,200));
+            }
+            else
+            {
+                ui->graphicsView_5->scene()->clear();
+                ui->graphicsView_5->scene()->addPixmap(onepicarr[9]);
+            }
+            break;
+        }
+        case 10:
+        {
+            if (collectiveflow)
+            {
+                pmtemp = scene->filterpuzzle(onepicarr[10],scene->attentt,theta_arr[numsamples-1],beta_arr[numsamples-1],gamma_arr[numsamples-1],alpha_arr[numsamples-1]);
+                ui->graphicsView_11->scene()->addPixmap(pmtemp.scaled(300,200));
+            }
+            else
+            {
+                ui->graphicsView_11->scene()->clear();
+                ui->graphicsView_11->scene()->addPixmap(onepicarr[10]);
+            }
+            break;
+        }
+        case 11:
+        {
+            if (collectiveflow)
+            {
+                pmtemp = scene->filterpuzzle(onepicarr[11],scene->attentt,theta_arr[numsamples-1],beta_arr[numsamples-1],gamma_arr[numsamples-1],alpha_arr[numsamples-1]);
+                ui->graphicsView_12->scene()->addPixmap(pmtemp.scaled(300,200));
+            }
+            else
+            {
+                ui->graphicsView_12->scene()->clear();
+                ui->graphicsView_12->scene()->addPixmap(onepicarr[11]);
+            }
+            break;
+        }
+        case 12:
+        {
+            if (collectiveflow)
+            {
+                pmtemp = scene->filterpuzzle(onepicarr[12],scene->attentt,theta_arr[numsamples-1],beta_arr[numsamples-1],gamma_arr[numsamples-1],alpha_arr[numsamples-1]);
+                ui->graphicsView_13->scene()->addPixmap(pmtemp.scaled(300,200));
+            }
+            else
+            {
+                ui->graphicsView_13->scene()->clear();
+                ui->graphicsView_13->scene()->addPixmap(onepicarr[12]);
+            }
+            break;
+        }
+        case 13:
+        {
+            if (collectiveflow)
+            {
+                pmtemp = scene->filterpuzzle(onepicarr[13],scene->attentt,theta_arr[numsamples-1],beta_arr[numsamples-1],gamma_arr[numsamples-1],alpha_arr[numsamples-1]);
+                ui->graphicsView_14->scene()->addPixmap(pmtemp.scaled(300,200));
+            }
+            else
+            {
+                ui->graphicsView_14->scene()->clear();
+                ui->graphicsView_14->scene()->addPixmap(onepicarr[13]);
+            }
+            break;
+        }
+        case 14:
+        {
+            if (collectiveflow)
+            {
+                pmtemp = scene->filterpuzzle(onepicarr[14],scene->attentt,theta_arr[numsamples-1],beta_arr[numsamples-1],gamma_arr[numsamples-1],alpha_arr[numsamples-1]);
+                ui->graphicsView_15->scene()->addPixmap(pmtemp.scaled(300,200));
+            }
+            else
+            {
+                ui->graphicsView_15->scene()->clear();
+                ui->graphicsView_15->scene()->addPixmap(onepicarr[14]);
+            }
+            break;
+        }
+        }
+    }
+}
+
+void paintform::updateset_fillcorrectpuzzles_single()
+{
+    if (!collectiveflow)
+    {
+        stres.clear();
+        set_difference(stpic1.begin(), stpic1.end(), stpic0.begin(), stpic0.end(),inserter(stres, stres.end()));
+        setsize=stres.size();
+        randpuzzlelocs.resize(setsize);
+        iterst = stres.begin();
+        for (int i=0; i<setsize; i++)
+        {
+            randpuzzlelocs[i]=*iterst;
+            iterst++;
+        }
+        random_shuffle(randpuzzlelocs.begin(), randpuzzlelocs.end());
+
+        sortpuzzlelocs.resize(setsize);
+        for (int i=0; i<setsize; i++)
+            sortpuzzlelocs[i]=randpuzzlelocs[i];
+        sort(sortpuzzlelocs.begin(),sortpuzzlelocs.end());
+
+        for (int i=0; i<setsize; i++)
+        {
+            switch (sortpuzzlelocs[i])
+            {
+            case 0:
+            {
+                ui->graphicsView_6->scene()->clear();
+                ui->graphicsView_6->scene()->addPixmap(onepicarr[randpuzzlelocs[i]]);
+                break;
+            }
+            case 1:
+            {
+                ui->graphicsView_7->scene()->clear();
+                ui->graphicsView_7->scene()->addPixmap(onepicarr[randpuzzlelocs[i]]);
+                break;
+            }
+            case 2:
+            {
+                ui->graphicsView_8->scene()->clear();
+                ui->graphicsView_8->scene()->addPixmap(onepicarr[randpuzzlelocs[i]]);
+                break;
+            }
+            case 3:
+            {
+                ui->graphicsView_9->scene()->clear();
+                ui->graphicsView_9->scene()->addPixmap(onepicarr[randpuzzlelocs[i]]);
+                break;
+            }
+            case 4:
+            {
+                ui->graphicsView_10->scene()->clear();
+                ui->graphicsView_10->scene()->addPixmap(onepicarr[randpuzzlelocs[i]]);
+                break;
+            }
+            case 5:
+            {
+                ui->graphicsView_3->scene()->clear();
+                ui->graphicsView_3->scene()->addPixmap(onepicarr[randpuzzlelocs[i]]);
+                break;
+            }
+            case 6:
+            {
+                ui->graphicsView_2->scene()->clear();
+                ui->graphicsView_2->scene()->addPixmap(onepicarr[randpuzzlelocs[i]]);
+                break;
+            }
+            case 7:
+            {
+                scene->clear();
+                scene->addPixmap(onepicarr[randpuzzlelocs[i]]);
+                break;
+            }
+            case 8:
+            {
+                ui->graphicsView_4->scene()->clear();
+                ui->graphicsView_4->scene()->addPixmap(onepicarr[randpuzzlelocs[i]]);
+                break;
+            }
+            case 9:
+            {
+                ui->graphicsView_5->scene()->clear();
+                ui->graphicsView_5->scene()->addPixmap(onepicarr[randpuzzlelocs[i]]);
+                break;
+            }
+            case 10:
+            {
+                ui->graphicsView_11->scene()->clear();
+                ui->graphicsView_11->scene()->addPixmap(onepicarr[randpuzzlelocs[i]]);
+                break;
+            }
+            case 11:
+            {
+                ui->graphicsView_12->scene()->clear();
+                ui->graphicsView_12->scene()->addPixmap(onepicarr[randpuzzlelocs[i]]);
+                break;
+            }
+            case 12:
+            {
+                ui->graphicsView_13->scene()->clear();
+                ui->graphicsView_13->scene()->addPixmap(onepicarr[randpuzzlelocs[i]]);
+                break;
+            }
+            case 13:
+            {
+                ui->graphicsView_14->scene()->clear();
+                ui->graphicsView_14->scene()->addPixmap(onepicarr[randpuzzlelocs[i]]);
+                break;
+            }
+            case 14:
+            {
+                ui->graphicsView_15->scene()->clear();
+                ui->graphicsView_15->scene()->addPixmap(onepicarr[randpuzzlelocs[i]]);
+                break;
+            }
+            }
+        }
+    }
+}
+
 void paintform::randompics()
 {
     random_shuffle(randnumb.begin(), randnumb.end());
     if (!limitpicschange)
-    for (int i=0; i<14; i++)
-        currentindexes[i]=randnumb[i];
+        for (int i=0; i<14; i++)
+            currentindexes[i]=randnumb[i];
+
+    // flowmode - gathering puzzle, collectiveflow - with overlays of different pics
+    if (!flowmode)
     {
-        if ((limitpicschange) && (!flowmode))
+        if (limitpicschange)
         {
             random_shuffle(randnumb.begin(), randnumb.end());
             for (int i=0; i<picsforchange; i++)
@@ -958,577 +1470,31 @@ void paintform::randompics()
                 int t = qrand() % 14;
                 currentindexes[t]=randnumb[i];
             }
-
-            ui->graphicsView_2->scene()->clear();
-            ui->graphicsView_2->scene()->addPixmap(pmarray[currentindexes[0]]);
-            currimglist[0]=folderpath+"/"+imglist.at(currentindexes[0]);
-
-            ui->graphicsView_3->scene()->clear();
-            ui->graphicsView_3->scene()->addPixmap(pmarray[currentindexes[1]]);
-            currimglist[1]=folderpath+"/"+imglist.at(currentindexes[1]);
-
-            ui->graphicsView_4->scene()->clear();
-            ui->graphicsView_4->scene()->addPixmap(pmarray[currentindexes[2]]);
-            currimglist[2]=folderpath+"/"+imglist.at(currentindexes[2]);
-
-            ui->graphicsView_5->scene()->clear();
-            ui->graphicsView_5->scene()->addPixmap(pmarray[currentindexes[3]]);
-            currimglist[3]=folderpath+"/"+imglist.at(currentindexes[3]);
-
-            ui->graphicsView_6->scene()->clear();
-            ui->graphicsView_6->scene()->addPixmap(pmarray[currentindexes[4]]);
-            currimglist[4]=folderpath+"/"+imglist.at(currentindexes[4]);
-
-            ui->graphicsView_7->scene()->clear();
-            ui->graphicsView_7->scene()->addPixmap(pmarray[currentindexes[5]]);
-            currimglist[5]=folderpath+"/"+imglist.at(currentindexes[5]);
-
-            ui->graphicsView_8->scene()->clear();
-            ui->graphicsView_8->scene()->addPixmap(pmarray[currentindexes[6]]);
-            currimglist[6]=folderpath+"/"+imglist.at(currentindexes[6]);
-
-            ui->graphicsView_9->scene()->clear();
-            ui->graphicsView_9->scene()->addPixmap(pmarray[currentindexes[7]]);
-            currimglist[7]=folderpath+"/"+imglist.at(currentindexes[7]);
-
-            ui->graphicsView_10->scene()->clear();
-            ui->graphicsView_10->scene()->addPixmap(pmarray[currentindexes[8]]);
-            currimglist[8]=folderpath+"/"+imglist.at(currentindexes[8]);
-
-            ui->graphicsView_11->scene()->clear();
-            ui->graphicsView_11->scene()->addPixmap(pmarray[currentindexes[9]]);
-            currimglist[9]=folderpath+"/"+imglist.at(currentindexes[9]);
-
-            ui->graphicsView_12->scene()->clear();
-            ui->graphicsView_12->scene()->addPixmap(pmarray[currentindexes[10]]);
-            currimglist[10]=folderpath+"/"+imglist.at(currentindexes[10]);
-
-            ui->graphicsView_13->scene()->clear();
-            ui->graphicsView_13->scene()->addPixmap(pmarray[currentindexes[11]]);
-            currimglist[11]=folderpath+"/"+imglist.at(currentindexes[11]);
-
-            ui->graphicsView_14->scene()->clear();
-            ui->graphicsView_14->scene()->addPixmap(pmarray[currentindexes[12]]);
-            currimglist[12]=folderpath+"/"+imglist.at(currentindexes[12]);
-
-            ui->graphicsView_15->scene()->clear();
-            ui->graphicsView_15->scene()->addPixmap(pmarray[currentindexes[13]]);
-            currimglist[13]=folderpath+"/"+imglist.at(currentindexes[13]);
+            updateset_withlimitpics();
         }
-        else if ((!flowmode) && (collectiveflow))
+        else if (collectiveflow)
+            updateset_allpics();
+        else
+            updateset_singlepuzzle();
+    }
+    else
+    {
+        // firstly fill all fragments with different pics randomly, then recover N parts from puzzle pic
+        if (collectiveflow)
         {
-
-            ui->graphicsView_2->scene()->clear();
-            ui->graphicsView_2->scene()->addPixmap(pmarray[randnumb[0]]);
-            currimglist[0]=folderpath+"/"+imglist.at(randnumb[0]);
-
-            ui->graphicsView_3->scene()->clear();
-            ui->graphicsView_3->scene()->addPixmap(pmarray[randnumb[1]]);
-            currimglist[1]=folderpath+"/"+imglist.at(randnumb[1]);
-
-            ui->graphicsView_4->scene()->clear();
-            ui->graphicsView_4->scene()->addPixmap(pmarray[randnumb[2]]);
-            currimglist[2]=folderpath+"/"+imglist.at(randnumb[2]);
-
-            ui->graphicsView_5->scene()->clear();
-            ui->graphicsView_5->scene()->addPixmap(pmarray[randnumb[3]]);
-            currimglist[3]=folderpath+"/"+imglist.at(randnumb[3]);
-
-            ui->graphicsView_6->scene()->clear();
-            ui->graphicsView_6->scene()->addPixmap(pmarray[randnumb[4]]);
-            currimglist[4]=folderpath+"/"+imglist.at(randnumb[4]);
-
-            ui->graphicsView_7->scene()->clear();
-            ui->graphicsView_7->scene()->addPixmap(pmarray[randnumb[5]]);
-            currimglist[5]=folderpath+"/"+imglist.at(randnumb[5]);
-
-            ui->graphicsView_8->scene()->clear();
-            ui->graphicsView_8->scene()->addPixmap(pmarray[randnumb[6]]);
-            currimglist[6]=folderpath+"/"+imglist.at(randnumb[6]);
-
-            ui->graphicsView_9->scene()->clear();
-            ui->graphicsView_9->scene()->addPixmap(pmarray[randnumb[7]]);
-            currimglist[7]=folderpath+"/"+imglist.at(randnumb[7]);
-
-            ui->graphicsView_10->scene()->clear();
-            ui->graphicsView_10->scene()->addPixmap(pmarray[randnumb[8]]);
-            currimglist[8]=folderpath+"/"+imglist.at(randnumb[8]);
-
-            ui->graphicsView_11->scene()->clear();
-            ui->graphicsView_11->scene()->addPixmap(pmarray[randnumb[9]]);
-            currimglist[9]=folderpath+"/"+imglist.at(randnumb[9]);
-
-            ui->graphicsView_12->scene()->clear();
-            ui->graphicsView_12->scene()->addPixmap(pmarray[randnumb[10]]);
-            currimglist[10]=folderpath+"/"+imglist.at(randnumb[10]);
-
-            ui->graphicsView_13->scene()->clear();
-            ui->graphicsView_13->scene()->addPixmap(pmarray[randnumb[11]]);
-            currimglist[11]=folderpath+"/"+imglist.at(randnumb[11]);
-
-            ui->graphicsView_14->scene()->clear();
-            ui->graphicsView_14->scene()->addPixmap(pmarray[randnumb[12]]);
-            currimglist[12]=folderpath+"/"+imglist.at(randnumb[12]);
-
-            ui->graphicsView_15->scene()->clear();
-            ui->graphicsView_15->scene()->addPixmap(pmarray[randnumb[13]]);
-            currimglist[13]=folderpath+"/"+imglist.at(randnumb[13]);
-        } else
-        if ((!flowmode) && (!collectiveflow))
-        {
-            random_shuffle(randpuzzlelocs.begin(), randpuzzlelocs.end());
-
-            ui->graphicsView_2->scene()->clear();
-            ui->graphicsView_2->scene()->addPixmap(onepicarr[randpuzzlelocs[0]]);
-
-            ui->graphicsView_3->scene()->clear();
-            ui->graphicsView_3->scene()->addPixmap(onepicarr[randpuzzlelocs[1]]);
-
-            ui->graphicsView_4->scene()->clear();
-            ui->graphicsView_4->scene()->addPixmap(onepicarr[randpuzzlelocs[2]]);
-
-            ui->graphicsView_5->scene()->clear();
-            ui->graphicsView_5->scene()->addPixmap(onepicarr[randpuzzlelocs[3]]);
-
-            ui->graphicsView_6->scene()->clear();
-            ui->graphicsView_6->scene()->addPixmap(onepicarr[randpuzzlelocs[4]]);
-
-            ui->graphicsView_7->scene()->clear();
-            ui->graphicsView_7->scene()->addPixmap(onepicarr[randpuzzlelocs[5]]);
-
-            ui->graphicsView_8->scene()->clear();
-            ui->graphicsView_8->scene()->addPixmap(onepicarr[randpuzzlelocs[6]]);
-
-            ui->graphicsView_9->scene()->clear();
-            ui->graphicsView_9->scene()->addPixmap(onepicarr[randpuzzlelocs[7]]);
-
-            ui->graphicsView_10->scene()->clear();
-            ui->graphicsView_10->scene()->addPixmap(onepicarr[randpuzzlelocs[8]]);
-
-            ui->graphicsView_11->scene()->clear();
-            ui->graphicsView_11->scene()->addPixmap(onepicarr[randpuzzlelocs[9]]);
-
-            ui->graphicsView_12->scene()->clear();
-            ui->graphicsView_12->scene()->addPixmap(onepicarr[randpuzzlelocs[10]]);
-
-            ui->graphicsView_13->scene()->clear();
-            ui->graphicsView_13->scene()->addPixmap(onepicarr[randpuzzlelocs[11]]);
-
-            ui->graphicsView_14->scene()->clear();
-            ui->graphicsView_14->scene()->addPixmap(onepicarr[randpuzzlelocs[12]]);
-
-            ui->graphicsView_15->scene()->clear();
-            ui->graphicsView_15->scene()->addPixmap(onepicarr[randpuzzlelocs[13]]);
-
+            updateset_allpics();
             scene->clear();
-            scene->addPixmap(onepicarr[randpuzzlelocs[14]]);
+            scene->addPixmap(pmarray[randnumb[18]]);
         }
-        if (flowmode)
-        {
-           // random_shuffle(randnumb.begin(), randnumb.end());
 
-            if (collectiveflow)
-            {
-                ui->graphicsView_2->scene()->clear();
-                ui->graphicsView_2->scene()->addPixmap(pmarray[randnumb[0]]);
-                currimglist[0]=folderpath+"/"+imglist.at(randnumb[0]);
+        //  matchpuzzle();
+        scene->randr=qrand()%256; // for colorizing parts
+        scene->randg=qrand()%256;
+        scene->randb=qrand()%256;
 
-                ui->graphicsView_3->scene()->clear();
-                ui->graphicsView_3->scene()->addPixmap(pmarray[randnumb[1]]);
-                currimglist[1]=folderpath+"/"+imglist.at(randnumb[1]);
-
-                ui->graphicsView_4->scene()->clear();
-                ui->graphicsView_4->scene()->addPixmap(pmarray[randnumb[2]]);
-                currimglist[2]=folderpath+"/"+imglist.at(randnumb[2]);
-
-                ui->graphicsView_5->scene()->clear();
-                ui->graphicsView_5->scene()->addPixmap(pmarray[randnumb[3]]);
-                currimglist[3]=folderpath+"/"+imglist.at(randnumb[3]);
-
-                ui->graphicsView_6->scene()->clear();
-                ui->graphicsView_6->scene()->addPixmap(pmarray[randnumb[4]]);
-                currimglist[4]=folderpath+"/"+imglist.at(randnumb[4]);
-
-                ui->graphicsView_7->scene()->clear();
-                ui->graphicsView_7->scene()->addPixmap(pmarray[randnumb[5]]);
-                currimglist[5]=folderpath+"/"+imglist.at(randnumb[5]);
-
-                ui->graphicsView_8->scene()->clear();
-                ui->graphicsView_8->scene()->addPixmap(pmarray[randnumb[6]]);
-                currimglist[6]=folderpath+"/"+imglist.at(randnumb[6]);
-
-                ui->graphicsView_9->scene()->clear();
-                ui->graphicsView_9->scene()->addPixmap(pmarray[randnumb[7]]);
-                currimglist[7]=folderpath+"/"+imglist.at(randnumb[7]);
-
-                ui->graphicsView_10->scene()->clear();
-                ui->graphicsView_10->scene()->addPixmap(pmarray[randnumb[8]]);
-                currimglist[8]=folderpath+"/"+imglist.at(randnumb[8]);
-
-                ui->graphicsView_11->scene()->clear();
-                ui->graphicsView_11->scene()->addPixmap(pmarray[randnumb[9]]);
-                currimglist[9]=folderpath+"/"+imglist.at(randnumb[9]);
-
-                ui->graphicsView_12->scene()->clear();
-                ui->graphicsView_12->scene()->addPixmap(pmarray[randnumb[10]]);
-                currimglist[10]=folderpath+"/"+imglist.at(randnumb[10]);
-
-                ui->graphicsView_13->scene()->clear();
-                ui->graphicsView_13->scene()->addPixmap(pmarray[randnumb[11]]);
-                currimglist[11]=folderpath+"/"+imglist.at(randnumb[11]);
-
-                ui->graphicsView_14->scene()->clear();
-                ui->graphicsView_14->scene()->addPixmap(pmarray[randnumb[12]]);
-                currimglist[12]=folderpath+"/"+imglist.at(randnumb[12]);
-
-                ui->graphicsView_15->scene()->clear();
-                ui->graphicsView_15->scene()->addPixmap(pmarray[randnumb[13]]);
-                currimglist[13]=folderpath+"/"+imglist.at(randnumb[13]);
-
-                scene->clear();
-                scene->addPixmap(pmarray[randnumb[18]]);
-            }
-
-          //  matchpuzzle();
-            scene->randr=qrand()%256;
-            scene->randg=qrand()%256;
-            scene->randb=qrand()%256;
-            picsrestored = 15-picsforchange;
-            stpic0.clear();
-            for (int i=0; i<picsrestored; i++)
-            {
-                stpic0.insert(puzzlelocs[i]);
-                //   int t = qrand() % 15;
-                switch (puzzlelocs[i])
-                {
-                 case 0:
-                 {
-                    if (collectiveflow)
-                    {
-                        pmtemp = scene->filterpuzzle(onepicarr[0],scene->attentt,theta_arr[numsamples-1],beta_arr[numsamples-1],gamma_arr[numsamples-1],alpha_arr[numsamples-1]);
-                        ui->graphicsView_6->scene()->addPixmap(pmtemp.scaled(300,200));//pmarray[randnumb[i]]);
-                    } else
-                    {
-                        ui->graphicsView_6->scene()->clear();
-                        ui->graphicsView_6->scene()->addPixmap(onepicarr[0]);
-                    }
-                    break;
-                 }
-                 case 1:
-                 {
-                    if (collectiveflow)
-                    {
-                        pmtemp = scene->filterpuzzle(onepicarr[1],scene->attentt,theta_arr[numsamples-1],beta_arr[numsamples-1],gamma_arr[numsamples-1],alpha_arr[numsamples-1]);
-                        ui->graphicsView_7->scene()->addPixmap(pmtemp.scaled(300,200));
-                    }
-                    else
-                    {
-                        ui->graphicsView_7->scene()->clear();
-                        ui->graphicsView_7->scene()->addPixmap(onepicarr[1]);
-                    }
-                    break;
-                 }
-                 case 2:
-                 {
-                    if (collectiveflow)
-                    {
-                        pmtemp = scene->filterpuzzle(onepicarr[2],scene->attentt,theta_arr[numsamples-1],beta_arr[numsamples-1],gamma_arr[numsamples-1],alpha_arr[numsamples-1]);
-                        ui->graphicsView_8->scene()->addPixmap(pmtemp.scaled(300,200));
-                    }
-                    else
-                    {
-                        ui->graphicsView_8->scene()->clear();
-                        ui->graphicsView_8->scene()->addPixmap(onepicarr[2]);
-                    }
-                    break;
-                 }
-                 case 3:
-                 {
-                    if (collectiveflow)
-                    {
-                        pmtemp = scene->filterpuzzle(onepicarr[3],scene->attentt,theta_arr[numsamples-1],beta_arr[numsamples-1],gamma_arr[numsamples-1],alpha_arr[numsamples-1]);
-                        ui->graphicsView_9->scene()->addPixmap(pmtemp.scaled(300,200));
-                    }
-                    else
-                    {
-                        ui->graphicsView_9->scene()->clear();
-                        ui->graphicsView_9->scene()->addPixmap(onepicarr[3]);
-                    }
-                    break;
-                 }
-                 case 4:
-                 {
-                    if (collectiveflow)
-                    {
-                        pmtemp = scene->filterpuzzle(onepicarr[4],scene->attentt,theta_arr[numsamples-1],beta_arr[numsamples-1],gamma_arr[numsamples-1],alpha_arr[numsamples-1]);
-                        ui->graphicsView_10->scene()->addPixmap(pmtemp.scaled(300,200));
-                    }
-                    else
-                    {
-                        ui->graphicsView_10->scene()->clear();
-                        ui->graphicsView_10->scene()->addPixmap(onepicarr[4]);
-                    }
-                    break;
-                 }
-                 case 5:
-                 {
-                    if (collectiveflow)
-                    {
-                        pmtemp = scene->filterpuzzle(onepicarr[5],scene->attentt,theta_arr[numsamples-1],beta_arr[numsamples-1],gamma_arr[numsamples-1],alpha_arr[numsamples-1]);
-                        ui->graphicsView_3->scene()->addPixmap(pmtemp.scaled(300,200));
-                    }
-                    else
-                    {
-                        ui->graphicsView_3->scene()->clear();
-                        ui->graphicsView_3->scene()->addPixmap(onepicarr[5]);
-                    }
-                    break;
-                 }
-                 case 6:
-                 {
-                    if (collectiveflow)
-                    {
-                        pmtemp = scene->filterpuzzle(onepicarr[6],scene->attentt,theta_arr[numsamples-1],beta_arr[numsamples-1],gamma_arr[numsamples-1],alpha_arr[numsamples-1]);
-                        ui->graphicsView_2->scene()->addPixmap(pmtemp.scaled(300,200));
-                    }
-                    else
-                    {
-                        ui->graphicsView_2->scene()->clear();
-                        ui->graphicsView_2->scene()->addPixmap(onepicarr[6]);
-                    }
-                    break;
-                 }
-                 case 7:
-                 {
-                    if (collectiveflow)
-                    {
-                        pmtemp = scene->filterpuzzle(onepicarr[7],scene->attentt,theta_arr[numsamples-1],beta_arr[numsamples-1],gamma_arr[numsamples-1],alpha_arr[numsamples-1]);
-                        scene->addPixmap(pmtemp.scaled(300,200));
-                    }
-                    else
-                    {
-                        scene->clear();
-                        scene->addPixmap(onepicarr[7]);
-                    }
-                    break;
-                 }
-                 case 8:
-                 {
-                    if (collectiveflow)
-                    {
-                        pmtemp = scene->filterpuzzle(onepicarr[8],scene->attentt,theta_arr[numsamples-1],beta_arr[numsamples-1],gamma_arr[numsamples-1],alpha_arr[numsamples-1]);
-                        ui->graphicsView_4->scene()->addPixmap(pmtemp.scaled(300,200));
-                    }
-                    else
-                    {
-                        ui->graphicsView_4->scene()->clear();
-                        ui->graphicsView_4->scene()->addPixmap(onepicarr[8]);
-                    }
-                    break;
-                 }
-                 case 9:
-                 {
-                    if (collectiveflow)
-                    {
-                        pmtemp = scene->filterpuzzle(onepicarr[9],scene->attentt,theta_arr[numsamples-1],beta_arr[numsamples-1],gamma_arr[numsamples-1],alpha_arr[numsamples-1]);
-                        ui->graphicsView_5->scene()->addPixmap(pmtemp.scaled(300,200));
-                    }
-                    else
-                    {
-                        ui->graphicsView_5->scene()->clear();
-                        ui->graphicsView_5->scene()->addPixmap(onepicarr[9]);
-                    }
-                    break;
-                 }
-                 case 10:
-                 {
-                    if (collectiveflow)
-                    {
-                        pmtemp = scene->filterpuzzle(onepicarr[10],scene->attentt,theta_arr[numsamples-1],beta_arr[numsamples-1],gamma_arr[numsamples-1],alpha_arr[numsamples-1]);
-                        ui->graphicsView_11->scene()->addPixmap(pmtemp.scaled(300,200));
-                    }
-                    else
-                    {
-                        ui->graphicsView_11->scene()->clear();
-                        ui->graphicsView_11->scene()->addPixmap(onepicarr[10]);
-                    }
-                    break;
-                 }
-                 case 11:
-                 {
-                    if (collectiveflow)
-                    {
-                        pmtemp = scene->filterpuzzle(onepicarr[11],scene->attentt,theta_arr[numsamples-1],beta_arr[numsamples-1],gamma_arr[numsamples-1],alpha_arr[numsamples-1]);
-                        ui->graphicsView_12->scene()->addPixmap(pmtemp.scaled(300,200));
-                    }
-                    else
-                    {
-                        ui->graphicsView_12->scene()->clear();
-                        ui->graphicsView_12->scene()->addPixmap(onepicarr[11]);
-                    }
-                    break;
-                 }
-                 case 12:
-                 {
-                    if (collectiveflow)
-                    {
-                        pmtemp = scene->filterpuzzle(onepicarr[12],scene->attentt,theta_arr[numsamples-1],beta_arr[numsamples-1],gamma_arr[numsamples-1],alpha_arr[numsamples-1]);
-                        ui->graphicsView_13->scene()->addPixmap(pmtemp.scaled(300,200));
-                    }
-                    else
-                    {
-                        ui->graphicsView_13->scene()->clear();
-                        ui->graphicsView_13->scene()->addPixmap(onepicarr[12]);
-                    }
-                    break;
-                 }
-                 case 13:
-                 {
-                    if (collectiveflow)
-                    {
-                        pmtemp = scene->filterpuzzle(onepicarr[13],scene->attentt,theta_arr[numsamples-1],beta_arr[numsamples-1],gamma_arr[numsamples-1],alpha_arr[numsamples-1]);
-                        ui->graphicsView_14->scene()->addPixmap(pmtemp.scaled(300,200));
-                    }
-                    else
-                    {
-                        ui->graphicsView_14->scene()->clear();
-                        ui->graphicsView_14->scene()->addPixmap(onepicarr[13]);
-                    }
-                    break;
-                 }
-                 case 14:
-                 {
-                    if (collectiveflow)
-                    {
-                        pmtemp = scene->filterpuzzle(onepicarr[14],scene->attentt,theta_arr[numsamples-1],beta_arr[numsamples-1],gamma_arr[numsamples-1],alpha_arr[numsamples-1]);
-                        ui->graphicsView_15->scene()->addPixmap(pmtemp.scaled(300,200));
-                    }
-                    else
-                    {
-                        ui->graphicsView_15->scene()->clear();
-                        ui->graphicsView_15->scene()->addPixmap(onepicarr[14]);
-                    }
-                    break;
-                 }
-                }
-            }
-            if (!collectiveflow)
-            {
-                stres.clear();
-                set_difference(stpic1.begin(), stpic1.end(), stpic0.begin(), stpic0.end(),inserter(stres, stres.end()));
-                setsize=stres.size();
-                randpuzzlelocs.resize(setsize);
-                iterst = stres.begin();
-                for (int i=0; i<setsize; i++)
-                {
-                   randpuzzlelocs[i]=*iterst;
-                   iterst++;
-                }
-                random_shuffle(randpuzzlelocs.begin(), randpuzzlelocs.end());
-
-                sortpuzzlelocs.resize(setsize);
-                for (int i=0; i<setsize; i++)
-                    sortpuzzlelocs[i]=randpuzzlelocs[i];
-                sort(sortpuzzlelocs.begin(),sortpuzzlelocs.end());
-
-                for (int i=0; i<setsize; i++)
-                {
-                   switch (sortpuzzlelocs[i])
-                   {
-                   case 0:
-                   {
-                       ui->graphicsView_6->scene()->clear();
-                       ui->graphicsView_6->scene()->addPixmap(onepicarr[randpuzzlelocs[i]]);
-                       break;
-                   }
-                   case 1:
-                   {
-                       ui->graphicsView_7->scene()->clear();
-                       ui->graphicsView_7->scene()->addPixmap(onepicarr[randpuzzlelocs[i]]);
-                       break;
-                   }
-                   case 2:
-                   {
-                      ui->graphicsView_8->scene()->clear();
-                      ui->graphicsView_8->scene()->addPixmap(onepicarr[randpuzzlelocs[i]]);
-                      break;
-                   }
-                   case 3:
-                   {
-                      ui->graphicsView_9->scene()->clear();
-                      ui->graphicsView_9->scene()->addPixmap(onepicarr[randpuzzlelocs[i]]);
-                      break;
-                   }
-                   case 4:
-                   {
-                      ui->graphicsView_10->scene()->clear();
-                      ui->graphicsView_10->scene()->addPixmap(onepicarr[randpuzzlelocs[i]]);
-                      break;
-                   }
-                   case 5:
-                   {
-                      ui->graphicsView_3->scene()->clear();
-                      ui->graphicsView_3->scene()->addPixmap(onepicarr[randpuzzlelocs[i]]);
-                      break;
-                   }
-                   case 6:
-                   {
-                      ui->graphicsView_2->scene()->clear();
-                      ui->graphicsView_2->scene()->addPixmap(onepicarr[randpuzzlelocs[i]]);
-                      break;
-                   }
-                   case 7:
-                   {
-                      scene->clear();
-                      scene->addPixmap(onepicarr[randpuzzlelocs[i]]);
-                      break;
-                   }
-                   case 8:
-                   {
-                      ui->graphicsView_4->scene()->clear();
-                      ui->graphicsView_4->scene()->addPixmap(onepicarr[randpuzzlelocs[i]]);
-                      break;
-                   }
-                   case 9:
-                   {
-                      ui->graphicsView_5->scene()->clear();
-                      ui->graphicsView_5->scene()->addPixmap(onepicarr[randpuzzlelocs[i]]);
-                      break;
-                   }
-                   case 10:
-                   {
-                      ui->graphicsView_11->scene()->clear();
-                      ui->graphicsView_11->scene()->addPixmap(onepicarr[randpuzzlelocs[i]]);
-                      break;
-                   }
-                   case 11:
-                   {
-                      ui->graphicsView_12->scene()->clear();
-                      ui->graphicsView_12->scene()->addPixmap(onepicarr[randpuzzlelocs[i]]);
-                      break;
-                   }
-                   case 12:
-                   {
-                      ui->graphicsView_13->scene()->clear();
-                      ui->graphicsView_13->scene()->addPixmap(onepicarr[randpuzzlelocs[i]]);
-                      break;
-                   }
-                   case 13:
-                   {
-                      ui->graphicsView_14->scene()->clear();
-                      ui->graphicsView_14->scene()->addPixmap(onepicarr[randpuzzlelocs[i]]);
-                      break;
-                   }
-                   case 14:
-                   {
-                      ui->graphicsView_15->scene()->clear();
-                      ui->graphicsView_15->scene()->addPixmap(onepicarr[randpuzzlelocs[i]]);
-                      break;
-                   }
-                   }
-                }
-            }
-        }
+        picsrestored = 15-picsforchange;            // picsforchange determined by attention
+        updateset_fillcorrectpuzzles();             // filling correct fragments in collective flow
+        updateset_fillcorrectpuzzles_single();      // filling correct fragments in one pic puzzle
     }
     setloaded=true;
 }
@@ -1678,7 +1644,7 @@ bool paintform::eventFilter(QObject *target, QEvent *event)
 
     if ((target == ui->graphicsView) && (event->type() == QEvent::MouseButtonDblClick))
     {
-       if ((!gamemode) && (!flowmode) && (!scene->drawflow) && (minimode))
+       if ((!gamemode) && (!flowmode) && (!scene->drawflow) && (iconsready))
        {
             if (!puzzlemode)
                 pmg = ui->graphicsView->grab();
@@ -1747,7 +1713,7 @@ bool paintform::eventFilter(QObject *target, QEvent *event)
         {
             int t = qrand() % imglist.length();
             currentindexes[0]=t;
-            if (minimode)
+            if (iconsready)
                 ui->graphicsView_2->scene()->addPixmap(pmarray[t]);
             else
             {
@@ -1795,7 +1761,7 @@ bool paintform::eventFilter(QObject *target, QEvent *event)
         {
             int t = qrand() % imglist.length();
             currentindexes[1]=t;
-            if (minimode)
+            if (iconsready)
                 ui->graphicsView_3->scene()->addPixmap(pmarray[t]);
             else
             {
@@ -1837,7 +1803,7 @@ bool paintform::eventFilter(QObject *target, QEvent *event)
         {
             int t = qrand() % imglist.length();
             currentindexes[2]=t;
-            if (minimode)
+            if (iconsready)
                 ui->graphicsView_4->scene()->addPixmap(pmarray[t]);
             else
             {
@@ -1879,7 +1845,7 @@ bool paintform::eventFilter(QObject *target, QEvent *event)
         {
             int t = qrand() % imglist.length();
             currentindexes[3]=t;
-            if (minimode)
+            if (iconsready)
                 ui->graphicsView_5->scene()->addPixmap(pmarray[t]);
             else
             {
@@ -1921,7 +1887,7 @@ bool paintform::eventFilter(QObject *target, QEvent *event)
         {
             int t = qrand() % imglist.length();
             currentindexes[4]=t;
-            if (minimode)
+            if (iconsready)
                 ui->graphicsView_6->scene()->addPixmap(pmarray[t]);
             else
             {
@@ -1963,7 +1929,7 @@ bool paintform::eventFilter(QObject *target, QEvent *event)
         {
             int t = qrand() % imglist.length();
             currentindexes[5]=t;
-            if (minimode)
+            if (iconsready)
                 ui->graphicsView_7->scene()->addPixmap(pmarray[t]);
             else
             {
@@ -2005,7 +1971,7 @@ bool paintform::eventFilter(QObject *target, QEvent *event)
         {
             int t = qrand() % imglist.length();
             currentindexes[6]=t;
-            if (minimode)
+            if (iconsready)
                 ui->graphicsView_8->scene()->addPixmap(pmarray[t]);
             else
             {
@@ -2047,7 +2013,7 @@ bool paintform::eventFilter(QObject *target, QEvent *event)
         {
             int t = qrand() % imglist.length();
             currentindexes[7]=t;
-            if (minimode)
+            if (iconsready)
                 ui->graphicsView_9->scene()->addPixmap(pmarray[t]);
             else
             {
@@ -2089,7 +2055,7 @@ bool paintform::eventFilter(QObject *target, QEvent *event)
         {
             int t = qrand() % imglist.length();
             currentindexes[8]=t;
-            if (minimode)
+            if (iconsready)
                 ui->graphicsView_10->scene()->addPixmap(pmarray[t]);
             else
             {
@@ -2131,7 +2097,7 @@ bool paintform::eventFilter(QObject *target, QEvent *event)
         {
             int t = qrand() % imglist.length();
             currentindexes[9]=t;
-            if (minimode)
+            if (iconsready)
                 ui->graphicsView_11->scene()->addPixmap(pmarray[t]);
             else
             {
@@ -2173,7 +2139,7 @@ bool paintform::eventFilter(QObject *target, QEvent *event)
         {
             int t = qrand() % imglist.length();
             currentindexes[10]=t;
-            if (minimode)
+            if (iconsready)
                 ui->graphicsView_12->scene()->addPixmap(pmarray[t]);
             else
             {
@@ -2215,7 +2181,7 @@ bool paintform::eventFilter(QObject *target, QEvent *event)
         {
             int t = qrand() % imglist.length();
             currentindexes[11]=t;
-            if (minimode)
+            if (iconsready)
                 ui->graphicsView_13->scene()->addPixmap(pmarray[t]);
             else
             {
@@ -2257,7 +2223,7 @@ bool paintform::eventFilter(QObject *target, QEvent *event)
         {
             int t = qrand() % imglist.length();
             currentindexes[12]=t;
-            if (minimode)
+            if (iconsready)
                 ui->graphicsView_14->scene()->addPixmap(pmarray[t]);
             else
             {
@@ -2299,7 +2265,7 @@ bool paintform::eventFilter(QObject *target, QEvent *event)
         {
             int t = qrand() % imglist.length();
             currentindexes[13]=t;
-            if (minimode)
+            if (iconsready)
                 ui->graphicsView_15->scene()->addPixmap(pmarray[t]);
             else
             {
@@ -2449,7 +2415,7 @@ void paintform::filteringmain_ingame(int grade)
 
 void paintform::filtering_allpuzzles(int grade)
 {
-    if ((minimode) && (puzzlemode))
+    if ((iconsready) && (puzzlemode))
     {
         filtering_puzzle(ui->graphicsView_2,pmarray[currentindexes[0]],grade);
         filtering_puzzle(ui->graphicsView_3,pmarray[currentindexes[1]],grade);
@@ -3052,12 +3018,7 @@ void paintform::on_checkBox_7_clicked()
 
 void paintform::on_checkBox_8_clicked()
 {
-    //if (flowmode)
-        puzzlemode=!puzzlemode;
-   // if ((puzzlemode) && (!flowmode))
-   //     ui->checkBox_16->setEnabled(false);
-   // else
-   //     ui->checkBox_16->setEnabled(true);
+    puzzlemode=!puzzlemode;
 
     ui->checkBox_10->setEnabled(puzzlemode);
     ui->checkBox_20->setEnabled(!puzzlemode);
@@ -3073,14 +3034,15 @@ void paintform::on_checkBox_8_clicked()
         ui->graphicsView->setGeometry(650,250,300,200);
     }
     else
-        ui->graphicsView->setGeometry(50,50,1500,800);
+        ui->graphicsView->setGeometry(50,50,1500,800);    
+
     if ((qimload) && (!flowmode))
         scene->addPixmap(mainpic.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
-    ui->graphicsView->repaint();
+
     ui->graphicsView_2->setVisible(puzzlemode);
     ui->graphicsView_3->setVisible(puzzlemode);
     ui->graphicsView_4->setVisible(puzzlemode);
-    ui->graphicsView_5->setVisible(puzzlemode);
+    ui->graphicsView_5->setVisible(puzzlemode);    
     ui->graphicsView_6->setVisible(puzzlemode);
     ui->graphicsView_7->setVisible(puzzlemode);
     ui->graphicsView_8->setVisible(puzzlemode);
@@ -3092,7 +3054,7 @@ void paintform::on_checkBox_8_clicked()
     ui->graphicsView_14->setVisible(puzzlemode);
     ui->graphicsView_15->setVisible(puzzlemode);
 
-    if (minimode)
+    if (iconsready)
         ui->checkBox_13->setEnabled(puzzlemode);
 
     if (firstpuzzle)
@@ -3132,7 +3094,7 @@ void paintform::on_checkBox_10_clicked()
 {
     changingpics=!changingpics;
     ui->checkBox_13->setEnabled(!changingpics);
-    if (minimode)
+    if (iconsready)
         ui->checkBox_11->setEnabled(changingpics);
     if (changingpics)
         tpicschange->start();
@@ -3150,7 +3112,6 @@ void paintform::on_pushButton_8_clicked()
     iota(randnumb.begin(), randnumb.end(), 0);
     random_shuffle(randnumb.begin(), randnumb.end());
     initpics();
-//    ui->pushButton_8->setEnabled(false);
     ui->spinBox_3->setMinimum(100);
     if (puzzlemode)
         ui->checkBox_13->setEnabled(true);
@@ -3371,7 +3332,7 @@ void paintform::on_checkBox_19_clicked()
 void paintform::on_checkBox_20_clicked()
 {    
     scene->drawflow=!scene->drawflow;
-    if (minimode)
+    if (iconsready)
     {
         ui->checkBox_8->setEnabled(!scene->drawflow);
         ui->checkBox_16->setEnabled(!scene->drawflow);
@@ -3414,7 +3375,7 @@ void paintform::on_checkBox_18_clicked()
         ui->checkBox_17->setEnabled(false);
     } else
     {
-        if (minimode)
+        if (iconsready)
         {
             ui->checkBox_8->setEnabled(true);
             ui->checkBox_16->setEnabled(true);

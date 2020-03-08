@@ -114,6 +114,7 @@ plotwindow::plotwindow(QWidget *parent) :
     ui->setupUi(this);    
     ui->widget->installEventFilter(this);
 
+    blurback = true;
     canbackchange=true;
     attentmodul=true;
     recplaying=false;
@@ -753,7 +754,9 @@ void plotwindow::doplot()
     ui->checkBox_5->setGeometry(1210,900,125,25);
 
     ui->radioButton->setGeometry(1330,846,95,20);
-    ui->pushButton_25->setGeometry(1436,810,120,21);
+    ui->pushButton_25->setGeometry(1286,810,120,25);
+    ui->checkBox_15->setGeometry(1430,813,110,21);
+    ui->checkBox_15->setChecked(blurback);
     ui->checkBox_14->setGeometry(1430,833,130,20);
     ui->checkBox_11->setGeometry(1430,853,145,20);
     ui->checkBox_12->setGeometry(1430,873,130,20);
@@ -1074,14 +1077,10 @@ void plotwindow::pauseflow()
 void plotwindow::applyfilteronback()
 {
     //if (!backimg.isNull())
-    {      
-        blurp = new QGraphicsBlurEffect;
-        colorizep = new QGraphicsColorizeEffect;
-
-        blurp->setBlurRadius((100-attent)/12);
-
+    {                             
         if (colorizeback)
         {
+            colorizep = new QGraphicsColorizeEffect;
            // colorize->setColor(QColor(pw->alpha*5,256-pw->beta*5,256-pw->gamma*6,pw->meditt*2));
             colorizep->setColor(QColor(beta*4,theta*4,alpha*4,meditt*2));
             colorizep->setStrength((double)attent/70);
@@ -1095,13 +1094,26 @@ void plotwindow::applyfilteronback()
         }
 
         QM = backimg.toImage();
-        qbim1 = applyEffectToImage(QM, blurp, 0);
+
+        if (blurback)
+        {
+            blurp = new QGraphicsBlurEffect;
+            blurp->setBlurRadius((100-attent)/12);
+            qbim1 = applyEffectToImage(QM, blurp, 0);
+        }
 
         if (colorizeback)
-            qbim2 = applyEffectToImage(qbim1, colorizep, 0);
+        {
+            if (blurback)
+                qbim2 = applyEffectToImage(qbim1, colorizep, 0);
+            else
+                qbim2 = applyEffectToImage(QM, colorizep, 0);
+        }
 
         delete pmvr;
-        if (!colorizeback)
+        if ((!colorizeback) && (!blurback))
+            pmvr = new QPixmap(QPixmap::fromImage(QM));
+        else if (!colorizeback)
             pmvr = new QPixmap(QPixmap::fromImage(qbim1));
         else
             pmvr = new QPixmap(QPixmap::fromImage(qbim2));
@@ -3412,6 +3424,10 @@ void plotwindow::on_comboBox_currentIndexChanged(int index)
 void plotwindow::on_checkBox_12_clicked()
 {
     soundmodul=!soundmodul;
+    if (soundmodul)
+        ui->spinBox_5->setStyleSheet("QSpinBox { background-color: yellow; }");
+    else
+        ui->spinBox_5->setStyleSheet("QSpinBox { background-color: white; }");
 }
 
 void plotwindow::on_pushButton_24_clicked()
@@ -3459,4 +3475,9 @@ void plotwindow::on_pushButton_2_clicked()
         pmx = ui->widget->grab();        
         mw->setdstfromplay(pmx.toImage());
     }
+}
+
+void plotwindow::on_checkBox_15_clicked()
+{
+    blurback=!blurback;
 }

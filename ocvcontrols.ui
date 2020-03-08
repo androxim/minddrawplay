@@ -716,19 +716,19 @@
     <rect>
      <x>330</x>
      <y>10</y>
-     <width>171</width>
+     <width>121</width>
      <height>20</height>
     </rect>
    </property>
    <property name="text">
-    <string>attention modulated area</string>
+    <string>area by attention</string>
    </property>
   </widget>
   <widget class="QPushButton" name="pushButton">
    <property name="geometry">
     <rect>
      <x>530</x>
-     <y>10</y>
+     <y>34</y>
      <width>81</width>
      <height>21</height>
     </rect>
@@ -740,14 +740,27 @@
   <widget class="QPushButton" name="pushButton_2">
    <property name="geometry">
     <rect>
-     <x>530</x>
-     <y>30</y>
+     <x>450</x>
+     <y>34</y>
      <width>81</width>
      <height>21</height>
     </rect>
    </property>
    <property name="text">
     <string>cancell all</string>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="checkBox_7">
+   <property name="geometry">
+    <rect>
+     <x>470</x>
+     <y>10</y>
+     <width>71</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>hue only</string>
    </property>
   </widget>
  </widget>

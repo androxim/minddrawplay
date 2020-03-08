@@ -67,7 +67,7 @@ public:
     bool bfiltmode,adaptivenumparts;
     QDir fd;
     bool backimageloaded,canbackchange;
-    bool filteringback;
+    bool filteringback, blurback;
     bool hidebutt, soundmodul, fixback;
     QStringList imglist;
     int picchangeborder, colorizeback;
@@ -75,7 +75,7 @@ public:
     QPixmap pm, pmx;
     QPalette sp1, sp2;
     QImage QM, qbim1, qbim2;   
-    bool readyfortones;
+    bool readyfortones;    
     qreal volume;
     int simsrfr;
     int maxtonerepeats, memorylength, attent;
@@ -379,6 +379,8 @@ private slots:
     void on_checkBox_14_clicked();
 
     void on_pushButton_2_clicked();
+
+    void on_checkBox_15_clicked();
 
 private:
     Ui::plot *ui;

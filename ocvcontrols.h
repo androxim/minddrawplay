@@ -30,6 +30,7 @@ public:
     bool changerandpic_byclick = false; bool dreamflowmode = false;             // mixer params
     bool autodreamflow = false; int dreamflowrate = 77;                         // mixer params
     bool attmodul_area = false; bool attent_modulated_dreams = false;           // attention modulated filter area
+    bool hueonly = false;                                                       // hue only, without overlay
     Mat randpic;
 
     leftpanel* leftpan;
@@ -102,6 +103,8 @@ private slots:
     void on_spinBox_13_valueChanged(int arg1);
 
     void on_checkBox_6_clicked();
+
+    void on_checkBox_7_clicked();
 
 private:
     Ui::ocvcontrols *ui;

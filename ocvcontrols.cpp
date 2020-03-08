@@ -29,6 +29,7 @@ void ocvcontrols::updateformvals()
     else
         ui->radioButton_6->setChecked(true);
     ui->spinBox_13->setValue(dreamflowrate);
+    ui->checkBox_7->setChecked(hueonly);
 }
 
 ocvcontrols::~ocvcontrols()
@@ -238,4 +239,9 @@ void ocvcontrols::on_checkBox_6_clicked()
         ui->spinBox_13->setStyleSheet("QSpinBox { background-color: yellow; }");
     else
         ui->spinBox_13->setStyleSheet("QSpinBox { background-color: white; }");
+}
+
+void ocvcontrols::on_checkBox_7_clicked()
+{
+    hueonly=!hueonly;
 }

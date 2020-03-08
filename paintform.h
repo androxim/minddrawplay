@@ -28,6 +28,20 @@ class paintform : public QWidget
 public:
     explicit paintform(QWidget *parent = 0);
     paintScene *scene;
+    QGraphicsScene* scene2;
+    QGraphicsScene* scene3;
+    QGraphicsScene* scene4;
+    QGraphicsScene* scene5;
+    QGraphicsScene* scene6;
+    QGraphicsScene* scene7;
+    QGraphicsScene* scene8;
+    QGraphicsScene* scene9;
+    QGraphicsScene* scene10;
+    QGraphicsScene* scene11;
+    QGraphicsScene* scene12;
+    QGraphicsScene* scene13;
+    QGraphicsScene* scene14;
+    QGraphicsScene* scene15;
     plotwindow *pw;
     MainWindow *mww;
     QPolygonF plane;
@@ -72,7 +86,7 @@ public:
     vector<int> randnumb;
     int eegsize, pensize, temppensize;
     int prevpict, prevpuzzle;
-    bool erasepen, qimload, bfiltmode, puzzlemode, fixedmain, changingpics, minimode, attentmodu, limitpicschange, setloaded, musicactiv;
+    bool erasepen, qimload, bfiltmode, puzzlemode, fixedmain, changingpics, iconsready, attentmodu, limitpicschange, setloaded, musicactiv;
     bool eventFilter(QObject *target, QEvent *event);
     void delay(int temp);
     void getimg1();
@@ -92,6 +106,11 @@ public:
     void filtering_puzzle(QGraphicsView *gv, QPixmap pm, int grade);
     void filteringmain_ingame(int grade);
     void filtering_allpuzzles(int grade);
+    void updateset_withlimitpics();
+    void updateset_allpics();
+    void updateset_singlepuzzle();
+    void updateset_fillcorrectpuzzles();
+    void updateset_fillcorrectpuzzles_single();
     void startround();
     void setactiveflowtime(int t);
     void setbackimage(QPixmap pm);

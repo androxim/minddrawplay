@@ -1468,12 +1468,12 @@
     <rect>
      <x>840</x>
      <y>620</y>
-     <width>151</width>
+     <width>131</width>
      <height>17</height>
     </rect>
    </property>
    <property name="text">
-    <string>change hue back img</string>
+    <string>grab mindocv flow</string>
    </property>
   </widget>
   <widget class="QComboBox" name="comboBox">
@@ -1630,6 +1630,19 @@
    </property>
    <property name="text">
     <string>to MindOCV</string>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="checkBox_15">
+   <property name="geometry">
+    <rect>
+     <x>850</x>
+     <y>540</y>
+     <width>111</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>blur back img</string>
    </property>
   </widget>
  </widget>

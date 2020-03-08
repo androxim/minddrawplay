@@ -91,8 +91,10 @@ public:
     void updateocvparams();
     void cancellast();
     void cancelall();
+    void keys_processing();
     void setdstfromplay(QImage qm);
     void save_and_add_overlaypic();
+    void run_opencvform();
     QImage grabopcvpic();
     QString getimagepath(int t);
     void Webcamsource();

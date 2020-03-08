@@ -47,6 +47,7 @@ void onMouse(int event, int x, int y, int flags, void* );
 void dosvdtransform();
 void getsvdimage(int r);
 void applyfilt(int type, Rect rt);
+void fillpolygon(Mat im);
 
 Mat dilate(Rect srcRect);               // dilation filter
 Mat waves(Rect srcRect);                // waves filter
@@ -286,7 +287,8 @@ void Border(int, void *) {  }
 void Overlay( int, void* )
 {
    // getsvdimage(elem5);
-    ProcessingMix();
+    if (!ocvform->hueonly)
+        ProcessingMix();
 }
 
 void Attent( int, void* ) { }
@@ -341,10 +343,13 @@ void Processing() // processing of HUE, Saturation, Value changes
     cvtColor(img,image,COLOR_HSV2RGB);
 
   //  dst = image;
-    addWeighted(image, alphaval, srccopy, 1 - alphaval, 0, dst);
-    imshow("image", dst);
-
-   //  imshow( "image", image );
+    if (!ocvform->hueonly)
+    {
+        addWeighted(image, alphaval, srccopy, 1 - alphaval, 0, dst);
+        imshow("image", dst);
+    }
+    else
+        imshow( "image", image );
 }
 
 void ProcessingMix() // processing of overlay changes, alphaval - transparency
@@ -353,7 +358,7 @@ void ProcessingMix() // processing of overlay changes, alphaval - transparency
     if (estattention)   // if MindWave connected and attention values are streaming
     {
         cv::resize(srccopy, srccopy, cv::Size(image.cols,image.rows), 0, 0, cv::INTER_LINEAR);
-        if (activeflow)
+        if (activeflow)                   
             addWeighted(image, alphaval, srccopy, 1 - alphaval, 0, dst);
         else
             addWeighted(src, alphaval, srccopy, 1 - alphaval, 0, dst);
@@ -366,6 +371,18 @@ void ProcessingMix() // processing of overlay changes, alphaval - transparency
     clear_dst.release();
     clear_dst = dst.clone();
     imshow("image", dst);
+}
+
+void fillpolygon(Mat img)
+{
+    int lineType = LINE_8;
+    int npk = elem4 / 10 + 3;
+    Point rook_points[1][npk];
+    for (int i=0; i<npk; i++)
+        rook_points[0][i] = Point(qrand()%dstt.rows,qrand()%dstt.cols);
+    const Point* ppt[1] = {rook_points[0]};
+    int npt[] = { npk };
+    fillPoly(img,ppt,npt,1,Scalar( 255, 255, 255 ),lineType);
 }
 
 void onMouse( int event, int x, int y, int flags, void* )   // Mouse clicks and moves processing
@@ -391,6 +408,7 @@ void onMouse( int event, int x, int y, int flags, void* )   // Mouse clicks and 
 
             Mat mask_image(dstt.size(), CV_8U, Scalar(0)); // mask to have only circle of region
             circle(mask_image, Point(mask_image.rows / 2, mask_image.cols / 2), ocvform->currfilterarea/2, CV_RGB(255, 255, 255),-1,LINE_AA);
+           // fillpolygon(mask_image);
 
             if (ocvform->currfilttype==5)
                 addWeighted(dst(srcDstRect), (double)ocvform->transp / 100, dstt, 1 - (double)ocvform->transp / 100, 0, dstt);
@@ -412,6 +430,7 @@ void onMouse( int event, int x, int y, int flags, void* )   // Mouse clicks and 
 
         Mat mask_image( dstt.size(), CV_8U, Scalar(0));
         circle(mask_image, Point(mask_image.rows / 2, mask_image.cols / 2), ocvform->currfilterarea/2, CV_RGB(255, 255, 255),-1,LINE_AA);
+       // fillpolygon(mask_image);
 
         prev_dst = dst.clone(); // for keeping state before last action (using in "cancel last")
 
@@ -435,7 +454,7 @@ void onMouse( int event, int x, int y, int flags, void* )   // Mouse clicks and 
         QString ocvpic=folderpath+"/"+imglist.at(currmainpic);
         src = imread(ocvpic.toStdString());
         cv::resize(srccopy, srccopy, cv::Size(src.cols,src.rows), 0, 0, cv::INTER_LINEAR);
-        if (activeflow)
+        if ((activeflow) && (!ocvform->hueonly))
         {
             addWeighted(src, alphaval, srccopy, 1 - alphaval, 0, dst);
             imshow("image", dst);
@@ -455,8 +474,11 @@ void onMouse( int event, int x, int y, int flags, void* )   // Mouse clicks and 
         QString ocvpic=folderpath+"/"+imglist.at(curroverpic);
         srccopy = imread(ocvpic.toStdString());
         cv::resize(srccopy, srccopy, cv::Size(src.cols,src.rows), 0, 0, cv::INTER_LINEAR);
-        addWeighted(src, alphaval, srccopy, 1 - alphaval, 0, dst);
-        imshow("image", dst);
+        if (!ocvform->hueonly)
+        {
+            addWeighted(src, alphaval, srccopy, 1 - alphaval, 0, dst);
+            imshow("image", dst);
+        }
     } else
     if (event == EVENT_LBUTTONDBLCLK)
     {
@@ -523,18 +545,19 @@ Mat cartoon(Rect srcRect, int ksize) // cartoonize filter
     int num_repetitions = 1;
     //int ds_factor = 2;
     cvtColor(srct,gray_element,COLOR_BGR2GRAY);
-    medianBlur(gray_element,gray_element,7); // Apply median filter to the grayscale image
+    medianBlur(gray_element,gray_element,ocvform->kernel_s); // Apply median filter to the grayscale image
     edges.release();
     mask.release();
     trp.release();
     Laplacian(gray_element,edges,CV_8U,ocvform->kernel_s); // // Detect edges in the image and threshold it
     threshold(edges, mask, 180, 255, THRESH_BINARY_INV); // 'mask' is the sketch of the image
-  //  cv::resize(srct, srct, cv::Size(srct.cols/ds_factor,srct.rows/ds_factor), 0, 0, cv::INTER_AREA); //  Resize the image to a smaller size for faster computation
+
+    //  cv::resize(srct, srct, cv::Size(srct.cols/ds_factor,srct.rows/ds_factor), 0, 0, cv::INTER_AREA); //  Resize the image to a smaller size for faster computation
     for (int i=0; i < num_repetitions; i++) // Apply bilateral filter the image multiple times
     {
         bilateralFilter(srct,trp,ocvform->kernel_s,ocvform->sigma_color,ocvform->sigma_space);
         srct=trp.clone();
-    }
+    }    
    // cv::resize(srct, srct, cv::Size(srct.cols*ds_factor,srct.rows*ds_factor), 0, 0, cv::INTER_LINEAR);
     dstg.release();
     bitwise_and(srct,srct,dstg,mask); // Add the thick boundary lines to the image using 'AND' operator
@@ -710,7 +733,8 @@ void MainWindow::dreamflow_Update() // timer for puzzling mode, when new pic app
     dstt = dst(srcDstRect);
     dstt = mixfilt(srcDstRect);
     Mat mask_image( dstt.size(), CV_8U, Scalar(0));
-    circle(mask_image, Point(mask_image.rows / 2, mask_image.cols / 2), ocvform->currfilterarea/2, CV_RGB(255, 255, 255),-1,LINE_AA);
+    //circle(mask_image, Point(mask_image.rows / 2, mask_image.cols / 2), ocvform->currfilterarea/2, CV_RGB(255, 255, 255),-1,LINE_AA);
+    fillpolygon(mask_image);
     addWeighted(dst(srcDstRect), (double)ocvform->transp / 100, dstt, 1 - (double)ocvform->transp / 100, 0, dstt);
     dstt.copyTo(dst(srcDstRect),mask_image);
 
@@ -808,7 +832,7 @@ void MainWindow::updatemainpic(int num)
     QString ocvpic=folderpath+"/"+imglist.at(currmainpic);
     src = imread(ocvpic.toStdString()); 
     cv::resize(srccopy, srccopy, cv::Size(src.cols,src.rows), 0, 0, cv::INTER_LINEAR);
-    if (activeflow)
+    if ((activeflow) && (!ocvform->hueonly))
     {
         addWeighted(src, alphaval, srccopy, 1 - alphaval, 0, dst);
         imshow("image", dst);
@@ -833,7 +857,7 @@ void MainWindow::updateoverpic(int num)
     QString ocvpic=folderpath+"/"+imglist.at(curroverpic);
     srccopy = imread(ocvpic.toStdString());
     cv::resize(srccopy, srccopy, cv::Size(src.cols,src.rows), 0, 0, cv::INTER_LINEAR);
-    if (activeflow)
+    if ((activeflow) && (!ocvform->hueonly))
     {
         addWeighted(src, alphaval, srccopy, 1 - alphaval, 0, dst);
         imshow("image", dst);
@@ -1030,6 +1054,10 @@ void MainWindow::setattent(int i)
 {
     elem4=i;           
     setTrackbarPos("Attention","image",elem4);
+
+    opencvinterval = (120 - elem4);
+    picfilt->setInterval(opencvinterval);
+
     if ((ocvform->attmodul_area) && (!activeflow))
     {
         // attention modulated filter area with minimum area value, only not activeflow mode
@@ -1044,7 +1072,7 @@ void MainWindow::setattent(int i)
             ocvform->changerandpic();
         if ((ocvform->autodreamflow) && (ocvform->attent_modulated_dreams))
         {
-            ocvform->dreamflowrate=110-elem4;
+            ocvform->dreamflowrate=105-elem4;
             dreamflow_timer->setInterval(ocvform->dreamflowrate);
             ocvform->updateformvals();
         }
@@ -1067,12 +1095,15 @@ void MainWindow::setborder(int i)
 
 QImage MainWindow::grabopcvpic()
 {
-     return Mat2QImageRGB(dst);
+    if (!ocvform->hueonly)
+        return Mat2QImageRGB(dst);
+    else
+        return Mat2QImageRGB(image);
    // cvtColor(dst,dstcopy,COLOR_RGB2HSV);
   //  return Mat2QImage(dstcopy);
 }
 
-void MainWindow::on_pushButton_6_clicked()  // MindOCV window run
+void MainWindow::run_opencvform()   // MindOCV window run
 {
     if (imglist.length()>0)
     {
@@ -1091,6 +1122,11 @@ void MainWindow::on_pushButton_6_clicked()  // MindOCV window run
         msgBox.setText("Choose a folder with .jpg files!");
         msgBox.exec();
     }
+}
+
+void MainWindow::on_pushButton_6_clicked()
+{
+    run_opencvform();
 }
 
 void MainWindow::startopencv() // MindOCV initialization function
@@ -1197,10 +1233,13 @@ void MainWindow::checkoverlay()
             rightpw->fillpics();            
             QString ocvpic=folderpath+"/"+imglist.at(curroverpic);
             src=srccopy.clone();
-            srccopy = imread(ocvpic.toStdString());
-            cv::resize(srccopy, srccopy, cv::Size(src.cols,src.rows), 0, 0, cv::INTER_LINEAR);
-            addWeighted(src, alphaval, srccopy, 1 - alphaval, 0, dst);
-            imshow("image", dst);
+            srccopy = imread(ocvpic.toStdString());            
+            if (!ocvform->hueonly)
+            {
+                cv::resize(srccopy, srccopy, cv::Size(src.cols,src.rows), 0, 0, cv::INTER_LINEAR);
+                addWeighted(src, alphaval, srccopy, 1 - alphaval, 0, dst);
+                imshow("image", dst);
+            }
         } else
         {
             prevoverpic = curroverpic;
@@ -1296,11 +1335,11 @@ void MainWindow::mindwtUpdate() // processing data from MindWave device
                     paintw->updateattentionplot(mw_atten);
                     if (opencvstart)        // update attention by estimated value, but 1 per sec
                     {
-                        setattent(paintw->getestattval());
+                        setattent(paintw->getestattval());                        
                         curoverl=elem4;
                     }
                 }
-              //  if (opencvstart)        // update attention by device value, but 1 per sec
+              //  if (opencvstart)        // update attention by device value, 1 per sec
               //  {
               //      setattent(mw_atten);
               //      curoverl=elem4;
@@ -1392,15 +1431,15 @@ void MainWindow::mindwtUpdate() // processing data from MindWave device
     }
 }
 
-void MainWindow::picfiltUpdate() // function for MindOCV window actions and flow
-{    
-    char key = cv::waitKey(10) % 256;    
+void MainWindow::keys_processing()      // processing keys pressing
+{
+    char key = cv::waitKey(1) % 256;
     if (key == 't') // test stuff button
     {
         //
     }
     else if (key == 'a') // save and add current overlay to pictures
-    {       
+    {
         save_and_add_overlaypic();
     }
     else if (key == 'q') // save and add current overlay to pictures, set main pic to current overlay
@@ -1415,7 +1454,7 @@ void MainWindow::picfiltUpdate() // function for MindOCV window actions and flow
         leftpw->fillpics();
         rightpw->fillpics();
         QString ocvpic=folderpath+"/"+imglist.at(currmainpic);
-        src = imread(ocvpic.toStdString());    
+        src = imread(ocvpic.toStdString());
         addWeighted(src, alphaval, src, 1 - alphaval, 0, dst);
         imshow("image", dst);
     }
@@ -1549,13 +1588,22 @@ void MainWindow::picfiltUpdate() // function for MindOCV window actions and flow
     }
     else if ((key == 'm') && (ocvform->currfilttype==5)) // change picture in mixer random pic mode
         ocvform->changerandpic();
+    else if (key == 'u')
+    {
+        ocvform->hueonly=!ocvform->hueonly;
+        ocvform->updateformvals();
+    }
+}
 
+void MainWindow::picfiltUpdate() // function for MindOCV hue-overlay flow updates
+{        
+    keys_processing();
 
     if (activeflow)
     {
 
         // change of HUE values untill previous ~ new one, then can change previous HUE
-        if ((abs(curhue-prevhue)==0) || ((abs(curhue-prevhue)==1)))
+        if (abs(curhue-prevhue)<2)
             canchangehue=true;
         else
         {
