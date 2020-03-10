@@ -230,6 +230,7 @@ public:
     void graboverlay(QPixmap pmg);
     void setbackfromcamera();
     void pauseflow();
+    void updateimlength(int t);
 
 private slots:
 

@@ -65,7 +65,7 @@ void paintScene::init(plotwindow* pww, MainWindow* mw)
 {
     pw=pww;
     mww=mw;
-    mww->psstart=true;
+    mww->paintw_started=true;
   //  pw->pssstart=true;
     startedline=false;
     attmodul=false;
@@ -206,7 +206,7 @@ void paintScene::applyfilter()
         {      
         colorize = new QGraphicsColorizeEffect;
         blur = new QGraphicsBlurEffect;
-        blur->setBlurRadius((100-pw->attent)/15);
+        blur->setBlurRadius((100-paintf->estattn)/15);
        // colorize->setColor(QColor(pw->alpha*5,256-pw->beta*5,256-pw->gamma*6,pw->meditt*2));
         QColor qcl = QColor(pw->theta*4,pw->beta*4,pw->gamma*4,pw->alpha*6);
        // qcl.setHsv(pw->beta*7,pw->alpha*7,pw->theta*6);

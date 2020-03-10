@@ -145,19 +145,22 @@ void ocvcontrols::on_spinBox_12_valueChanged(int arg1)
 void ocvcontrols::on_radioButton_4_clicked()
 {
     mixtype = 1;
+    ui->checkBox_2->setEnabled(false);
     ui->checkBox_4->setEnabled(false);
 }
 
 void ocvcontrols::on_radioButton_5_clicked()
 {
     mixtype = 2;
-    ui->checkBox_4->setEnabled(false);
+    ui->checkBox_2->setEnabled(false);
+    ui->checkBox_4->setEnabled(false);    
 }
 
 void ocvcontrols::on_radioButton_6_clicked()
 {
     mixtype = 3;
     changerandpic();  
+    ui->checkBox_2->setEnabled(true);
     ui->checkBox_4->setEnabled(true);
 }
 

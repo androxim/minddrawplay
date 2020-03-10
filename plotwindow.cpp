@@ -1074,6 +1074,12 @@ void plotwindow::pauseflow()
         tim->start();
 }
 
+void plotwindow::updateimlength(int t)
+{
+    imlength=t/1.953125;
+    ui->spinBox_5->setValue(t);
+}
+
 void plotwindow::applyfilteronback()
 {
     //if (!backimg.isNull())
@@ -1098,7 +1104,7 @@ void plotwindow::applyfilteronback()
         if (blurback)
         {
             blurp = new QGraphicsBlurEffect;
-            blurp->setBlurRadius((100-attent)/12);
+            blurp->setBlurRadius((100-attent)/10);
             qbim1 = applyEffectToImage(QM, blurp, 0);
         }
 
@@ -1754,6 +1760,7 @@ void plotwindow::timerUpdate()
                     imlength=600;
                 ui->spinBox_5->setValue(imlength*2);
                 ui->horizontalSlider->setValue(imlength*2);
+                pss->paintf->update_estrate(imlength*2);
             }
          }
          counter=0;
@@ -2697,9 +2704,9 @@ void plotwindow::on_spinBox_5_valueChanged(int arg1)
 {
     if (mindwstart)
     {
-        imlength=arg1/1.953125;
-       // tryplay->setInterval(arg1);
+        imlength=arg1/1.953125;        
         ui->horizontalSlider->setValue(arg1);
+        pss->paintf->update_estrate(arg1);
     } else
     if (simeeg)
     {

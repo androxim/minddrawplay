@@ -168,7 +168,7 @@ void appconnect::ReceivingThread::run()
                 parent.states[name] = value;
                 if (abs(stod(value))<100)
                 {
-                    if (parent.mw->psstart)
+                    if (parent.mw->paintw_started)
                         parent.ps->getdata(stod(value)*2);
                     if (parent.wd->start)
                         parent.wd->bcidata(stod(value)*2);

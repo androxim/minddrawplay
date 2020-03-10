@@ -20,7 +20,8 @@ class ocvcontrols : public QWidget
     Q_OBJECT
 
 public:
-    int currfilterarea = 250, currfilterrate = 12, currfilttype = 5, totalfilts = 5;
+    bool drawbrushcontour = true;
+    int currfilterarea = 250, currfilterrate = 12, currfilttype = 5, totalfilts = 5;    
     int sigma_color = 25, sigma_space = 50, kernel_s = 5;                       // cartoonize params
     int wave_freqs = 42, wave_amp = 9;                                          // waves params
     int dilation_size = 1, dilation_elem = 2;                                   // dilate params
@@ -28,7 +29,7 @@ public:
     QColor fcolor = QColor(255,255,255); bool randfcolor=false;                 // ORB params
     int mixtype = 1, transp = 80, randpicn;                                     // mixer params
     bool changerandpic_byclick = false; bool dreamflowmode = false;             // mixer params
-    bool autodreamflow = false; int dreamflowrate = 77;                         // mixer params
+    bool autodreamflow = false; int dreamflowrate = 77; bool polygonmask = true;// mixer params
     bool attmodul_area = false; bool attent_modulated_dreams = false;           // attention modulated filter area
     bool hueonly = false;                                                       // hue only, without overlay
     Mat randpic;

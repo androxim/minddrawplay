@@ -114,12 +114,14 @@ public:
     void startround();
     void setactiveflowtime(int t);
     void setbackimage(QPixmap pm);
+    void puzzle_onepic_switch();
     void grabpuzzles();
     void matchpuzzle();
     void startpolyt();
     void loadempty();
     void setsoundtype(int index);
     double getestattval();
+    void update_estrate(int t);
     void setbackimageocv(QString filename);
     void setbackimageoverlay(QPixmap pmg);
     int getgraphicview_width();
@@ -179,7 +181,6 @@ private slots:
 
     void on_pushButton_8_clicked();
 
-
     void on_radioButton_4_clicked();
 
     void on_radioButton_5_clicked();
@@ -227,6 +228,8 @@ private slots:
     void on_pushButton_11_clicked();
 
     void on_pushButton_12_clicked();
+
+    void on_spinBox_7_valueChanged(int arg1);
 
 private:
     Ui::paintform *ui;

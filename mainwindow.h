@@ -31,7 +31,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:  
-    bool psstart;
+    bool paintw_started;
     bool pwstart;
     bool simeeg;
     bool bciconnect;
@@ -87,8 +87,7 @@ public:
     int getoverpic();
     void updatemainpic(int num);
     void updateoverpic(int num);
-    void setfolderpath(QString fp);
-    void updateocvparams();
+    void setfolderpath(QString fp);   
     void cancellast();
     void cancelall();
     void keys_processing();

@@ -163,7 +163,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ocvcontrshow = true;             // if openCV filters control form shown
 
     pwstart = false;                 // MindPlay window run detector
-    psstart = false;                 // MindDraw window run detector
+    paintw_started = false;                 // MindDraw window run detector
     opencvstart = false;             // MindOCV window run detector
     storymode = false;
 
@@ -391,10 +391,13 @@ void onMouse( int event, int x, int y, int flags, void* )   // Mouse clicks and 
     if ((!activeflow) && (event == EVENT_MOUSEMOVE) && (y<dst.rows-ocvform->currfilterarea/2) && (x<dst.cols-ocvform->currfilterarea/2) && (y>ocvform->currfilterarea/2) && (x>ocvform->currfilterarea/2))
     {
         // draw brush contour
-        dst0.release();
-        dst0 = dst.clone();
-        circle(dst0, Point(x, y), ocvform->currfilterarea/2, CV_RGB(255, 255, 255),0,LINE_AA);
-        imshow("image", dst0);
+        if (ocvform->drawbrushcontour)
+        {
+            dst0.release();
+            dst0 = dst.clone();
+            circle(dst0, Point(x, y), ocvform->currfilterarea/2, CV_RGB(255, 255, 255),0,LINE_AA);
+            imshow("image", dst0);
+        }
     }
     if ((!activeflow) && (event == EVENT_MOUSEMOVE) && ((flags ==  EVENT_FLAG_LBUTTON) || (keepfiltering)) && (y<dst.rows-ocvform->currfilterarea/2) && (x<dst.cols-ocvform->currfilterarea/2) && (y>ocvform->currfilterarea/2) && (x>ocvform->currfilterarea/2))
     {
@@ -733,8 +736,10 @@ void MainWindow::dreamflow_Update() // timer for puzzling mode, when new pic app
     dstt = dst(srcDstRect);
     dstt = mixfilt(srcDstRect);
     Mat mask_image( dstt.size(), CV_8U, Scalar(0));
-    //circle(mask_image, Point(mask_image.rows / 2, mask_image.cols / 2), ocvform->currfilterarea/2, CV_RGB(255, 255, 255),-1,LINE_AA);
-    fillpolygon(mask_image);
+    if (!ocvform->polygonmask)
+        circle(mask_image, Point(mask_image.rows / 2, mask_image.cols / 2), ocvform->currfilterarea/2, CV_RGB(255, 255, 255),-1,LINE_AA);
+    else
+        fillpolygon(mask_image);
     addWeighted(dst(srcDstRect), (double)ocvform->transp / 100, dstt, 1 - (double)ocvform->transp / 100, 0, dstt);
     dstt.copyTo(dst(srcDstRect),mask_image);
 
@@ -839,7 +844,7 @@ void MainWindow::updatemainpic(int num)
     }
     if (plotw->start)
         plotw->grabopencv(ocvpic);
-    if (psstart)
+    if (paintw_started)
         paintw->setbackimageocv(ocvpic);
 }
 
@@ -1055,7 +1060,7 @@ void MainWindow::setattent(int i)
     elem4=i;           
     setTrackbarPos("Attention","image",elem4);
 
-    opencvinterval = (120 - elem4);
+    opencvinterval = 20 + (100 - elem4)/2;
     picfilt->setInterval(opencvinterval);
 
     if ((ocvform->attmodul_area) && (!activeflow))
@@ -1209,7 +1214,7 @@ void MainWindow::simulateEEGUpdate() // simulated EEG data (in development)
     currentsimdata *= 3;
     if (plotw->start)
         plotw->bcidata(currentsimdata);
-    if (psstart)
+    if (paintw_started)
         paintw->scene->getdata(currentsimdata/4);
     //  qDebug()<<currentsimdata;       
 }
@@ -1293,11 +1298,6 @@ void MainWindow::setfolderpath(QString fp) // set path for pictures folder
     rightpw->imgnumber = imglist.length()-2;
 }
 
-void MainWindow::updateocvparams() // updating openCV filters parameters from openCV form control
-{
-
-}
-
 void MainWindow::mindwtUpdate() // processing data from MindWave device
 {
     //int c=0;
@@ -1314,7 +1314,7 @@ void MainWindow::mindwtUpdate() // processing data from MindWave device
             if (rs->start)
                 rs->updatesignal(mw_raw/2);
             if (abs(mw_raw)<100) // anti blink artifacts for drawing
-            if (psstart)
+            if (paintw_started)
                 paintw->scene->getdata(mw_raw/2);
                 //cout<<"RAW value: "<<mw_raw<<endl;
         }
@@ -1330,12 +1330,12 @@ void MainWindow::mindwtUpdate() // processing data from MindWave device
                     curhue=100+mw_atten*4;
                     canchangehue=false;
                 }                
-                if (psstart)
+                if (paintw_started)
                 {
                     paintw->updateattentionplot(mw_atten);
                     if (opencvstart)        // update attention by estimated value, but 1 per sec
                     {
-                        setattent(paintw->getestattval());                        
+                        setattent(paintw->getestattval());
                         curoverl=elem4;
                     }
                 }
@@ -1354,7 +1354,7 @@ void MainWindow::mindwtUpdate() // processing data from MindWave device
                 mw_medit=TG_GetValue(connectionId, TG_DATA_MEDITATION);                
                 if (plotw->start)
                     plotw->update_meditation(mw_medit);
-                if (psstart)
+                if (paintw_started)
                 {
                     paintw->updatemeditation(mw_medit);
                 //    paintw->updateplots(false);
@@ -1433,7 +1433,7 @@ void MainWindow::mindwtUpdate() // processing data from MindWave device
 
 void MainWindow::keys_processing()      // processing keys pressing
 {
-    char key = cv::waitKey(1) % 256;
+    char key = cv::waitKey(2) % 256;
     if (key == 't') // test stuff button
     {
         //
@@ -1467,7 +1467,7 @@ void MainWindow::keys_processing()      // processing keys pressing
             QPixmap pm = QPixmap::fromImage(Mat2QImageRGB(dst));
             plotw->graboverlay(pm);
         }
-        if (psstart)
+        if (paintw_started)
         {
             QPixmap pm = QPixmap::fromImage(Mat2QImageRGB(dst));
             paintw->setbackimageoverlay(pm);
@@ -1533,11 +1533,15 @@ void MainWindow::keys_processing()      // processing keys pressing
         ocvform->currfilterrate++;
         ocvform->updateformvals();
     }
-    else if (key == '5')            // free slot
+    else if (key == '5')
     {
-
-    }// else if (key == '6')        // make SVD transform (very slow!)
-     //   dosvdtransform();
+        ocvform->drawbrushcontour=!ocvform->drawbrushcontour;
+        imshow("image", dst);
+    }
+    else if (key == '6')
+        ocvform->polygonmask=!ocvform->polygonmask;
+    //else if (key == '7')        // make SVD transform (very slow!)
+        //dosvdtransform();
     else if ((key == 'z') && (!activeflow))     // change filter on the left one
     {
         if (ocvform->currfilttype==1)

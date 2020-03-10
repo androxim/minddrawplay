@@ -186,7 +186,7 @@ paintform::paintform(QWidget *parent) :
     picsforchange=4;
     limitpicschange=false;
 
-    borderlevel=77;
+    borderlevel=85;
     borderpicchange=75;
 
     showestatt=true;
@@ -199,9 +199,11 @@ paintform::paintform(QWidget *parent) :
     ui->pushButton_11->setGeometry(780,885,70,20);
     ui->label_4->setGeometry(850,920,120,20);
     ui->label_5->setGeometry(950,910,70,50);
-    ui->pushButton_4->setGeometry(860,865,70,30);
-    ui->pushButton_9->setGeometry(940,865,80,24);
+    ui->pushButton_4->setGeometry(860,865,50,24);
+    ui->label_8->setGeometry(920,865,50,20);
+    ui->spinBox_7->setGeometry(970,865,50,20);
     ui->pushButton_12->setGeometry(940,891,80,24);
+    ui->pushButton_9->setGeometry(860,891,80,24);
     ui->checkBox_8->setGeometry(1070,905,100,20);
     ui->checkBox_8->setEnabled(false);
     ui->verticalSlider->setGeometry(1038,820,20,150);
@@ -218,12 +220,14 @@ paintform::paintform(QWidget *parent) :
     ui->checkBox_16->setGeometry(1490,855,85,30);
     ui->checkBox_17->setGeometry(1490,873,55,30);
     ui->pushButton_8->setGeometry(1310,900,100,20);
-    ui->pushButton_10->setGeometry(1310,920,100,20);
-    ui->checkBox_11->setGeometry(1310,940,120,25);
-    ui->spinBox_4->setGeometry(1410,940,35,25);
+    ui->pushButton_10->setGeometry(1410,900,100,20);
+    ui->checkBox_11->setGeometry(1310,929,120,20);
+    ui->spinBox_4->setGeometry(1410,929,35,20);
     ui->pushButton_7->setEnabled(false);
     ui->comboBox->setGeometry(1420,900,130,25);
-    ui->comboBox_2->setGeometry(1450,930,100,20);
+    ui->comboBox->setVisible(false);
+    ui->label_6->setGeometry(1455,920,80,20);
+    ui->comboBox_2->setGeometry(1450,940,100,20);
     ui->checkBox->setGeometry(550,860,110,20);
     ui->checkBox_2->setGeometry(550,880,110,20);
     ui->radioButton->setGeometry(554,860,120,20);
@@ -660,6 +664,11 @@ double paintform::getestattval()
         return 0;
 }
 
+void paintform::update_estrate(int t)
+{
+    ui->spinBox_7->setValue(t);
+}
+
 void paintform::updatefreqarrs(double deltat, double thetat, double alphat, double betat, double gammat, double hgammat)
 {
   //  qDebug()<<numfrsamples;
@@ -810,7 +819,7 @@ void paintform::updateattention(int t)
     if (attentmodu)
     {
 
-        scene->drawrate=70-t;
+        scene->drawrate=80-t;       // contour mode drawing rate
         if (scene->drawrate<5)
             scene->drawrate=5;
         scene->tim->setInterval(scene->drawrate);
@@ -884,11 +893,7 @@ void paintform::updatemeditation(int t)
    // numsamples++;
 
     if (!attentmodu)
-    {
-      // scene->drawrate=70-t;
-      // if (scene->drawrate<5)
-      //     scene->drawrate=5;
-      // scene->tim->setInterval(scene->drawrate);
+    {  
        ui->verticalSlider->setValue(t);
 
        if ((bfiltmode) || (!canpuzzlechange))
@@ -1501,41 +1506,21 @@ void paintform::randompics()
 
 void paintform::matchpuzzle()
 {
-    ui->graphicsView_6->scene()->addPixmap(onepicarr[0]);
-   // ui->graphicsView_6->repaint();
-    ui->graphicsView_7->scene()->addPixmap(onepicarr[1]);
-  //  ui->graphicsView_7->repaint();
-    ui->graphicsView_8->scene()->addPixmap(onepicarr[2]);
-   // ui->graphicsView_8->repaint();
-    ui->graphicsView_9->scene()->addPixmap(onepicarr[3]);
-   // ui->graphicsView_9->repaint();
-    ui->graphicsView_10->scene()->addPixmap(onepicarr[4]);
-  //  ui->graphicsView_10->repaint();
-
-    ui->graphicsView_3->scene()->addPixmap(onepicarr[5]);
-  //  ui->graphicsView_3->repaint();
-    ui->graphicsView_2->scene()->addPixmap(onepicarr[6]);
-   // ui->graphicsView_2->repaint();
-    scene->addPixmap(onepicarr[7]);
-  //  scene->paintf->repaint();
-    ui->graphicsView_4->scene()->addPixmap(onepicarr[8]);
-  //  ui->graphicsView_4->repaint();
-    ui->graphicsView_5->scene()->addPixmap(onepicarr[9]);
-  //  ui->graphicsView_5->repaint();
-
-    ui->graphicsView_11->scene()->addPixmap(onepicarr[10]);
-  //  ui->graphicsView_11->repaint();
-    ui->graphicsView_12->scene()->addPixmap(onepicarr[11]);
-  //  ui->graphicsView_12->repaint();
-    ui->graphicsView_13->scene()->addPixmap(onepicarr[12]);
-  //  ui->graphicsView_13->repaint();
-    ui->graphicsView_14->scene()->addPixmap(onepicarr[13]);
-  //  ui->graphicsView_14->repaint();
-    ui->graphicsView_15->scene()->addPixmap(onepicarr[14]);
-   // ui->graphicsView_15->repaint();
-//    if (puzzlemode)
- //   {
-  //      scene->addPixmap(onepicarr[14]);
+    ui->graphicsView_6->scene()->addPixmap(onepicarr[0]);   
+    ui->graphicsView_7->scene()->addPixmap(onepicarr[1]);  
+    ui->graphicsView_8->scene()->addPixmap(onepicarr[2]);   
+    ui->graphicsView_9->scene()->addPixmap(onepicarr[3]);   
+    ui->graphicsView_10->scene()->addPixmap(onepicarr[4]);  
+    ui->graphicsView_3->scene()->addPixmap(onepicarr[5]);  
+    ui->graphicsView_2->scene()->addPixmap(onepicarr[6]);   
+    scene->addPixmap(onepicarr[7]);  
+    ui->graphicsView_4->scene()->addPixmap(onepicarr[8]);  
+    ui->graphicsView_5->scene()->addPixmap(onepicarr[9]);  
+    ui->graphicsView_11->scene()->addPixmap(onepicarr[10]);  
+    ui->graphicsView_12->scene()->addPixmap(onepicarr[11]);  
+    ui->graphicsView_13->scene()->addPixmap(onepicarr[12]);  
+    ui->graphicsView_14->scene()->addPixmap(onepicarr[13]);  
+    ui->graphicsView_15->scene()->addPixmap(onepicarr[14]);   
 }
 
 void paintform::resizeEvent(QResizeEvent *)
@@ -2365,18 +2350,18 @@ void paintform::filtering_puzzle(QGraphicsView* gv, QPixmap pm, int grade)
 {
     QGraphicsBlurEffect *blur = new QGraphicsBlurEffect;
     if (attentmodu)
-        blur->setBlurRadius((100-pw->attent)/grade);
+        blur->setBlurRadius((100-estattn)/grade);
     else
         blur->setBlurRadius((100-pw->meditt)/grade);
     QGraphicsColorizeEffect *colorize = new QGraphicsColorizeEffect;
-    if (attentmodu)
-        colorize->setStrength((double)pw->attent/70);
+   /* if (attentmodu)
+        colorize->setStrength((double)estattn/70);
     else
         colorize->setStrength((double)pw->meditt/70);
-    colorize->setColor(QColor(qrand()%255,qrand()%255,qrand()%256,qrand()%255));
+    colorize->setColor(QColor(qrand()%255,qrand()%255,qrand()%256,qrand()%255));*/
 
     QImage qbim1 = applyEffectToImage(pm.toImage(), blur, 0);
-    //QImage qbim2 = applyEffectToImage(qbim1, colorize, 0);
+   // QImage qbim2 = applyEffectToImage(qbim1, colorize, 0);
     gv->scene()->clear();
     gv->scene()->addPixmap(QPixmap::fromImage(qbim1));
     gv->repaint();
@@ -2386,15 +2371,15 @@ void paintform::filteringmain_ingame(int grade)
 {
     QGraphicsBlurEffect *blur = new QGraphicsBlurEffect;
     if (attentmodu)
-        blur->setBlurRadius((100-pw->attent)/grade);
+        blur->setBlurRadius((100-estattn)/grade);
     else
         blur->setBlurRadius((100-pw->meditt)/grade);
     QGraphicsColorizeEffect *colorize = new QGraphicsColorizeEffect;
-    if (attentmodu)
-        colorize->setStrength((double)pw->attent/70);
+   /* if (attentmodu)
+        colorize->setStrength((double)estattn/70);
     else
         colorize->setStrength((double)pw->meditt/70);
-    colorize->setColor(QColor(qrand()%255,qrand()%255,qrand()%256,qrand()%255));
+    colorize->setColor(QColor(qrand()%255,qrand()%255,qrand()%256,qrand()%255)); */
 
     QImage qbim1;
     if (puzzlemode)
@@ -3016,25 +3001,19 @@ void paintform::on_checkBox_7_clicked()
 
 }
 
-void paintform::on_checkBox_8_clicked()
+void paintform::puzzle_onepic_switch()
 {
-    puzzlemode=!puzzlemode;
-
-    ui->checkBox_10->setEnabled(puzzlemode);
-    ui->checkBox_20->setEnabled(!puzzlemode);
-    ui->pushButton_7->setEnabled(puzzlemode);
-
     if (puzzlemode)
     {
         if (flowmode)
         {
             scene->clear();
             scene->addPixmap(onepicarr[7]);
-        }            
+        }
         ui->graphicsView->setGeometry(650,250,300,200);
     }
     else
-        ui->graphicsView->setGeometry(50,50,1500,800);    
+        ui->graphicsView->setGeometry(50,50,1500,800);
 
     if ((qimload) && (!flowmode))
         scene->addPixmap(mainpic.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
@@ -3042,7 +3021,7 @@ void paintform::on_checkBox_8_clicked()
     ui->graphicsView_2->setVisible(puzzlemode);
     ui->graphicsView_3->setVisible(puzzlemode);
     ui->graphicsView_4->setVisible(puzzlemode);
-    ui->graphicsView_5->setVisible(puzzlemode);    
+    ui->graphicsView_5->setVisible(puzzlemode);
     ui->graphicsView_6->setVisible(puzzlemode);
     ui->graphicsView_7->setVisible(puzzlemode);
     ui->graphicsView_8->setVisible(puzzlemode);
@@ -3053,9 +3032,21 @@ void paintform::on_checkBox_8_clicked()
     ui->graphicsView_13->setVisible(puzzlemode);
     ui->graphicsView_14->setVisible(puzzlemode);
     ui->graphicsView_15->setVisible(puzzlemode);
+}
 
-    if (iconsready)
-        ui->checkBox_13->setEnabled(puzzlemode);
+void paintform::on_checkBox_8_clicked()
+{
+    puzzlemode=!puzzlemode;
+
+    ui->checkBox_10->setEnabled(puzzlemode);
+    ui->checkBox_16->setEnabled(!puzzlemode);
+    ui->checkBox_17->setEnabled(!puzzlemode);
+    ui->checkBox_20->setEnabled(!puzzlemode);
+    ui->pushButton_7->setEnabled(puzzlemode);
+
+    puzzle_onepic_switch();
+
+    ui->checkBox_13->setEnabled(puzzlemode);
 
     if (firstpuzzle)
     {
@@ -3113,11 +3104,12 @@ void paintform::on_pushButton_8_clicked()
     random_shuffle(randnumb.begin(), randnumb.end());
     initpics();
     ui->spinBox_3->setMinimum(100);
-    if (puzzlemode)
-        ui->checkBox_13->setEnabled(true);
-    ui->checkBox_16->setEnabled(true);
-    ui->checkBox_17->setEnabled(true);
-    ui->checkBox_8->setEnabled(true);
+    if (!puzzlemode)
+    {
+        ui->checkBox_16->setEnabled(true);
+        ui->checkBox_17->setEnabled(true);
+        ui->checkBox_8->setEnabled(true);
+    }
 }
 
 void paintform::on_radioButton_4_clicked()
@@ -3167,9 +3159,8 @@ void paintform::on_checkBox_12_clicked()
 void paintform::on_checkBox_13_clicked()
 {
     gamemode=!gamemode;
+    ui->checkBox_8->setEnabled(!gamemode);
     ui->checkBox_10->setEnabled(!gamemode);
-    ui->checkBox_16->setEnabled(!gamemode);
-    ui->checkBox_17->setEnabled(!gamemode);
     if (gamemode)
         startround();
 }
@@ -3278,13 +3269,17 @@ void paintform::on_checkBox_16_clicked()
             random_shuffle(puzzlelocs.begin(), puzzlelocs.end());
         }
 
+        ui->checkBox_8->setEnabled(!flowmode);
         ui->checkBox_8->setChecked(flowmode);
-        on_checkBox_8_clicked();
+        ui->checkBox_20->setEnabled(!flowmode);
+        puzzlemode=flowmode;
+
+        puzzle_onepic_switch();
+
         changingpics=flowmode;
-        ui->checkBox_10->setChecked(flowmode);                
-        ui->checkBox_13->setEnabled(!flowmode);
+        ui->checkBox_10->setChecked(flowmode);                       
         ui->checkBox_11->setEnabled(flowmode);        
-        ui->checkBox_11->setChecked(flowmode);
+        ui->checkBox_11->setChecked(flowmode);        
         if (flowmode)
             tpicschange->start();
         else
@@ -3296,13 +3291,10 @@ void paintform::on_checkBox_16_clicked()
         if (flowmode)
             ui->graphicsView->setGeometry(650,250,300,200);
         else
-            ui->graphicsView->setGeometry(50,50,1500,800);
-       // if (qimload)
-       //     scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
+            ui->graphicsView->setGeometry(50,50,1500,800);       
         ui->graphicsView->repaint();
     }
 //    pw->bfiltmode=bfiltmode;
-//    puzzlemode=true;
 }
 
 void paintform::on_checkBox_17_clicked()
@@ -3333,7 +3325,7 @@ void paintform::on_checkBox_20_clicked()
 {    
     scene->drawflow=!scene->drawflow;
     if (iconsready)
-    {
+    {        
         ui->checkBox_8->setEnabled(!scene->drawflow);
         ui->checkBox_16->setEnabled(!scene->drawflow);
         ui->checkBox_17->setEnabled(!scene->drawflow);
@@ -3404,4 +3396,9 @@ void paintform::on_pushButton_12_clicked()
             pixMap = scene->bkgndimg;
         mww->setdstfromplay(pixMap.toImage());
     }
+}
+
+void paintform::on_spinBox_7_valueChanged(int arg1)
+{
+    pw->updateimlength(arg1);
 }
