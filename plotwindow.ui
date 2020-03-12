@@ -1506,7 +1506,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>sound modulation</string>
+    <string>duration modul-n</string>
    </property>
   </widget>
   <widget class="QPushButton" name="pushButton_24">

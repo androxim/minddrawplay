@@ -21,6 +21,7 @@ class ocvcontrols : public QWidget
 
 public:
     bool drawbrushcontour = true;
+    int picwidth = 2000, picheight = 1125;
     int currfilterarea = 250, currfilterrate = 12, currfilttype = 5, totalfilts = 5;    
     int sigma_color = 25, sigma_space = 50, kernel_s = 5;                       // cartoonize params
     int wave_freqs = 42, wave_amp = 9;                                          // waves params
@@ -30,6 +31,7 @@ public:
     int mixtype = 1, transp = 80, randpicn;                                     // mixer params
     bool changerandpic_byclick = false; bool dreamflowmode = false;             // mixer params
     bool autodreamflow = false; int dreamflowrate = 77; bool polygonmask = true;// mixer params
+    bool changepic_bytime = false; int changepic_interval = 3; QTimer* pichngT; // mixer params
     bool attmodul_area = false; bool attent_modulated_dreams = false;           // attention modulated filter area
     bool hueonly = false;                                                       // hue only, without overlay
     Mat randpic;
@@ -43,6 +45,9 @@ public:
     ~ocvcontrols();
 
 private slots:
+
+    void randpicchange_Update();
+
     void on_spinBox_valueChanged(int arg1);
 
     void on_spinBox_2_valueChanged(int arg1);
@@ -106,6 +111,12 @@ private slots:
     void on_checkBox_6_clicked();
 
     void on_checkBox_7_clicked();
+
+    void on_checkBox_8_clicked();
+
+    void on_checkBox_9_clicked();
+
+    void on_spinBox_14_valueChanged(int arg1);
 
 private:
     Ui::ocvcontrols *ui;

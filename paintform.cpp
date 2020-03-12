@@ -2665,6 +2665,14 @@ void paintform::setbackimageoverlay(QPixmap pmg)
 
 }
 
+void paintform::adaptivespinrate(bool fl)
+{
+    if (fl)
+        ui->spinBox_7->setStyleSheet("QSpinBox { background-color: yellow; }");
+    else
+        ui->spinBox_7->setStyleSheet("QSpinBox { background-color: white; }");
+}
+
 void paintform::setbackimageocv(QString filename)
 {
     mainpic.load(filename);

@@ -48,6 +48,7 @@ void dosvdtransform();
 void getsvdimage(int r);
 void applyfilt(int type, Rect rt);
 void fillpolygon(Mat im);
+Mat adaptivemask(Rect rt);
 
 Mat dilate(Rect srcRect);               // dilation filter
 Mat waves(Rect srcRect);                // waves filter
@@ -356,18 +357,14 @@ void ProcessingMix() // processing of overlay changes, alphaval - transparency
 {
     alphaval = (double) elem5 / 100;
     if (estattention)   // if MindWave connected and attention values are streaming
-    {
-        cv::resize(srccopy, srccopy, cv::Size(image.cols,image.rows), 0, 0, cv::INTER_LINEAR);
+    {       
         if (activeflow)                   
             addWeighted(image, alphaval, srccopy, 1 - alphaval, 0, dst);
         else
             addWeighted(src, alphaval, srccopy, 1 - alphaval, 0, dst);
     }
-    else
-    {
-        cv::resize(srccopy, srccopy, cv::Size(src.cols,src.rows), 0, 0, cv::INTER_LINEAR);
-        addWeighted(src, alphaval, srccopy, 1 - alphaval, 0, dst);
-    }
+    else         
+        addWeighted(src, alphaval, srccopy, 1 - alphaval, 0, dst);    
     clear_dst.release();
     clear_dst = dst.clone();
     imshow("image", dst);
@@ -383,6 +380,16 @@ void fillpolygon(Mat img)
     const Point* ppt[1] = {rook_points[0]};
     int npt[] = { npk };
     fillPoly(img,ppt,npt,1,Scalar( 255, 255, 255 ),lineType);
+}
+
+Mat adaptivemask(Rect rt)
+{
+    srct = dst(rt);
+    cvtColor(srct,gray_element,COLOR_BGR2GRAY);
+    int blocksize = 15;
+    int constant = 2;
+    adaptiveThreshold(gray_element,gray_element,255,ADAPTIVE_THRESH_GAUSSIAN_C,THRESH_BINARY_INV,blocksize,constant);
+    return gray_element;
 }
 
 void onMouse( int event, int x, int y, int flags, void* )   // Mouse clicks and moves processing
@@ -409,9 +416,8 @@ void onMouse( int event, int x, int y, int flags, void* )   // Mouse clicks and 
 
             applyfilt(ocvform->currfilttype,srcDstRect);
 
-            Mat mask_image(dstt.size(), CV_8U, Scalar(0)); // mask to have only circle of region
+            Mat mask_image(dstt.size(), CV_8U, Scalar(0)); // mask to have only circle of region                        
             circle(mask_image, Point(mask_image.rows / 2, mask_image.cols / 2), ocvform->currfilterarea/2, CV_RGB(255, 255, 255),-1,LINE_AA);
-           // fillpolygon(mask_image);
 
             if (ocvform->currfilttype==5)
                 addWeighted(dst(srcDstRect), (double)ocvform->transp / 100, dstt, 1 - (double)ocvform->transp / 100, 0, dstt);
@@ -431,9 +437,8 @@ void onMouse( int event, int x, int y, int flags, void* )   // Mouse clicks and 
 
         applyfilt(ocvform->currfilttype,srcDstRect);
 
-        Mat mask_image( dstt.size(), CV_8U, Scalar(0));
+        Mat mask_image( dstt.size(), CV_8U, Scalar(0));                
         circle(mask_image, Point(mask_image.rows / 2, mask_image.cols / 2), ocvform->currfilterarea/2, CV_RGB(255, 255, 255),-1,LINE_AA);
-       // fillpolygon(mask_image);
 
         prev_dst = dst.clone(); // for keeping state before last action (using in "cancel last")
 
@@ -455,8 +460,8 @@ void onMouse( int event, int x, int y, int flags, void* )   // Mouse clicks and 
         leftpw->fillpics();    
         rightpw->fillpics();
         QString ocvpic=folderpath+"/"+imglist.at(currmainpic);
-        src = imread(ocvpic.toStdString());
-        cv::resize(srccopy, srccopy, cv::Size(src.cols,src.rows), 0, 0, cv::INTER_LINEAR);
+        src = imread(ocvpic.toStdString());        
+        cv::resize(src, src, cv::Size(ocvform->picwidth,ocvform->picheight), 0, 0, cv::INTER_LINEAR);
         if ((activeflow) && (!ocvform->hueonly))
         {
             addWeighted(src, alphaval, srccopy, 1 - alphaval, 0, dst);
@@ -476,7 +481,7 @@ void onMouse( int event, int x, int y, int flags, void* )   // Mouse clicks and 
         leftpw->fillpics();
         QString ocvpic=folderpath+"/"+imglist.at(curroverpic);
         srccopy = imread(ocvpic.toStdString());
-        cv::resize(srccopy, srccopy, cv::Size(src.cols,src.rows), 0, 0, cv::INTER_LINEAR);
+        cv::resize(srccopy, srccopy, cv::Size(ocvform->picwidth,ocvform->picheight), 0, 0, cv::INTER_LINEAR);
         if (!ocvform->hueonly)
         {
             addWeighted(src, alphaval, srccopy, 1 - alphaval, 0, dst);
@@ -797,7 +802,7 @@ inline cv::Mat QImageToCvMat( const QImage &inImage, bool inCloneImageData = tru
 void MainWindow::setdstfromplay(QImage qm) // set openCV picture from MindPlay picture, only in not flow mode - for filtering
 {
     Mat dsnt = QImageToCvMat(qm);
-    cv::resize(dsnt, dsnt, cv::Size(dst.cols,dst.rows), 0, 0, cv::INTER_LINEAR);
+    cv::resize(dsnt, dsnt, cv::Size(ocvform->picwidth,ocvform->picheight), 0, 0, cv::INTER_LINEAR);
     cvtColor(dsnt,dsnt,COLOR_BGRA2BGR);
     clear_dst = dsnt.clone();
     dst = dsnt.clone();
@@ -836,7 +841,7 @@ void MainWindow::updatemainpic(int num)
     rightpw->fillpics();
     QString ocvpic=folderpath+"/"+imglist.at(currmainpic);
     src = imread(ocvpic.toStdString()); 
-    cv::resize(srccopy, srccopy, cv::Size(src.cols,src.rows), 0, 0, cv::INTER_LINEAR);
+    cv::resize(src, src, cv::Size(ocvform->picwidth,ocvform->picheight), 0, 0, cv::INTER_LINEAR);
     if ((activeflow) && (!ocvform->hueonly))
     {
         addWeighted(src, alphaval, srccopy, 1 - alphaval, 0, dst);
@@ -861,7 +866,7 @@ void MainWindow::updateoverpic(int num)
     leftpw->fillpics();
     QString ocvpic=folderpath+"/"+imglist.at(curroverpic);
     srccopy = imread(ocvpic.toStdString());
-    cv::resize(srccopy, srccopy, cv::Size(src.cols,src.rows), 0, 0, cv::INTER_LINEAR);
+    cv::resize(srccopy, srccopy, cv::Size(ocvform->picwidth,ocvform->picheight), 0, 0, cv::INTER_LINEAR);
     if ((activeflow) && (!ocvform->hueonly))
     {
         addWeighted(src, alphaval, srccopy, 1 - alphaval, 0, dst);
@@ -1039,6 +1044,7 @@ void MainWindow::mindwaveconnect() // function to connect to MindWave device
 void MainWindow::setsourceimg(QString fpath) // set openCV main image from path
 {
     src = imread(fpath.toStdString());
+    cv::resize(src, src, cv::Size(ocvform->picwidth,ocvform->picheight), 0, 0, cv::INTER_LINEAR);
     imshow("image", src );
 }
 
@@ -1143,9 +1149,9 @@ void MainWindow::startopencv() // MindOCV initialization function
 
         createTrackbar("Hue","image",&elem1, max_elem,Hue);
         // createTrackbar("Saturation","image",&elem2, max_elem,Saturation);
-        // createTrackbar("Value","image",&elem3, max_elem,Value);
-        createTrackbar("Attention","image",&elem4,max_elem2,Attent);
+        // createTrackbar("Value","image",&elem3, max_elem,Value);        
         createTrackbar("Overlay","image",&elem5,max_elem2,Overlay);
+        createTrackbar("Attention","image",&elem4,max_elem2,Attent);
         createTrackbar("Border","image",&elem6,max_elem2,Border);
 
         setMouseCallback( "image", onMouse, 0 );
@@ -1155,15 +1161,21 @@ void MainWindow::startopencv() // MindOCV initialization function
         rchanged=false;
         defineiconsarr();
         opencvpic = folderpath+"/"+imglist.at(currmainpic);
+
         src = imread(opencvpic.toStdString());                
         image = imread(opencvpic.toStdString());
         dst = imread(opencvpic.toStdString());
         clear_dst = imread(opencvpic.toStdString());        
+        cv::resize(src, src, cv::Size(ocvform->picwidth,ocvform->picheight), 0, 0, cv::INTER_LINEAR);
+        cv::resize(image, image, cv::Size(ocvform->picwidth,ocvform->picheight), 0, 0, cv::INTER_LINEAR);
+        cv::resize(dst, dst, cv::Size(ocvform->picwidth,ocvform->picheight), 0, 0, cv::INTER_LINEAR);
+        cv::resize(clear_dst, clear_dst, cv::Size(ocvform->picwidth,ocvform->picheight), 0, 0, cv::INTER_LINEAR);
 
         curroverpic = iconsarr[qrand() % (imglist.length()-1)];
         define_riconsarr();
         QString stp = folderpath+"/"+imglist.at(curroverpic);
-        srccopy =  imread(stp.toStdString());
+        srccopy = imread(stp.toStdString());
+        cv::resize(srccopy, srccopy, cv::Size(ocvform->picwidth,ocvform->picheight), 0, 0, cv::INTER_LINEAR);
 
         firstrun=false;    
         defineiconsarr();        
@@ -1239,9 +1251,9 @@ void MainWindow::checkoverlay()
             QString ocvpic=folderpath+"/"+imglist.at(curroverpic);
             src=srccopy.clone();
             srccopy = imread(ocvpic.toStdString());            
+            cv::resize(srccopy, srccopy, cv::Size(ocvform->picwidth,ocvform->picheight), 0, 0, cv::INTER_LINEAR);
             if (!ocvform->hueonly)
-            {
-                cv::resize(srccopy, srccopy, cv::Size(src.cols,src.rows), 0, 0, cv::INTER_LINEAR);
+            {                
                 addWeighted(src, alphaval, srccopy, 1 - alphaval, 0, dst);
                 imshow("image", dst);
             }
@@ -1257,7 +1269,7 @@ void MainWindow::checkoverlay()
             rightpw->fillpics();
             QString ocvpic=folderpath+"/"+imglist.at(curroverpic);
             srccopy = imread(ocvpic.toStdString());
-            cv::resize(srccopy, srccopy, cv::Size(src.cols,src.rows), 0, 0, cv::INTER_LINEAR);
+            cv::resize(srccopy, srccopy, cv::Size(ocvform->picwidth,ocvform->picheight), 0, 0, cv::INTER_LINEAR);
             addWeighted(src, alphaval, srccopy, 1 - alphaval, 0, dst);
           //  imshow("image", dst);
         }
@@ -1433,7 +1445,7 @@ void MainWindow::mindwtUpdate() // processing data from MindWave device
 
 void MainWindow::keys_processing()      // processing keys pressing
 {
-    char key = cv::waitKey(2) % 256;
+    char key = cv::waitKey(5) % 256;
     if (key == 't') // test stuff button
     {
         //
@@ -1539,7 +1551,10 @@ void MainWindow::keys_processing()      // processing keys pressing
         imshow("image", dst);
     }
     else if (key == '6')
+    {
         ocvform->polygonmask=!ocvform->polygonmask;
+        ocvform->updateformvals();
+    }
     //else if (key == '7')        // make SVD transform (very slow!)
         //dosvdtransform();
     else if ((key == 'z') && (!activeflow))     // change filter on the left one
@@ -1590,7 +1605,7 @@ void MainWindow::keys_processing()      // processing keys pressing
         ocvform->transp++;
         ocvform->updateformvals();
     }
-    else if ((key == 'm') && (ocvform->currfilttype==5)) // change picture in mixer random pic mode
+    else if ((key == 'm') && (!activeflow)) // change picture for mixer random pic mode
         ocvform->changerandpic();
     else if (key == 'u')
     {
@@ -1601,7 +1616,14 @@ void MainWindow::keys_processing()      // processing keys pressing
 
 void MainWindow::picfiltUpdate() // function for MindOCV hue-overlay flow updates
 {        
-    keys_processing();
+    try
+    {
+        keys_processing();
+    }
+    catch (...)
+    {
+        qDebug()<<"key process error";
+    }
 
     if (activeflow)
     {
@@ -1659,16 +1681,20 @@ void MainWindow::on_pushButton_7_clicked()
         opencvpic = folderpath+"/"+imglist.at(currmainpic);
         src = imread(opencvpic.toStdString());
         image = imread(opencvpic.toStdString());
+        cv::resize(src, src, cv::Size(ocvform->picwidth,ocvform->picheight), 0, 0, cv::INTER_LINEAR);
+        cv::resize(image, image, cv::Size(ocvform->picwidth,ocvform->picheight), 0, 0, cv::INTER_LINEAR);
         curroverpic = iconsarr[qrand() % (imglist.length()-1)];
         define_riconsarr();
         QString stp = folderpath+"/"+imglist.at(curroverpic);
         srccopy =  imread(stp.toStdString());
+        cv::resize(srccopy, srccopy, cv::Size(ocvform->picwidth,ocvform->picheight), 0, 0, cv::INTER_LINEAR);
         firstrun = false;
         defineiconsarr();
         shuffleicons(true);
         leftpw->fillpics();
         shuffleicons(false);
         rightpw->fillpics();
+        ProcessingMix();
     }
 }
 

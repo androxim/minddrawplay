@@ -19,7 +19,7 @@
      <x>20</x>
      <y>40</y>
      <width>591</width>
-     <height>81</height>
+     <height>93</height>
     </rect>
    </property>
    <property name="autoFillBackground">
@@ -94,6 +94,9 @@
      </property>
      <property name="text">
       <string>MORPH_CROSS</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
      </property>
     </widget>
     <widget class="QLabel" name="label_9">
@@ -555,9 +558,9 @@
      <property name="geometry">
       <rect>
        <x>220</x>
-       <y>31</y>
+       <y>27</y>
        <width>71</width>
-       <height>22</height>
+       <height>20</height>
       </rect>
      </property>
      <property name="text">
@@ -649,6 +652,73 @@
      </property>
      <property name="text">
       <string>by attention</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="checkBox_8">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>330</x>
+       <y>50</y>
+       <width>111</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>polygons mask</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="checkBox_9">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>184</x>
+       <y>50</y>
+       <width>71</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>by timer</string>
+     </property>
+    </widget>
+    <widget class="QSpinBox" name="spinBox_14">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>260</x>
+       <y>50</y>
+       <width>35</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="minimum">
+      <number>3</number>
+     </property>
+     <property name="maximum">
+      <number>10</number>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_16">
+     <property name="geometry">
+      <rect>
+       <x>300</x>
+       <y>52</y>
+       <width>21</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>sec</string>
      </property>
     </widget>
    </widget>

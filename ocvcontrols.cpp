@@ -10,6 +10,10 @@ ocvcontrols::ocvcontrols(QWidget *parent) :
     setWindowFlags(Qt::FramelessWindowHint|Qt::WindowStaysOnTopHint);
     attmodul_area=false;
     updateformvals();
+    pichngT = new QTimer(this);     // timer for auto dreamflow mode, when new picture appears by fragments
+    pichngT->connect(pichngT,SIGNAL(timeout()), this, SLOT(randpicchange_Update()));
+    pichngT->setInterval(changepic_interval*1000);
+
    // setAttribute(Qt::WA_TranslucentBackground,true);
    // setWindowOpacity(0.95);
    // ui->tabWidget->setAutoFillBackground(true);
@@ -30,11 +34,17 @@ void ocvcontrols::updateformvals()
         ui->radioButton_6->setChecked(true);
     ui->spinBox_13->setValue(dreamflowrate);
     ui->checkBox_7->setChecked(hueonly);
+    ui->checkBox_8->setChecked(polygonmask);
 }
 
 ocvcontrols::~ocvcontrols()
 {
     delete ui;
+}
+
+void ocvcontrols::randpicchange_Update()
+{
+    changerandpic();
 }
 
 void ocvcontrols::on_spinBox_valueChanged(int arg1)
@@ -147,6 +157,9 @@ void ocvcontrols::on_radioButton_4_clicked()
     mixtype = 1;
     ui->checkBox_2->setEnabled(false);
     ui->checkBox_4->setEnabled(false);
+    ui->checkBox_8->setEnabled(false);
+    ui->checkBox_9->setEnabled(false);
+    ui->spinBox_14->setEnabled(false);
 }
 
 void ocvcontrols::on_radioButton_5_clicked()
@@ -154,6 +167,9 @@ void ocvcontrols::on_radioButton_5_clicked()
     mixtype = 2;
     ui->checkBox_2->setEnabled(false);
     ui->checkBox_4->setEnabled(false);    
+    ui->checkBox_8->setEnabled(false);
+    ui->checkBox_9->setEnabled(false);
+    ui->spinBox_14->setEnabled(false);
 }
 
 void ocvcontrols::on_radioButton_6_clicked()
@@ -162,6 +178,9 @@ void ocvcontrols::on_radioButton_6_clicked()
     changerandpic();  
     ui->checkBox_2->setEnabled(true);
     ui->checkBox_4->setEnabled(true);
+    ui->checkBox_8->setEnabled(true);
+    ui->checkBox_9->setEnabled(true);
+    ui->spinBox_14->setEnabled(true);
 }
 
 void ocvcontrols::changerandpic()
@@ -170,7 +189,7 @@ void ocvcontrols::changerandpic()
     QString rpic = mww->getimagepath(randpicn);
     randpic.release();
     randpic = imread(rpic.toStdString());
-    // cv::resize(randpic, randpic, cv::Size(src.cols,src.rows), 0, 0, cv::INTER_LINEAR);
+    cv::resize(randpic, randpic, cv::Size(picwidth,picheight), 0, 0, cv::INTER_LINEAR);
 }
 
 void ocvcontrols::stopdreamflow()
@@ -211,8 +230,11 @@ void ocvcontrols::on_checkBox_4_clicked()
     {
         autodreamflow = false;
         ui->checkBox_5->setChecked(false);
+        mww->dreamflow_timer->stop();
+        ui->checkBox_6->setEnabled(false);        
     }
     ui->checkBox_5->setEnabled(dreamflowmode);
+    ui->checkBox_8->setEnabled(dreamflowmode);
 }
 
 void ocvcontrols::on_checkBox_5_clicked()
@@ -247,4 +269,23 @@ void ocvcontrols::on_checkBox_6_clicked()
 void ocvcontrols::on_checkBox_7_clicked()
 {
     hueonly=!hueonly;
+}
+
+void ocvcontrols::on_checkBox_8_clicked()
+{
+    polygonmask=!polygonmask;
+}
+
+void ocvcontrols::on_checkBox_9_clicked()
+{
+    changepic_bytime=!changepic_bytime;
+    if (changepic_bytime)
+        pichngT->start();
+    else
+        pichngT->stop();
+}
+
+void ocvcontrols::on_spinBox_14_valueChanged(int arg1)
+{
+    changepic_interval=arg1*1000;
 }

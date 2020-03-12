@@ -3432,9 +3432,15 @@ void plotwindow::on_checkBox_12_clicked()
 {
     soundmodul=!soundmodul;
     if (soundmodul)
+    {
+        pss->paintf->adaptivespinrate(true);
         ui->spinBox_5->setStyleSheet("QSpinBox { background-color: yellow; }");
+    }
     else
+    {
+        pss->paintf->adaptivespinrate(false);
         ui->spinBox_5->setStyleSheet("QSpinBox { background-color: white; }");
+    }
 }
 
 void plotwindow::on_pushButton_24_clicked()

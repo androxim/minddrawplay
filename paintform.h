@@ -124,6 +124,7 @@ public:
     void update_estrate(int t);
     void setbackimageocv(QString filename);
     void setbackimageoverlay(QPixmap pmg);
+    void adaptivespinrate(bool fl);
     int getgraphicview_width();
     int getgraphicview_height();
     ~paintform();
