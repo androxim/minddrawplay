@@ -23,17 +23,21 @@ public:
     bool drawbrushcontour = true;
     int picwidth = 2000, picheight = 1125;
     int currfilterarea = 250, currfilterrate = 12, currfilttype = 5, totalfilts = 5;    
-    int sigma_color = 25, sigma_space = 50, kernel_s = 5;                       // cartoonize params
-    int wave_freqs = 42, wave_amp = 9;                                          // waves params
-    int dilation_size = 1, dilation_elem = 2;                                   // dilate params
-    int nfeatures = 100, nlevels = 6, edgetreshold = 20; float scalef = 1.1;    // ORB params
-    QColor fcolor = QColor(255,255,255); bool randfcolor=false;                 // ORB params
-    int mixtype = 1, transp = 80, randpicn;                                     // mixer params
-    bool changerandpic_byclick = false; bool dreamflowmode = false;             // mixer params
-    bool autodreamflow = false; int dreamflowrate = 77; bool polygonmask = true;// mixer params
-    bool changepic_bytime = false; int changepic_interval = 3; QTimer* pichngT; // mixer params
-    bool attmodul_area = false; bool attent_modulated_dreams = false;           // attention modulated filter area
-    bool hueonly = false;                                                       // hue only, without overlay
+    int sigma_color = 25, sigma_space = 50, kernel_s = 5;                              // cartoonize params
+    int wave_freqs = 42, wave_amp = 9;                                                 // waves params
+    int dilation_size = 1, dilation_elem = 2;                                          // dilate params
+    int nfeatures = 100, nlevels = 6, edgetreshold = 20; float scalef = 1.1;           // ORB params
+    QColor fcolor = QColor(255,255,255); bool randfcolor=false;                        // ORB params
+    int mixtype = 1, transp = 80, randpicn;                                            // mixer params
+    bool changerandpic_byclick = false; bool changebyattention = false;                // mixer params
+    bool dreamflow = false; int dreamflowrate = 77; bool polygonmask = true;           // mixer params
+    bool changepic_bytime = false; int changepic_interval = 3; QTimer* pichngT;        // mixer params
+    QPoint seed; int x_left, x_right, y_top, y_bottom, drops_interval = 50;            // mixer params
+    bool dropsmode = false; QTimer* dropsT; int dropsgrow_step = 50;                   // mixer params
+    int firstdrop_size = 30; bool plotdroprect = false; bool drops_byatt = false;      // mixer params
+    bool poly_by_att = true; int pointsinpoly = 3;                                     // mixer params
+    bool attmodul_area = false; bool attent_modulated_dreams = false;    // attention modulated filter area
+    bool hueonly = false;                                                // hue only, without overlay
     Mat randpic;
 
     leftpanel* leftpan;
@@ -47,6 +51,8 @@ public:
 private slots:
 
     void randpicchange_Update();
+
+    void windowsize_Update();
 
     void on_spinBox_valueChanged(int arg1);
 
@@ -117,6 +123,16 @@ private slots:
     void on_checkBox_9_clicked();
 
     void on_spinBox_14_valueChanged(int arg1);
+
+    void on_checkBox_10_clicked();
+
+    void on_checkBox_12_clicked();
+
+    void on_spinBox_16_valueChanged(int arg1);
+
+    void on_checkBox_11_clicked();
+
+    void on_spinBox_15_valueChanged(int arg1);
 
 private:
     Ui::ocvcontrols *ui;

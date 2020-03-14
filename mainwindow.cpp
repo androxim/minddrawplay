@@ -63,8 +63,9 @@ Mat mixfilt(Rect srcRect);              // mixer of pics with transparency
 // srccopy - overlay pic, chosen from right panel, more clear when attention low
 // dst - resulting overlay pic for area filtering
 Mat src, srccopy, dst, dstcopy, prev_dst, clear_dst, img, image, dstg, edges, mask, trp, randpic;
-Mat tempimg, dstemp, dst0, srg, srct, srwt, dstt, svd_img, gray_element, element;
+Mat tempimg, dstemp, dst0, srg, srct, srwt, dstt, svd_img, gray_element, element, dream0;
 int currmainpic, curroverpic, prevmainpic = -1, prevoverpic = -1;
+Rect df_srcDstRect;
 
 bool firstrun = true;
 bool estattention = false;  // if attention is streaming from MindWave device
@@ -372,13 +373,12 @@ void ProcessingMix() // processing of overlay changes, alphaval - transparency
 
 void fillpolygon(Mat img)
 {
-    int lineType = LINE_8;
-    int npk = elem4 / 10 + 3;
-    Point rook_points[1][npk];
-    for (int i=0; i<npk; i++)
+    int lineType = LINE_8;   
+    Point rook_points[1][ocvform->pointsinpoly];
+    for (int i=0; i<ocvform->pointsinpoly; i++)
         rook_points[0][i] = Point(qrand()%dstt.rows,qrand()%dstt.cols);
     const Point* ppt[1] = {rook_points[0]};
-    int npt[] = { npk };
+    int npt[] = { ocvform->pointsinpoly };
     fillPoly(img,ppt,npt,1,Scalar( 255, 255, 255 ),lineType);
 }
 
@@ -696,6 +696,26 @@ QString MainWindow::getimagepath(int t) // return image path for ocvcontrol form
     return folderpath+"/"+imglist.at(t);
 }
 
+void MainWindow::setdream0() // grab initial image before starting expanding mode in dreamflow
+{
+    dream0 = dst.clone();
+}
+
+void MainWindow::setprevdfrect(int x, int y, int w, int h) // save prev expanding window in dreamflow
+{
+    df_srcDstRect = Rect(x,y,w,h);
+}
+
+void MainWindow::drawwindow(int x, int y, int w, int h) // draw rect of window for expanding mode in dreamflow
+{
+    dst(df_srcDstRect).copyTo(dream0(df_srcDstRect)); // copy updated rect on image without window box
+    dst = dream0.clone();
+    dream0.release();
+    dream0 = dst.clone();
+    rectangle(dst, Point(x-2,y-2), Point(x+w+2,y+h+2), cv::Scalar(255,255,255),2);
+    imshow("image",dst);
+}
+
 void MainWindow::save_and_add_overlaypic() // save and add current overlay to pictures
 {
     QString fimg = "newimg-"+QDateTime::currentDateTime().toString("ddMMyyyy-hhmmss")+".jpg";
@@ -732,17 +752,35 @@ void MainWindow::cancelall()    // cancel all filtering actions
     imshow("image", dst);
 }
 
-void MainWindow::dreamflow_Update() // timer for puzzling mode, when new pic appears by random fragment over old
+void MainWindow::dreamflow_Update() // timer for dreamflow mode, when new pic appears by random fragment over old
 {
-    int x = ocvform->currfilterarea/2 + qrand() % (dst.cols-ocvform->currfilterarea);
-    int y = ocvform->currfilterarea/2 + qrand() % (dst.rows-ocvform->currfilterarea);
-
-    Rect srcDstRect(x-ocvform->currfilterarea/2, y-ocvform->currfilterarea/2, ocvform->currfilterarea, ocvform->currfilterarea);
-    dstt = dst(srcDstRect);
+    int x,y, area;
+    Rect srcDstRect;
+    if (!ocvform->dropsmode)
+    {
+        x = ocvform->currfilterarea/2 + qrand() % (dst.cols - ocvform->currfilterarea);
+        y = ocvform->currfilterarea/2 + qrand() % (dst.rows - ocvform->currfilterarea);
+        srcDstRect = Rect(x-ocvform->currfilterarea/2, y-ocvform->currfilterarea/2, ocvform->currfilterarea, ocvform->currfilterarea);
+    } else
+    {
+        // define area inside current expanding window
+        if (ocvform->drops_byatt)
+            area = (((ocvform->x_right-ocvform->x_left)/2-5)*elem4)/100+3;
+        else
+            area = qrand()%((ocvform->x_right-ocvform->x_left)/2-5)+3;
+        x = ocvform->x_left + area/2 + qrand() % (ocvform->x_right - ocvform->x_left - area); // define rect based on area size (inside expanding window)
+        y = ocvform->y_top + area/2 + qrand() % (ocvform->y_bottom - ocvform->y_top - area);
+        srcDstRect = Rect(x-area/2, y-area/2, area, area);
+    }
     dstt = mixfilt(srcDstRect);
-    Mat mask_image( dstt.size(), CV_8U, Scalar(0));
+    Mat mask_image(dstt.size(), CV_8U, Scalar(0));
     if (!ocvform->polygonmask)
-        circle(mask_image, Point(mask_image.rows / 2, mask_image.cols / 2), ocvform->currfilterarea/2, CV_RGB(255, 255, 255),-1,LINE_AA);
+    {
+        if (!ocvform->dropsmode)
+            circle(mask_image, Point(mask_image.rows / 2, mask_image.cols / 2), ocvform->currfilterarea/2, CV_RGB(255, 255, 255),-1,LINE_AA);
+        else
+            circle(mask_image, Point(mask_image.rows / 2, mask_image.cols / 2), area/2, CV_RGB(255, 255, 255),-1,LINE_AA);
+    }
     else
         fillpolygon(mask_image);
     addWeighted(dst(srcDstRect), (double)ocvform->transp / 100, dstt, 1 - (double)ocvform->transp / 100, 0, dstt);
@@ -1077,14 +1115,28 @@ void MainWindow::setattent(int i)
         ocvform->currfilterarea=elem4*5;
         ocvform->updateformvals(); // updating values on openCV filter control form
     }
-    if ((!activeflow) && (ocvform->currfilttype==5) && (ocvform->mixtype==3) && (ocvform->dreamflowmode))
+    if ((!activeflow) && (ocvform->currfilttype==5) && (ocvform->mixtype==3) && (ocvform->changebyattention))
     {
         if (elem4>elem6)
-            ocvform->changerandpic();
-        if ((ocvform->autodreamflow) && (ocvform->attent_modulated_dreams))
+            ocvform->changerandpic();        
+    }
+    if ((!activeflow) && (ocvform->currfilttype==5) && (ocvform->mixtype==3) && (ocvform->dreamflow))
+    {
+        if (ocvform->attent_modulated_dreams)
         {
             ocvform->dreamflowrate=105-elem4;
             dreamflow_timer->setInterval(ocvform->dreamflowrate);
+            ocvform->updateformvals();
+        }
+        if (ocvform->drops_byatt)
+        {
+            ocvform->drops_interval=(105-elem4)*2;
+            ocvform->dropsT->setInterval(ocvform->drops_interval);
+            ocvform->updateformvals();
+        }
+        if (ocvform->poly_by_att)
+        {
+            ocvform->pointsinpoly = elem4 / 10 + 3;
             ocvform->updateformvals();
         }
     }
@@ -1501,7 +1553,7 @@ void MainWindow::keys_processing()      // processing keys pressing
             ocvform->hide();
             ocvcontrshow=false;
             keepfiltering=false;
-            if (ocvform->autodreamflow)
+            if (ocvform->dreamflow)
                 ocvform->stopdreamflow();
         }
         else
@@ -1551,10 +1603,7 @@ void MainWindow::keys_processing()      // processing keys pressing
         imshow("image", dst);
     }
     else if (key == '6')
-    {
-        ocvform->polygonmask=!ocvform->polygonmask;
-        ocvform->updateformvals();
-    }
+        ocvform->plotdroprect=!ocvform->plotdroprect;
     //else if (key == '7')        // make SVD transform (very slow!)
         //dosvdtransform();
     else if ((key == 'z') && (!activeflow))     // change filter on the left one

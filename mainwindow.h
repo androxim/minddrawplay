@@ -94,6 +94,9 @@ public:
     void setdstfromplay(QImage qm);
     void save_and_add_overlaypic();
     void run_opencvform();
+    void drawwindow(int x, int y, int w, int h);
+    void setdream0();
+    void setprevdfrect(int x, int y, int w, int h);
     QImage grabopcvpic();
     QString getimagepath(int t);
     void Webcamsource();

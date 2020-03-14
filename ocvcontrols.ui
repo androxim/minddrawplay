@@ -489,7 +489,7 @@
     <widget class="QRadioButton" name="radioButton_4">
      <property name="geometry">
       <rect>
-       <x>20</x>
+       <x>5</x>
        <y>30</y>
        <width>95</width>
        <height>20</height>
@@ -502,8 +502,8 @@
     <widget class="QRadioButton" name="radioButton_5">
      <property name="geometry">
       <rect>
-       <x>110</x>
-       <y>30</y>
+       <x>5</x>
+       <y>50</y>
        <width>95</width>
        <height>20</height>
       </rect>
@@ -544,21 +544,21 @@
     <widget class="QRadioButton" name="radioButton_6">
      <property name="geometry">
       <rect>
-       <x>210</x>
-       <y>6</y>
+       <x>84</x>
+       <y>30</y>
        <width>95</width>
        <height>20</height>
       </rect>
      </property>
      <property name="text">
-      <string>random pic</string>
+      <string>random pics</string>
      </property>
     </widget>
     <widget class="QPushButton" name="pushButton_3">
      <property name="geometry">
       <rect>
-       <x>220</x>
-       <y>27</y>
+       <x>102</x>
+       <y>50</y>
        <width>71</width>
        <height>20</height>
       </rect>
@@ -573,8 +573,8 @@
      </property>
      <property name="geometry">
       <rect>
-       <x>310</x>
-       <y>6</y>
+       <x>184</x>
+       <y>10</y>
        <width>111</width>
        <height>20</height>
       </rect>
@@ -589,14 +589,14 @@
      </property>
      <property name="geometry">
       <rect>
-       <x>440</x>
-       <y>6</y>
-       <width>131</width>
+       <x>184</x>
+       <y>30</y>
+       <width>138</width>
        <height>20</height>
       </rect>
      </property>
      <property name="text">
-      <string>dreamflow mode</string>
+      <string>by attention&gt;border</string>
      </property>
     </widget>
     <widget class="QCheckBox" name="checkBox_5">
@@ -605,21 +605,21 @@
      </property>
      <property name="geometry">
       <rect>
-       <x>310</x>
-       <y>30</y>
-       <width>101</width>
+       <x>325</x>
+       <y>10</y>
+       <width>85</width>
        <height>20</height>
       </rect>
      </property>
      <property name="text">
-      <string>autonomous</string>
+      <string>dreamflow</string>
      </property>
     </widget>
     <widget class="QSpinBox" name="spinBox_13">
      <property name="geometry">
       <rect>
-       <x>442</x>
-       <y>30</y>
+       <x>440</x>
+       <y>10</y>
        <width>42</width>
        <height>22</height>
       </rect>
@@ -629,7 +629,7 @@
      <property name="geometry">
       <rect>
        <x>410</x>
-       <y>32</y>
+       <y>12</y>
        <width>31</width>
        <height>16</height>
       </rect>
@@ -644,8 +644,8 @@
      </property>
      <property name="geometry">
       <rect>
-       <x>490</x>
-       <y>30</y>
+       <x>493</x>
+       <y>10</y>
        <width>91</width>
        <height>20</height>
       </rect>
@@ -660,14 +660,14 @@
      </property>
      <property name="geometry">
       <rect>
-       <x>330</x>
+       <x>325</x>
        <y>50</y>
        <width>111</width>
        <height>20</height>
       </rect>
      </property>
      <property name="text">
-      <string>polygons mask</string>
+      <string>polygons, np:</string>
      </property>
      <property name="checked">
       <bool>true</bool>
@@ -718,7 +718,106 @@
       </rect>
      </property>
      <property name="text">
-      <string>sec</string>
+      <string>s</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="checkBox_10">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>325</x>
+       <y>30</y>
+       <width>81</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>in drops</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_17">
+     <property name="geometry">
+      <rect>
+       <x>410</x>
+       <y>32</y>
+       <width>31</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>rate:</string>
+     </property>
+    </widget>
+    <widget class="QSpinBox" name="spinBox_15">
+     <property name="geometry">
+      <rect>
+       <x>440</x>
+       <y>30</y>
+       <width>42</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <property name="minimum">
+      <number>0</number>
+     </property>
+     <property name="maximum">
+      <number>500</number>
+     </property>
+     <property name="singleStep">
+      <number>10</number>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="checkBox_11">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>493</x>
+       <y>30</y>
+       <width>91</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>by attention</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="checkBox_12">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>493</x>
+       <y>50</y>
+       <width>91</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>by attention</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QSpinBox" name="spinBox_16">
+     <property name="geometry">
+      <rect>
+       <x>440</x>
+       <y>50</y>
+       <width>42</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <property name="minimum">
+      <number>3</number>
+     </property>
+     <property name="maximum">
+      <number>10</number>
      </property>
     </widget>
    </widget>

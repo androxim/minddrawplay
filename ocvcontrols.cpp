@@ -7,17 +7,30 @@ ocvcontrols::ocvcontrols(QWidget *parent) :
 {
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint);
-    setWindowFlags(Qt::FramelessWindowHint|Qt::WindowStaysOnTopHint);
-    attmodul_area=false;
-    updateformvals();
+    setWindowFlags(Qt::FramelessWindowHint|Qt::WindowStaysOnTopHint);    
+
     pichngT = new QTimer(this);     // timer for auto dreamflow mode, when new picture appears by fragments
     pichngT->connect(pichngT,SIGNAL(timeout()), this, SLOT(randpicchange_Update()));
     pichngT->setInterval(changepic_interval*1000);
 
+    dropsT = new QTimer(this);     // timer for expanding window in dreamflow mode
+    dropsT->connect(dropsT,SIGNAL(timeout()), this, SLOT(windowsize_Update()));
+    dropsT->setInterval(drops_interval);
+
+    seed.setX(1000);
+    seed.setY(562);
+    x_left = seed.x()-firstdrop_size/2;
+    x_right = seed.x()+firstdrop_size/2;
+    y_top = seed.y()-firstdrop_size/2;
+    y_bottom = seed.y()+firstdrop_size/2;
+
+    ui->spinBox_16->setStyleSheet("QSpinBox { background-color: yellow; }");
+
+    updateformvals();
    // setAttribute(Qt::WA_TranslucentBackground,true);
    // setWindowOpacity(0.95);
    // ui->tabWidget->setAutoFillBackground(true);
-   // ui->tabWidget->setStyleSheet("background-color:lightgray;");
+   // ui->tabWidget->setStyleSheet("background-color:lightgray;");    
 }
 
 void ocvcontrols::updateformvals()
@@ -31,10 +44,12 @@ void ocvcontrols::updateformvals()
     else if (mixtype==2)
         ui->radioButton_5->setChecked(true);
     else
-        ui->radioButton_6->setChecked(true);
-    ui->spinBox_13->setValue(dreamflowrate);
+        ui->radioButton_6->setChecked(true);    
     ui->checkBox_7->setChecked(hueonly);
     ui->checkBox_8->setChecked(polygonmask);
+    ui->spinBox_13->setValue(dreamflowrate);
+    ui->spinBox_15->setValue(drops_interval);
+    ui->spinBox_16->setValue(pointsinpoly);
 }
 
 ocvcontrols::~ocvcontrols()
@@ -45,6 +60,31 @@ ocvcontrols::~ocvcontrols()
 void ocvcontrols::randpicchange_Update()
 {
     changerandpic();
+}
+
+void ocvcontrols::windowsize_Update()
+{
+    if (x_left>=dropsgrow_step)
+        x_left-=dropsgrow_step;
+    if (x_right<=picwidth-dropsgrow_step)
+        x_right+=dropsgrow_step;
+    if (y_top>=dropsgrow_step)
+        y_top-=dropsgrow_step;
+    if (y_bottom<=picheight-dropsgrow_step)
+        y_bottom+=dropsgrow_step;
+    if ((x_left<dropsgrow_step) && (x_right>picwidth-dropsgrow_step) && (y_top<dropsgrow_step) && (y_bottom>picheight-dropsgrow_step))
+    {
+        seed.setX(dropsgrow_step*3+firstdrop_size+qrand()%(picwidth-dropsgrow_step*3-firstdrop_size*3));
+        seed.setY(dropsgrow_step*3+firstdrop_size+qrand()%(picheight-dropsgrow_step*3-firstdrop_size*3));
+        x_left = seed.x()-firstdrop_size/2;
+        x_right = seed.x()+firstdrop_size/2;
+        y_top = seed.y()-firstdrop_size/2;
+        y_bottom = seed.y()+firstdrop_size/2;
+        changerandpic();
+    }
+    if (plotdroprect)
+        mww->drawwindow(x_left,y_top,x_right-x_left,y_bottom-y_top);
+    mww->setprevdfrect(x_left+3,y_top+3,x_right-x_left-3,y_bottom-y_top-3);
 }
 
 void ocvcontrols::on_spinBox_valueChanged(int arg1)
@@ -157,6 +197,7 @@ void ocvcontrols::on_radioButton_4_clicked()
     mixtype = 1;
     ui->checkBox_2->setEnabled(false);
     ui->checkBox_4->setEnabled(false);
+    ui->checkBox_5->setEnabled(false);
     ui->checkBox_8->setEnabled(false);
     ui->checkBox_9->setEnabled(false);
     ui->spinBox_14->setEnabled(false);
@@ -167,6 +208,7 @@ void ocvcontrols::on_radioButton_5_clicked()
     mixtype = 2;
     ui->checkBox_2->setEnabled(false);
     ui->checkBox_4->setEnabled(false);    
+    ui->checkBox_5->setEnabled(false);
     ui->checkBox_8->setEnabled(false);
     ui->checkBox_9->setEnabled(false);
     ui->spinBox_14->setEnabled(false);
@@ -178,7 +220,7 @@ void ocvcontrols::on_radioButton_6_clicked()
     changerandpic();  
     ui->checkBox_2->setEnabled(true);
     ui->checkBox_4->setEnabled(true);
-    ui->checkBox_8->setEnabled(true);
+    ui->checkBox_5->setEnabled(true);
     ui->checkBox_9->setEnabled(true);
     ui->spinBox_14->setEnabled(true);
 }
@@ -225,31 +267,28 @@ void ocvcontrols::on_checkBox_3_clicked()
 
 void ocvcontrols::on_checkBox_4_clicked()
 {
-    dreamflowmode=!dreamflowmode;
-    if (!dreamflowmode)
-    {
-        autodreamflow = false;
-        ui->checkBox_5->setChecked(false);
-        mww->dreamflow_timer->stop();
-        ui->checkBox_6->setEnabled(false);        
-    }
-    ui->checkBox_5->setEnabled(dreamflowmode);
-    ui->checkBox_8->setEnabled(dreamflowmode);
+    changebyattention=!changebyattention;
 }
 
 void ocvcontrols::on_checkBox_5_clicked()
 {
-    autodreamflow=!autodreamflow;
-    if (autodreamflow)
+    dreamflow=!dreamflow;
+    if (dreamflow)
     {
-        mww->dreamflow_timer->start();
-        ui->checkBox_6->setEnabled(true);
+        mww->dreamflow_timer->start();    
+        if (dropsmode)
+            dropsT->start();
     }
     else
     {
         mww->dreamflow_timer->stop();
-        ui->checkBox_6->setEnabled(false);
+        dropsT->stop();
+        ui->checkBox_10->setEnabled(false);
     }
+    ui->checkBox_6->setEnabled(dreamflow);
+    ui->checkBox_10->setEnabled(dreamflow);
+    ui->checkBox_8->setEnabled(dreamflow);
+    ui->checkBox_12->setEnabled(dreamflow);
 }
 
 void ocvcontrols::on_spinBox_13_valueChanged(int arg1)
@@ -274,6 +313,8 @@ void ocvcontrols::on_checkBox_7_clicked()
 void ocvcontrols::on_checkBox_8_clicked()
 {
     polygonmask=!polygonmask;
+    ui->spinBox_16->setEnabled(polygonmask);
+    ui->checkBox_12->setEnabled(polygonmask);
 }
 
 void ocvcontrols::on_checkBox_9_clicked()
@@ -288,4 +329,48 @@ void ocvcontrols::on_checkBox_9_clicked()
 void ocvcontrols::on_spinBox_14_valueChanged(int arg1)
 {
     changepic_interval=arg1*1000;
+}
+
+void ocvcontrols::on_checkBox_10_clicked()
+{
+    dropsmode=!dropsmode;
+    if (dropsmode)
+    {
+        mww->setdream0();
+        mww->setprevdfrect(x_left+3,y_top+3,x_right-x_left-3,y_bottom-y_top-3);
+        dropsT->start();
+    }
+    else
+        dropsT->stop();
+    ui->spinBox_15->setEnabled(dropsmode);
+    ui->checkBox_11->setEnabled(dropsmode);
+}
+
+void ocvcontrols::on_checkBox_12_clicked()
+{
+    poly_by_att=!poly_by_att;
+    if (poly_by_att)
+        ui->spinBox_16->setStyleSheet("QSpinBox { background-color: yellow; }");
+    else
+        ui->spinBox_16->setStyleSheet("QSpinBox { background-color: white; }");
+}
+
+void ocvcontrols::on_spinBox_16_valueChanged(int arg1)
+{
+    pointsinpoly=arg1;
+}
+
+void ocvcontrols::on_checkBox_11_clicked()
+{
+    drops_byatt=!drops_byatt;
+    if (drops_byatt)
+        ui->spinBox_15->setStyleSheet("QSpinBox { background-color: yellow; }");
+    else
+        ui->spinBox_15->setStyleSheet("QSpinBox { background-color: white; }");
+}
+
+void ocvcontrols::on_spinBox_15_valueChanged(int arg1)
+{
+    drops_interval=arg1;
+    dropsT->setInterval(drops_interval);
 }
