@@ -50,6 +50,9 @@ void ocvcontrols::updateformvals()
     ui->spinBox_13->setValue(dreamflowrate);
     ui->spinBox_15->setValue(drops_interval);
     ui->spinBox_16->setValue(pointsinpoly);
+    ui->checkBox_14->setChecked(plotdroprect);
+    ui->checkBox_15->setChecked(seed_frommousepos);
+    ui->checkBox_16->setChecked(drawbrushcontour);
 }
 
 ocvcontrols::~ocvcontrols()
@@ -74,8 +77,23 @@ void ocvcontrols::windowsize_Update()
         y_bottom+=dropsgrow_step;
     if ((x_left<dropsgrow_step) && (x_right>picwidth-dropsgrow_step) && (y_top<dropsgrow_step) && (y_bottom>picheight-dropsgrow_step))
     {
-        seed.setX(dropsgrow_step*3+firstdrop_size+qrand()%(picwidth-dropsgrow_step*3-firstdrop_size*3));
-        seed.setY(dropsgrow_step*3+firstdrop_size+qrand()%(picheight-dropsgrow_step*3-firstdrop_size*3));
+        if (!seed_frommousepos)
+        {
+            seed.setX(dropsgrow_step*3+firstdrop_size+qrand()%(picwidth-dropsgrow_step*3-firstdrop_size*3));
+            seed.setY(dropsgrow_step*3+firstdrop_size+qrand()%(picheight-dropsgrow_step*3-firstdrop_size*3));
+        }
+        else
+        {
+            if ((currmousepos.x()>dropsgrow_step*3+firstdrop_size) && (currmousepos.x()<picwidth-dropsgrow_step*3+firstdrop_size) && (currmousepos.y()>dropsgrow_step*3+firstdrop_size) && (currmousepos.y()<picheight-dropsgrow_step*3-firstdrop_size*3))
+            {
+                seed.setX(currmousepos.x());
+                seed.setY(currmousepos.y());
+            } else
+            {
+                seed.setX(dropsgrow_step*3+firstdrop_size+qrand()%(picwidth-dropsgrow_step*3-firstdrop_size*3));
+                seed.setY(dropsgrow_step*3+firstdrop_size+qrand()%(picheight-dropsgrow_step*3-firstdrop_size*3));
+            }
+        }
         x_left = seed.x()-firstdrop_size/2;
         x_right = seed.x()+firstdrop_size/2;
         y_top = seed.y()-firstdrop_size/2;
@@ -234,6 +252,15 @@ void ocvcontrols::changerandpic()
     cv::resize(randpic, randpic, cv::Size(picwidth,picheight), 0, 0, cv::INTER_LINEAR);
 }
 
+void ocvcontrols::setcurrdream(int t)
+{
+    randpicn = t;
+    QString rpic = mww->getimagepath(randpicn);
+    randpic.release();
+    randpic = imread(rpic.toStdString());
+    cv::resize(randpic, randpic, cv::Size(picwidth,picheight), 0, 0, cv::INTER_LINEAR);
+}
+
 void ocvcontrols::stopdreamflow()
 {
     if (attent_modulated_dreams)
@@ -275,20 +302,27 @@ void ocvcontrols::on_checkBox_5_clicked()
     dreamflow=!dreamflow;
     if (dreamflow)
     {
+        mww->setdream0();
         mww->dreamflow_timer->start();    
         if (dropsmode)
+        {
             dropsT->start();
+            ui->checkBox_14->setEnabled(true);
+            ui->checkBox_15->setEnabled(true);
+        }
     }
     else
     {
         mww->dreamflow_timer->stop();
         dropsT->stop();
         ui->checkBox_10->setEnabled(false);
+        ui->checkBox_14->setEnabled(false);
+        ui->checkBox_15->setEnabled(false);
     }
     ui->checkBox_6->setEnabled(dreamflow);
     ui->checkBox_10->setEnabled(dreamflow);
     ui->checkBox_8->setEnabled(dreamflow);
-    ui->checkBox_12->setEnabled(dreamflow);
+    ui->checkBox_12->setEnabled(dreamflow);    
 }
 
 void ocvcontrols::on_spinBox_13_valueChanged(int arg1)
@@ -344,6 +378,8 @@ void ocvcontrols::on_checkBox_10_clicked()
         dropsT->stop();
     ui->spinBox_15->setEnabled(dropsmode);
     ui->checkBox_11->setEnabled(dropsmode);
+    ui->checkBox_14->setEnabled(dropsmode);
+    ui->checkBox_15->setEnabled(dropsmode);
 }
 
 void ocvcontrols::on_checkBox_12_clicked()
@@ -373,4 +409,28 @@ void ocvcontrols::on_spinBox_15_valueChanged(int arg1)
 {
     drops_interval=arg1;
     dropsT->setInterval(drops_interval);
+}
+
+void ocvcontrols::on_checkBox_15_clicked()
+{
+    seed_frommousepos=!seed_frommousepos;
+}
+
+void ocvcontrols::on_checkBox_14_clicked()
+{
+    plotdroprect=!plotdroprect;
+}
+
+void ocvcontrols::on_checkBox_16_clicked()
+{
+    drawbrushcontour=!drawbrushcontour;
+}
+
+void ocvcontrols::on_checkBox_13_clicked()
+{
+    transp_by_att=!transp_by_att;
+    if (transp_by_att)
+        ui->spinBox_12->setStyleSheet("QSpinBox { background-color: yellow; }");
+    else
+        ui->spinBox_12->setStyleSheet("QSpinBox { background-color: white; }");
 }

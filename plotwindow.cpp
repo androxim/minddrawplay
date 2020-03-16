@@ -114,10 +114,10 @@ plotwindow::plotwindow(QWidget *parent) :
     ui->setupUi(this);    
     ui->widget->installEventFilter(this);
 
-    blurback = true;
-    canbackchange=true;
-    attentmodul=true;
-    recplaying=false;
+    blurback = false;
+    canbackchange = true;
+    attentmodul = true;
+    recplaying = false;
     tim = new QTimer(this);
     tim->connect(tim, SIGNAL(timeout()), this, SLOT(timerUpdate()));
     tim->setInterval(5);

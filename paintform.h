@@ -8,8 +8,8 @@
 #include "QInputEvent"
 #include "set"
 
-#define TPMAX 10000
-#define TFMAX 5000
+#define TPMAX 7300 // max points for attention/meditation
+#define TFMAX 2100 // max points for frequencies
 
 class paintScene;
 class plotwindow;

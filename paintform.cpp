@@ -685,6 +685,11 @@ void paintform::updatefreqarrs(double deltat, double thetat, double alphat, doub
     fout<<betat<<",";
     fout<<gammat<<" "; */
 
+    if (numfrsamples>2000)
+    {
+        numfrsamples-=2001;
+        ui->widget_2->xAxis->moveRange(-1968);
+    } else
     if (numfrsamples>32)
         ui->widget_2->xAxis->moveRange(1);
 
@@ -730,22 +735,7 @@ void paintform::updatefreqarrs(double deltat, double thetat, double alphat, doub
     ui->widget_2->graph(5)->setData(fxc, hgamma_arr);
     ui->widget_2->graph(6)->setData(fxc, estatt_arr);
 
-    ui->widget_2->replot();
-
-  //  scene->clear();
-  //  plane.clear();
- //   for (int i=0; i<5; i++)
- //   {
- //       centercoord[i][0]=qrand()%1500;
-  //      centercoord[i][1]=qrand()%800;
-   //     plane<<QPointF(centercoord[i][0],centercoord[i][1]);
-   // }
- /*   scene->drawpolygon(3,centercoord[0][0],centercoord[0][1],deltat*3,0.5);
-    scene->drawpolygon(5,centercoord[1][0],centercoord[1][1],thetat,0.5);
-    scene->drawpolygon(6,centercoord[2][0],centercoord[2][1],alphat,0.5);
-    scene->drawpolygon(7,centercoord[3][0],centercoord[3][1],betat,0.5);
-    scene->drawpolygon(8,centercoord[4][0],centercoord[4][1],gammat*4,0.5); */
-   // scene->addPolygon(plane,QPen(scene->drcolor, 2, Qt::SolidLine, Qt::RoundCap));
+    ui->widget_2->replot(); 
 
     numfrsamples++;
 }
@@ -788,8 +778,14 @@ void paintform::initpics()
 
 void paintform::updateattentionplot(int t)
 {
+    if (numsamples>7200) // 2 hours
+    {
+        numsamples-=7201;
+        ui->widget->xAxis->moveRange(-7168);
+    } else
     if (numsamples>32)
         ui->widget->xAxis->moveRange(1);
+
     attent_arr[numsamples]=t;
     border_arr[numsamples]=borderlevel;
     xc[numsamples]=numsamples;
@@ -884,13 +880,7 @@ void paintform::updatemeditation(int t)
     scene->meditt=t;
 
     medit_arr[numsamples]=t;
-   // xc[numsamples]=numsamples;
-
     ui->widget->graph(1)->setData(xc, medit_arr);
-
-    ui->widget->replot();
-
-   // numsamples++;
 
     if (!attentmodu)
     {  

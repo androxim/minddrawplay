@@ -20,7 +20,7 @@ class ocvcontrols : public QWidget
     Q_OBJECT
 
 public:
-    bool drawbrushcontour = true;
+    bool drawbrushcontour = true; QPoint currmousepos;
     int picwidth = 2000, picheight = 1125;
     int currfilterarea = 250, currfilterrate = 12, currfilttype = 5, totalfilts = 5;    
     int sigma_color = 25, sigma_space = 50, kernel_s = 5;                              // cartoonize params
@@ -33,17 +33,18 @@ public:
     bool dreamflow = false; int dreamflowrate = 77; bool polygonmask = true;           // mixer params
     bool changepic_bytime = false; int changepic_interval = 3; QTimer* pichngT;        // mixer params
     QPoint seed; int x_left, x_right, y_top, y_bottom, drops_interval = 50;            // mixer params
-    bool dropsmode = false; QTimer* dropsT; int dropsgrow_step = 50;                   // mixer params
-    int firstdrop_size = 30; bool plotdroprect = false; bool drops_byatt = false;      // mixer params
-    bool poly_by_att = true; int pointsinpoly = 3;                                     // mixer params
-    bool attmodul_area = false; bool attent_modulated_dreams = false;    // attention modulated filter area
-    bool hueonly = false;                                                // hue only, without overlay
+    bool dropsmode = false; QTimer* dropsT; int dropsgrow_step = 24;                   // mixer params
+    int firstdrop_size = 30; bool plotdroprect = true; bool drops_byatt = false;       // mixer params
+    bool poly_by_att = true; int pointsinpoly = 3; bool seed_frommousepos = false;     // mixer params
+    bool attmodul_area = false; bool attent_modulated_dreams = false;    // attention modulated filter area and rate of dreamflow
+    bool hueonly = false; bool transp_by_att = false;                    // hue only, without overlay; transparency by attention
     Mat randpic;
 
     leftpanel* leftpan;
     MainWindow* mww;
     void updateformvals();
     void changerandpic();
+    void setcurrdream(int t);
     void stopdreamflow();
     explicit ocvcontrols(QWidget *parent = 0);
     ~ocvcontrols();
@@ -133,6 +134,14 @@ private slots:
     void on_checkBox_11_clicked();
 
     void on_spinBox_15_valueChanged(int arg1);
+
+    void on_checkBox_15_clicked();
+
+    void on_checkBox_14_clicked();
+
+    void on_checkBox_16_clicked();
+
+    void on_checkBox_13_clicked();
 
 private:
     Ui::ocvcontrols *ui;

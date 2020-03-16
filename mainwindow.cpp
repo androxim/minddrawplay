@@ -150,7 +150,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ocvform = new ocvcontrols();    // openCV filters controls form
     ocvform->mww = this;
-    ocvform->setFixedSize(619,130);
+    ocvform->setFixedSize(736,130);
     ocvform->move(QPoint(278,844));
     ocvform->leftpan = leftpw;
 
@@ -196,7 +196,7 @@ MainWindow::MainWindow(QWidget *parent) :
     currentel = 0; currentsimdata = 0;
     simulateEEG = new QTimer(this);
     simulateEEG->connect(simulateEEG,SIGNAL(timeout()), this, SLOT(simulateEEGUpdate()));
-    simulateEEG->setInterval(2);
+    simulateEEG->setInterval(1);
     simeeg = false; plotw->simeeg = false;
     // simulateEEG->start();
     // ==== set of variables for simulated EEG data mode end ====
@@ -406,8 +406,13 @@ void onMouse( int event, int x, int y, int flags, void* )   // Mouse clicks and 
             imshow("image", dst0);
         }
     }
-    if ((!activeflow) && (event == EVENT_MOUSEMOVE) && ((flags ==  EVENT_FLAG_LBUTTON) || (keepfiltering)) && (y<dst.rows-ocvform->currfilterarea/2) && (x<dst.cols-ocvform->currfilterarea/2) && (y>ocvform->currfilterarea/2) && (x>ocvform->currfilterarea/2))
+    if ((!activeflow) && (event == EVENT_MOUSEMOVE) && (y<dst.rows-ocvform->currfilterarea/2) && (x<dst.cols-ocvform->currfilterarea/2) && (y>ocvform->currfilterarea/2) && (x>ocvform->currfilterarea/2))
     {
+        ocvform->currmousepos.setX(x);
+        ocvform->currmousepos.setY(y);
+    }
+    if ((!activeflow) && (event == EVENT_MOUSEMOVE) && ((flags ==  EVENT_FLAG_LBUTTON) || (keepfiltering)) && (y<dst.rows-ocvform->currfilterarea/2) && (x<dst.cols-ocvform->currfilterarea/2) && (y>ocvform->currfilterarea/2) && (x>ocvform->currfilterarea/2))
+    {      
         curr_iter++; // determines how often with mouse moves will be doing filtering
         if (curr_iter >= ocvform->currfilterrate)
         {
@@ -495,7 +500,7 @@ void onMouse( int event, int x, int y, int flags, void* )   // Mouse clicks and 
         {
             rs->setGeometry(0,0,1940,80);
             rs->move(0,0);
-            ocvform->move(QPoint(-10,965));
+            ocvform->move(QPoint(-10,968));
             cv::setWindowProperty("image",cv::WND_PROP_FULLSCREEN,1);
             fullscr=true;
         }
@@ -885,6 +890,8 @@ void MainWindow::updatemainpic(int num)
         addWeighted(src, alphaval, srccopy, 1 - alphaval, 0, dst);
         imshow("image", dst);
     }
+    if ((!activeflow) && (ocvform->currfilttype==5) && (ocvform->mixtype==3))
+        ocvform->setcurrdream(num);
     if (plotw->start)
         plotw->grabopencv(ocvpic);
     if (paintw_started)
@@ -1130,7 +1137,7 @@ void MainWindow::setattent(int i)
         }
         if (ocvform->drops_byatt)
         {
-            ocvform->drops_interval=(105-elem4)*2;
+            ocvform->drops_interval=120-elem4; // 30+elem4/2;
             ocvform->dropsT->setInterval(ocvform->drops_interval);
             ocvform->updateformvals();
         }
@@ -1139,6 +1146,11 @@ void MainWindow::setattent(int i)
             ocvform->pointsinpoly = elem4 / 10 + 3;
             ocvform->updateformvals();
         }
+    }
+    if ((!activeflow) && (ocvform->currfilttype==5) && (ocvform->transp_by_att))
+    {
+        ocvform->transp = 100 - elem4/2;
+        ocvform->updateformvals();
     }
 }
 
@@ -1572,17 +1584,13 @@ void MainWindow::keys_processing()      // processing keys pressing
         setborder(80);
     else if (key == '7')
         setborder(70);
-    else if ((key == '1') && (ocvform->currfilterarea>50)) // && (svdt>2))   // decrease filter area
+    else if ((key == '1') && (ocvform->currfilterarea>50))  // decrease filter area
     {
-      //  svdt--;
-      //  getsvdimage(svdt);
         ocvform->currfilterarea-=10;
         ocvform->updateformvals();
     }
-    else if ((key == '2') && (ocvform->currfilterarea<800)) // && (svdt<100)) // increase filter area
+    else if ((key == '2') && (ocvform->currfilterarea<800)) // increase filter area
     {
-      //  svdt++;
-      //  getsvdimage(svdt);
         ocvform->currfilterarea+=10;
         ocvform->updateformvals();
     }
@@ -1600,12 +1608,15 @@ void MainWindow::keys_processing()      // processing keys pressing
     else if (key == '5')
     {
         ocvform->drawbrushcontour=!ocvform->drawbrushcontour;
+        ocvform->updateformvals();
         imshow("image", dst);
     }
     else if (key == '6')
+    {
         ocvform->plotdroprect=!ocvform->plotdroprect;
-    //else if (key == '7')        // make SVD transform (very slow!)
-        //dosvdtransform();
+        ocvform->updateformvals();
+    }
+
     else if ((key == 'z') && (!activeflow))     // change filter on the left one
     {
         if (ocvform->currfilttype==1)
