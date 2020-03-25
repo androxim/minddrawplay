@@ -311,7 +311,7 @@
      </property>
     </widget>
    </widget>
-   <widget class="QWidget" name="tab">
+   <widget class="QWidget" name="ORB">
     <attribute name="title">
      <string>ORB features</string>
     </attribute>
@@ -482,7 +482,7 @@
      </property>
     </widget>
    </widget>
-   <widget class="QWidget" name="tab_2">
+   <widget class="QWidget" name="Mixer">
     <attribute name="title">
      <string>Mixer</string>
     </attribute>
@@ -883,7 +883,7 @@
   <widget class="QSpinBox" name="spinBox">
    <property name="geometry">
     <rect>
-     <x>110</x>
+     <x>105</x>
      <y>10</y>
      <width>42</width>
      <height>22</height>
@@ -902,7 +902,7 @@
   <widget class="QLabel" name="label_2">
    <property name="geometry">
     <rect>
-     <x>170</x>
+     <x>160</x>
      <y>13</y>
      <width>81</width>
      <height>16</height>
@@ -915,9 +915,9 @@
   <widget class="QSpinBox" name="spinBox_2">
    <property name="geometry">
     <rect>
-     <x>260</x>
+     <x>244</x>
      <y>10</y>
-     <width>42</width>
+     <width>37</width>
      <height>22</height>
     </rect>
    </property>
@@ -931,7 +931,7 @@
   <widget class="QCheckBox" name="checkBox">
    <property name="geometry">
     <rect>
-     <x>330</x>
+     <x>290</x>
      <y>10</y>
      <width>121</width>
      <height>20</height>
@@ -944,9 +944,9 @@
   <widget class="QPushButton" name="pushButton">
    <property name="geometry">
     <rect>
-     <x>640</x>
-     <y>34</y>
-     <width>81</width>
+     <x>650</x>
+     <y>32</y>
+     <width>72</width>
      <height>21</height>
     </rect>
    </property>
@@ -957,9 +957,9 @@
   <widget class="QPushButton" name="pushButton_2">
    <property name="geometry">
     <rect>
-     <x>560</x>
-     <y>34</y>
-     <width>81</width>
+     <x>580</x>
+     <y>32</y>
+     <width>72</width>
      <height>21</height>
     </rect>
    </property>
@@ -970,7 +970,7 @@
   <widget class="QCheckBox" name="checkBox_7">
    <property name="geometry">
     <rect>
-     <x>470</x>
+     <x>504</x>
      <y>10</y>
      <width>71</width>
      <height>20</height>
@@ -983,7 +983,7 @@
   <widget class="QCheckBox" name="checkBox_16">
    <property name="geometry">
     <rect>
-     <x>560</x>
+     <x>418</x>
      <y>10</y>
      <width>81</width>
      <height>20</height>
@@ -993,7 +993,70 @@
     <string>plot brush</string>
    </property>
   </widget>
+  <widget class="QLabel" name="label_18">
+   <property name="geometry">
+    <rect>
+     <x>400</x>
+     <y>35</y>
+     <width>91</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>flow direction:</string>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="comboBox">
+   <property name="geometry">
+    <rect>
+     <x>490</x>
+     <y>33</y>
+     <width>79</width>
+     <height>19</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <weight>75</weight>
+     <bold>true</bold>
+    </font>
+   </property>
+   <item>
+    <property name="text">
+     <string>random</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>similar</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>opposite</string>
+    </property>
+   </item>
+  </widget>
+  <widget class="QCheckBox" name="checkBox_17">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>590</x>
+     <y>10</y>
+     <width>121</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>camera overlay</string>
+   </property>
+  </widget>
  </widget>
  <resources/>
  <connections/>
+ <buttongroups>
+  <buttongroup name="buttonGroup"/>
+ </buttongroups>
 </ui>

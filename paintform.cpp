@@ -1055,6 +1055,65 @@ void paintform::updateset_allpics()
     currimglist[13]=folderpath+"/"+imglist.at(randnumb[13]);
 }
 
+void paintform::updateset_allpics_similarly(int* picnums)
+{
+    ui->graphicsView_2->scene()->clear();
+    ui->graphicsView_2->scene()->addPixmap(pmarray[picnums[0]]);
+    currimglist[0]=folderpath+"/"+imglist.at(picnums[0]);
+
+    ui->graphicsView_3->scene()->clear();
+    ui->graphicsView_3->scene()->addPixmap(pmarray[picnums[1]]);
+    currimglist[1]=folderpath+"/"+imglist.at(picnums[1]);
+
+    ui->graphicsView_4->scene()->clear();
+    ui->graphicsView_4->scene()->addPixmap(pmarray[picnums[2]]);
+    currimglist[2]=folderpath+"/"+imglist.at(picnums[2]);
+
+    ui->graphicsView_5->scene()->clear();
+    ui->graphicsView_5->scene()->addPixmap(pmarray[picnums[3]]);
+    currimglist[3]=folderpath+"/"+imglist.at(picnums[3]);
+
+    ui->graphicsView_6->scene()->clear();
+    ui->graphicsView_6->scene()->addPixmap(pmarray[picnums[4]]);
+    currimglist[4]=folderpath+"/"+imglist.at(picnums[4]);
+
+    ui->graphicsView_7->scene()->clear();
+    ui->graphicsView_7->scene()->addPixmap(pmarray[picnums[5]]);
+    currimglist[5]=folderpath+"/"+imglist.at(picnums[5]);
+
+    ui->graphicsView_8->scene()->clear();
+    ui->graphicsView_8->scene()->addPixmap(pmarray[picnums[6]]);
+    currimglist[6]=folderpath+"/"+imglist.at(picnums[6]);
+
+    ui->graphicsView_9->scene()->clear();
+    ui->graphicsView_9->scene()->addPixmap(pmarray[picnums[7]]);
+    currimglist[7]=folderpath+"/"+imglist.at(picnums[7]);
+
+    ui->graphicsView_10->scene()->clear();
+    ui->graphicsView_10->scene()->addPixmap(pmarray[picnums[8]]);
+    currimglist[8]=folderpath+"/"+imglist.at(picnums[8]);
+
+    ui->graphicsView_11->scene()->clear();
+    ui->graphicsView_11->scene()->addPixmap(pmarray[picnums[9]]);
+    currimglist[9]=folderpath+"/"+imglist.at(picnums[9]);
+
+    ui->graphicsView_12->scene()->clear();
+    ui->graphicsView_12->scene()->addPixmap(pmarray[picnums[10]]);
+    currimglist[10]=folderpath+"/"+imglist.at(picnums[10]);
+
+    ui->graphicsView_13->scene()->clear();
+    ui->graphicsView_13->scene()->addPixmap(pmarray[picnums[11]]);
+    currimglist[11]=folderpath+"/"+imglist.at(picnums[11]);
+
+    ui->graphicsView_14->scene()->clear();
+    ui->graphicsView_14->scene()->addPixmap(pmarray[picnums[12]]);
+    currimglist[12]=folderpath+"/"+imglist.at(picnums[12]);
+
+    ui->graphicsView_15->scene()->clear();
+    ui->graphicsView_15->scene()->addPixmap(pmarray[picnums[13]]);
+    currimglist[13]=folderpath+"/"+imglist.at(picnums[13]);
+}
+
 void paintform::updateset_singlepuzzle()
 {
     random_shuffle(randpuzzlelocs.begin(), randpuzzlelocs.end());

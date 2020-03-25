@@ -8,8 +8,8 @@
 #include "QInputEvent"
 #include "set"
 
-#define TPMAX 7300 // max points for attention/meditation
-#define TFMAX 2100 // max points for frequencies
+#define TPMAX 7300 // max points before replot for attention/meditation
+#define TFMAX 2100 // max points before replot for frequencies
 
 class paintScene;
 class plotwindow;
@@ -127,6 +127,7 @@ public:
     void adaptivespinrate(bool fl);
     int getgraphicview_width();
     int getgraphicview_height();
+    void updateset_allpics_similarly(int* picnums);
     ~paintform();
 
 

@@ -24,7 +24,7 @@ ocvcontrols::ocvcontrols(QWidget *parent) :
     y_top = seed.y()-firstdrop_size/2;
     y_bottom = seed.y()+firstdrop_size/2;
 
-    ui->spinBox_16->setStyleSheet("QSpinBox { background-color: yellow; }");
+    ui->spinBox_16->setStyleSheet("QSpinBox { background-color: yellow; }");      
 
     updateformvals();
    // setAttribute(Qt::WA_TranslucentBackground,true);
@@ -53,6 +53,13 @@ void ocvcontrols::updateformvals()
     ui->checkBox_14->setChecked(plotdroprect);
     ui->checkBox_15->setChecked(seed_frommousepos);
     ui->checkBox_16->setChecked(drawbrushcontour);
+    ui->checkBox_17->setChecked(camerainp);
+    if (flowdirection==1)
+        ui->comboBox->setCurrentIndex(1);
+    else if (flowdirection==-1)
+        ui->comboBox->setCurrentIndex(2);
+    else
+        ui->comboBox->setCurrentIndex(0);
 }
 
 ocvcontrols::~ocvcontrols()
@@ -244,8 +251,25 @@ void ocvcontrols::on_radioButton_6_clicked()
 }
 
 void ocvcontrols::changerandpic()
-{
-    randpicn = mww->geticonnum(qrand() % (leftpan->imgnumber),true);    
+{    
+    if (flowdirection==0)
+        randpicn = mww->geticonnum(qrand() % (leftpan->imgnumber),true);
+    else
+    {
+        if (flowdirection==1)
+        {
+            mww->getchi2dists(randpicn);
+            randpicn = mww->nearest_pics[ngbarea/5+qrand()%ngbarea];
+        }
+        else
+        {
+            mww->getchi2dists(randpicn);
+            randpicn = mww->farest_pics[ngbarea/5+qrand()%ngbarea];
+        }
+        mww->getchi2dists(randpicn);
+        mww->fillmaininpuzzle(randpicn);
+        mww->fillpuzzle_withneighbours();
+    }
     QString rpic = mww->getimagepath(randpicn);
     randpic.release();
     randpic = imread(rpic.toStdString());
@@ -270,6 +294,11 @@ void ocvcontrols::stopdreamflow()
     }
     on_checkBox_5_clicked();
     ui->checkBox_5->setChecked(false);
+}
+
+void ocvcontrols::setcameracheckbox(bool fl)
+{
+    ui->checkBox_17->setEnabled(fl);
 }
 
 void ocvcontrols::on_pushButton_3_clicked()
@@ -433,4 +462,33 @@ void ocvcontrols::on_checkBox_13_clicked()
         ui->spinBox_12->setStyleSheet("QSpinBox { background-color: yellow; }");
     else
         ui->spinBox_12->setStyleSheet("QSpinBox { background-color: white; }");
+}
+
+void ocvcontrols::on_comboBox_currentIndexChanged(int index)
+{
+    if (index==2)
+    {
+        flowdirection=-1;
+        ui->comboBox->setStyleSheet("QComboBox { color: darkRed; }");
+    }
+    else if (index==1)
+    {
+        flowdirection=1;
+        ui->comboBox->setStyleSheet("QComboBox { color: darkGreen; }");
+    } else
+    {
+        flowdirection=0;
+        ui->comboBox->setStyleSheet("QComboBox { color: black; }");
+    }
+    if (mww->getchi2distsize()>0)
+        mww->fillpuzzle_withneighbours();
+}
+
+void ocvcontrols::on_checkBox_17_clicked()
+{
+    camerainp=!camerainp;
+    if (camerainp)
+        mww->usingcam(true);
+    else
+        mww->usingcam(false);
 }

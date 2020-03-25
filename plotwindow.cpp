@@ -132,7 +132,7 @@ plotwindow::plotwindow(QWidget *parent) :
     checkstates = new QTimer(this);
     checkstates->connect(checkstates,SIGNAL(timeout()), this, SLOT(checkstatesUpdate()));
     checkstates->setInterval(100);
-    checkstates->start();
+   // checkstates->start();
 
     colorchange = new QTimer(this);
     colorchange->connect(colorchange,SIGNAL(timeout()), this, SLOT(colorchangesUpdate()));

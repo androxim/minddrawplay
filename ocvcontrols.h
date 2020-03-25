@@ -20,7 +20,7 @@ class ocvcontrols : public QWidget
     Q_OBJECT
 
 public:
-    bool drawbrushcontour = true; QPoint currmousepos;
+    bool camerainp = false; bool drawbrushcontour = true; QPoint currmousepos;
     int picwidth = 2000, picheight = 1125;
     int currfilterarea = 250, currfilterrate = 12, currfilttype = 5, totalfilts = 5;    
     int sigma_color = 25, sigma_space = 50, kernel_s = 5;                              // cartoonize params
@@ -38,7 +38,9 @@ public:
     bool poly_by_att = true; int pointsinpoly = 3; bool seed_frommousepos = false;     // mixer params
     bool attmodul_area = false; bool attent_modulated_dreams = false;    // attention modulated filter area and rate of dreamflow
     bool hueonly = false; bool transp_by_att = false;                    // hue only, without overlay; transparency by attention
-    Mat randpic;
+    int flowdirection = 0; Mat randpic; int allngb = 32, ngbarea = 25; // area of neighbours for nearest / farest pic
+    // 0: "random" - next pic is randomly from all, 1: "similar" - from N nearest, -1: "opposite" - from N farest
+    bool directionswitch_by_att = false;
 
     leftpanel* leftpan;
     MainWindow* mww;
@@ -46,6 +48,7 @@ public:
     void changerandpic();
     void setcurrdream(int t);
     void stopdreamflow();
+    void setcameracheckbox(bool fl);
     explicit ocvcontrols(QWidget *parent = 0);
     ~ocvcontrols();
 
@@ -142,6 +145,10 @@ private slots:
     void on_checkBox_16_clicked();
 
     void on_checkBox_13_clicked();
+
+    void on_comboBox_currentIndexChanged(int index);
+
+    void on_checkBox_17_clicked();
 
 private:
     Ui::ocvcontrols *ui;

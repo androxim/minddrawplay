@@ -29,6 +29,7 @@ int main(int argc, char *argv[])
 
     w.setFixedSize(648,363);
     w.setWindowTitle("MindDrawPlay beta 2.4");
+
     w.show();
 
     return a.exec();
