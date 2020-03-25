@@ -36,8 +36,7 @@ public:
     bool simeeg;
     bool bciconnect;
     bool opencvstart;
-    bool ocvcontrshow;
-    bool camerainp;
+    bool ocvcontrshow;    
     bool storymode;
     QString daqport;
     QTimer* mindwt;
@@ -57,7 +56,8 @@ public:
     QString opencvpic;
     bool canchangehue, canchangeoverlay;
     QVector<QPixmap> imgarray;
-    vector<int> picsarr;    
+    vector<int> picsarr;       
+    int nearest_pics[15]; int farest_pics[15];  // indexes of nearest and farest pics in terms of histogram
     int deltafr, thetafr, alphafr, betafr, gammafr, hgammafr;
     int deltaphs, thetaphs, alphaphs, betaphs, gammaphs;
     int zdeltaamp, zthetaamp, zalphaamp, zbetaamp, zgammaamp, zhgammaamp;
@@ -100,6 +100,13 @@ public:
     QImage grabopcvpic();
     QString getimagepath(int t);
     void Webcamsource();
+    void gethistfeatures();
+    float chi2_distance(vector<float> f1, vector<float> f2);
+    void getchi2dists(int t);
+    void usingcam(bool fl);
+    void fillpuzzle_withneighbours();
+    void fillmaininpuzzle(int t);
+    int getchi2distsize();
 
     ~MainWindow();
 
