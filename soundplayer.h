@@ -1,3 +1,6 @@
+/* header file for sounplayer class -
+   resposible for sound samples configuration and playing in separate thread */
+
 #ifndef SOUNDPLAYER_H
 #define SOUNDPLAYER_H
 
@@ -14,7 +17,6 @@ public:
     explicit soundplayer(QObject *parent = 0);
 
 signals:
-
 
     void playGlow();
     void playD3();

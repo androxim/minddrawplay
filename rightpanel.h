@@ -1,3 +1,6 @@
+/* header file for right panel class -
+   resposible for overlay image choice for MindOCV */
+
 #ifndef RIGHTPANEL_H
 #define RIGHTPANEL_H
 

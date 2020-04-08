@@ -19,6 +19,10 @@
  * 
  * $END_BCI2000_LICENSE$
  */
+
+/* header file for AppConnect class -
+   responsible for signal acqusition from BCI2000 streaming */
+
 #ifndef MAINWIDGET_H
 #define MAINWIDGET_H
 

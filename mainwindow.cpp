@@ -1,3 +1,7 @@
+/* source file for MainWindow class -
+   resposible for connecting to EEG device, starting EEG generator,
+   starting MindPlay / MindDraw / MindOCV windows, processing most MindOCV actions */
+
 #include "mainwindow.h"
 #include "plotwindow.h"
 #include "ui_mainwindow.h"
@@ -29,8 +33,6 @@
 #include <QDate>
 #include "algorithm"
 
-// TO DO:
-
 using namespace cv;
 typedef std::pair<int,float> pairt;
 
@@ -54,7 +56,7 @@ Mat adaptivemask(Rect rt);
 
 Mat dilate(Rect srcRect);               // dilation filter
 Mat waves(Rect srcRect);                // waves filter
-Mat cartoon(Rect srcRect, int ksize);   // cartoonize filter
+Mat cartoon(Rect srcRect);              // cartoonize filter
 Mat orbdetect(Rect srcRect);            // ORB features detector
 Mat mixfilt(Rect srcRect);              // mixer of pics with transparency
 // ==== openCV functions end ====
@@ -136,6 +138,7 @@ MainWindow::MainWindow(QWidget *parent) :
     paintw->pw=plotw;
     paintw->mww=this;
     paintw->setFixedSize(1560,970);    
+    plotw->paintf = paintw;
 
     rs = new rawsignal();           // raw signal form
     rs->setGeometry(0,0,1600,80);
@@ -157,8 +160,12 @@ MainWindow::MainWindow(QWidget *parent) :
     ocvform->setFixedSize(736,130);
     ocvform->move(QPoint(278,844));
     ocvform->leftpan = leftpw;
+    plotw->ocvf = ocvform;
+    paintw->ocvfm = ocvform;
 
-    folderpath="D:/PICS";       // default path for pictures
+    folderpath = "D:/PICS";       // default path for pictures
+    plotw->folderpath = folderpath;
+    paintw->setpicfolder(folderpath);
     QDir fd(folderpath);
     imglist = fd.entryList(QStringList() << "*.jpg" << "*.JPG",QDir::Files);
     leftpw->imgnumber = imglist.length()-2;     // -2 because excluding current main and overlay pics
@@ -167,7 +174,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ocvform->randpicn = qrand()%imglist.length();
     ui->lineEdit->setText(folderpath);
 
-    ocvcontrshow = true;             // if openCV filters control form shown
+    //ocvcontrshow = true;             // if openCV filters control form shown
 
     pwstart = false;                 // MindPlay window run detector
     paintw_started = false;                 // MindDraw window run detector
@@ -211,24 +218,29 @@ MainWindow::MainWindow(QWidget *parent) :
     curhue = prevhue = 255;
     curoverl = prevoverl = 50;   
 
-    opencvinterval = 25;      // timer for openCV transitions in HUE, overlay flow
+    opencvinterval = 40;      // timer for openCV transitions in HUE, overlay flow
     picfilt = new QTimer(this);
     picfilt->connect(picfilt,SIGNAL(timeout()), this, SLOT(picfiltUpdate()));
     picfilt->setInterval(opencvinterval);    
 
     transfert_interval = 50;      // timer for camera flow
     cameraflow = new QTimer(this);
-    cameraflow->connect(cameraflow,SIGNAL(timeout()), this, SLOT(transfert_Update()));
+    cameraflow->connect(cameraflow,SIGNAL(timeout()), this, SLOT(streamcameraflow_Update()));
     cameraflow->setInterval(transfert_interval);
 
     dreamflow_timer = new QTimer(this);     // timer for auto dreamflow mode, when new picture appears by fragments
     dreamflow_timer->connect(dreamflow_timer,SIGNAL(timeout()), this, SLOT(dreamflow_Update()));
     dreamflow_timer->setInterval(ocvform->dreamflowrate);
 
+    int streamflowrate = 100;
+    streamflows = new QTimer(this); // timer for streaming flows to MindPlay
+    streamflows->connect(streamflows,SIGNAL(timeout()), this, SLOT(streamflows_Update()));
+    streamflows->setInterval(streamflowrate);
+
     QTime time = QTime::currentTime();
     qsrand((uint)time.msec());      
 
-    makeicons(); // function for making icons of picturs
+    makeicons(); // function for making icons of pictures
 }
 
 void delay(int temp)
@@ -256,7 +268,7 @@ void applyfilt(int type, Rect rt)   // choice of filter type on area around mous
         }
         case 3:
         {
-            dstt = cartoon(rt,ocvform->kernel_s);
+            dstt = cartoon(rt);
             break;
         }
         case 4:
@@ -386,7 +398,7 @@ void ProcessingMix() // processing of overlay changes, alphaval - transparency
         addWeighted(src, alphaval, srccopy, 1 - alphaval, 0, dst);    
     clear_dst.release();
     clear_dst = dst.clone();
-    imshow("image", dst);
+    imshow("image", dst);    
 }
 
 void fillpolygon(Mat img)
@@ -570,7 +582,7 @@ Mat dilate(Rect srcRect) // dilate filter
     return dstg;
 }
 
-Mat cartoon(Rect srcRect, int ksize) // cartoonize filter
+Mat cartoon(Rect srcRect) // cartoonize filter
 {
     srct = dst(srcRect);
     int num_repetitions = 1;
@@ -716,13 +728,17 @@ void MainWindow::usingcam(bool fl)
         cam.release();
 }
 
-void MainWindow::Webcamsource() // grab video from camera
-{    
-    cam>>trp;
-    cv::resize(trp, trp, cv::Size(ocvform->picwidth,ocvform->picheight), 0, 0, cv::INTER_NEAREST);
-    src = trp;
-   // cam>>dst;
-   // imshow("image", dst);
+void MainWindow::streamflows_Update() // streaming flows to MindPlay
+{
+    if ((opencvstart) && (plotw->start) && (plotw->filteringback) && (!plotw->colorizeback))
+    {
+        QPixmap pm;
+        if (!ocvform->hueonly)
+            pm = QPixmap::fromImage(Mat2QImageRGB(dst));
+        else
+            pm = QPixmap::fromImage(Mat2QImageRGB(image));
+        plotw->setbackimage(pm);
+    }
 }
 
 void MainWindow::fillpuzzle_withneighbours() // filling puzzle with neighbouring pics
@@ -739,7 +755,7 @@ void MainWindow::fillpuzzle_withneighbours() // filling puzzle with neighbouring
 void MainWindow::fillmaininpuzzle(int t)    // fill main pic in puzzle
 {
     QString ocvpic = folderpath+"/"+imglist.at(t);
-    if (paintw_started)
+    if ((paintw_started) && (paintw->puzzlemode))
         paintw->setbackimageocv(ocvpic);
 }
 
@@ -769,7 +785,7 @@ void MainWindow::drawwindow(int x, int y, int w, int h) // draw rect of window f
     dst = dream0.clone();
     dream0.release();
     dream0 = dst.clone();
-    rectangle(dst, Point(x-2,y-2), Point(x+w+2,y+h+2), cv::Scalar(255,255,255),2);
+    rectangle(dst, Point(x-2,y-2), Point(x+w+2,y+h+2),ocvform->wcolor,2);
     imshow("image",dst);
 }
 
@@ -843,13 +859,14 @@ void MainWindow::dreamflow_Update() // timer for dreamflow mode, when new pic ap
     addWeighted(dst(srcDstRect), (double)ocvform->transp / 100, dstt, 1 - (double)ocvform->transp / 100, 0, dstt);
     dstt.copyTo(dst(srcDstRect),mask_image);
 
-    imshow("image", dst);
+    imshow("image", dst);   
 }
 
-void MainWindow::transfert_Update() // streams pic from camera to MindPlay window
+void MainWindow::streamcameraflow_Update() // streams pic from camera to MindPlay window
 {
-    Webcamsource();
-   // plotw->setbackfromcamera();
+    cam>>trp;
+    QPixmap pm = QPixmap::fromImage(Mat2QImageRGB(trp));
+    plotw->setbackimage(pm);
 }
 
 inline cv::Mat QImageToCvMat( const QImage &inImage, bool inCloneImageData = true )
@@ -952,7 +969,7 @@ void MainWindow::updatemainpic(int num)
     if ((!activeflow) && (ocvform->currfilttype==5) && (ocvform->mixtype==3))
         ocvform->setcurrdream(currmainpic);
     if (plotw->start)
-        plotw->grabopencv(ocvpic);
+        plotw->setbackimg_fromleftpanel(ocvpic);
     if (paintw_started)
         paintw->setbackimageocv(ocvpic);     
 
@@ -994,31 +1011,10 @@ void MainWindow::on_pushButton_clicked() // close the App
 {
     if (mwconnected)
         TG_FreeConnection( connectionId );
-   // plotw->cleanmem();  
-    QApplication::quit();
-}
-
-void MainWindow::on_pushButton_3_clicked() // MindPlay window run
-{ 
-    plotw->show();
-    plotw->doplot();    
-    plotw->appcn=connectWin;
-    paintw->scene->init(plotw, this);
-    connectWin->ps=paintw->scene;
-
-    paintw->scene->init(plotw, this);
-    paintw->move(QApplication::desktop()->screen()->rect().center() - paintw->rect().center()+QPoint(-10,-35));
-    plotw->pssstart=true;
-    paintw->scene->clear();
-    paintw->show();
-    paintw->loadempty();
-   // paintw->startpolyt();
-    connectWin->ps=paintw->scene;
     if (plotw->start)
-        plotw->pss=paintw->scene;
-
-    paintw->hide();
-    plotw->setFocus();
+        plotw->quitthreads();
+    cv::destroyAllWindows();
+    QApplication::quit();
 }
 
 void MainWindow::on_pushButton_2_clicked() // BCI2000 window run
@@ -1053,12 +1049,35 @@ void MainWindow::on_pushButton_2_clicked() // BCI2000 window run
     }
 }
 
+void MainWindow::on_pushButton_3_clicked() // MindPlay window run
+{
+    plotw->show();
+    plotw->doplot();
+    plotw->appcn=connectWin;
+    paintw->scene->init(plotw, this);
+    connectWin->ps=paintw->scene;
+
+    paintw->scene->init(plotw, this);
+    paintw->move(QApplication::desktop()->screen()->rect().center() - paintw->rect().center()+QPoint(-10,-35));
+    paintw->scene->clear();
+    paintw->show();
+    paintw->loadempty();
+    plotw->paintfstart=true;
+   // paintw->startpolyt();
+    connectWin->ps=paintw->scene;
+    if (plotw->start)
+        plotw->pss=paintw->scene;
+    streamflows->start();
+    paintw->hide();
+    plotw->setFocus();
+}
+
 void MainWindow::on_pushButton_4_clicked() // MindDraw window run
 {
     on_pushButton_3_clicked();
     //plotw->hide();
     paintw->scene->init(plotw, this);  
-    plotw->pssstart=true;
+    plotw->paintfstart=true;
     paintw->scene->clear();
     paintw->show();
     paintw->loadempty();
@@ -1071,84 +1090,6 @@ void MainWindow::on_pushButton_4_clicked() // MindDraw window run
 void MainWindow::on_pushButton_5_clicked()
 {
     mindwaveconnect();
-}
-
-void MainWindow::mindwaveconnect() // function to connect to MindWave device
-{
-    char *comPortName = NULL;
-    char *portNumber = (char*)malloc(sizeof(char) * (2 + 1));
-    const char *comPortBase = NULL;
-    int   errCode = 0;
-    int comPortFound = 0;
-    const int MAX_PORT = 16;
-    size_t length = 0;
-    int i = 0;
-    int j = 0;
-
-    int dllVersion = TG_GetDriverVersion();
-    printdata("ThinkGear DLL version: "+QString::number(dllVersion));
-    connectionId = TG_GetNewConnectionId();
-    if( connectionId < 0 )
-        printdata("ERROR: TG_GetNewConnectionId() returned: "+QString::number(connectionId));
-    else
-        printdata("ThinkGear Connection ID is: "+QString::number(connectionId));
-
-    printdata("Scanning COM ports 0 to "+QString::number(MAX_PORT));
-    comPortBase = "\\\\.\\COM";
-    length = strlen(comPortBase);
-    comPortName = (char *)realloc (comPortName, (length + 5)*sizeof(char));
-
-    for(i=0; i <= MAX_PORT && comPortFound == 0; i++)
-    {
-
-        portNumber = itoa(i, portNumber, 10);
-        strcpy(comPortName,comPortBase);
-
-        for(j=0; j<(int)strlen(portNumber); j++)
-            comPortName[length+j] = portNumber[j];
-
-        comPortName[length+strlen(portNumber)] = '\0';
-
-        printdata("trying to connect on "+QString::fromUtf8(comPortName));
-        errCode = TG_Connect( connectionId,comPortName,TG_BAUD_9600,TG_STREAM_PACKETS );
-        if( errCode < 0 )
-            printdata("ERROR: TG_Connect() returned");
-        else
-        {
-            // Trying to read one packet to check the connection.
-            printdata("Connection available... wait...");
-            Sleep(3000); // sometimes we need to wait a little...
-            errCode = TG_ReadPackets(connectionId, 1);
-            if(errCode >= 0)
-            {
-                printdata("OK");
-                comPortFound = 1;
-                break;
-            }
-        }
-    } 	/* end: "Attempt to connect the connection ID handle to serial ports between COM0 and "COM16"" */
-
-    if (comPortFound == 1)
-    {
-        printdata("Connection with MindWave established! :)");
-        ui->pushButton_2->setEnabled(false);
-        simulateEEG->stop();
-        simeeg=false;
-        plotw->srfr=512;
-        plotw->imlength=256;
-        mindwt->start();
-        plotw->mindwstart=true;
-        plotw->simeeg=false;
-        rs->starting();
-        ui->pushButton_5->setEnabled(false);
-        if (!estattention)
-            estattention=true;
-        rs->show();
-        mwconnected=true;
-    }
-    else
-        printdata("Connection with MindWave could not be established! :(");
-    packetsRead = 0;
 }
 
 void MainWindow::setsourceimg(QString fpath) // set openCV main image from path
@@ -1328,10 +1269,9 @@ void MainWindow::startopencv() // MindOCV initialization function
         if (plotw->start)
             plotw->enablehue();
         picfilt->start();
-
     }
     else
-        imshow("image", src);
+        imshow("image", src);    
 }
 
 void MainWindow::simulateEEGUpdate() // simulated EEG data (in development)
@@ -1362,7 +1302,7 @@ void MainWindow::simulateEEGUpdate() // simulated EEG data (in development)
     currentsimdata = deltaamp*sin(deltafr*2*M_PI/srfr*(currentel+deltaphs)) + thetaamp*sin(thetafr*2*M_PI/srfr*(currentel+thetaphs)) + alphaamp*sin(alphafr*2*M_PI/srfr*(currentel+alphaphs)) + betaamp*sin(betafr*2*M_PI/srfr*(currentel+betaphs)) + gammaamp*sin(gammafr*2*M_PI/srfr*(currentel+gammaphs)) + hgammaamp*sin(hgammafr*2*M_PI/srfr*(currentel+gammaphs)) + nois;
     currentsimdata *= 3;
     if (plotw->start)
-        plotw->bcidata(currentsimdata);
+        plotw->getandprocess_eeg_data(currentsimdata);
     if (paintw_started)
         paintw->scene->getdata(currentsimdata/4);
     //  qDebug()<<currentsimdata;       
@@ -1488,6 +1428,84 @@ void MainWindow::setfolderpath(QString fp) // set path for pictures folder
     rightpw->imgnumber = imglist.length()-2;
 }
 
+void MainWindow::mindwaveconnect() // function to connect to MindWave device
+{
+    char *comPortName = NULL;
+    char *portNumber = (char*)malloc(sizeof(char) * (2 + 1));
+    const char *comPortBase = NULL;
+    int   errCode = 0;
+    int comPortFound = 0;
+    const int MAX_PORT = 16;
+    size_t length = 0;
+    int i = 0;
+    int j = 0;
+
+    int dllVersion = TG_GetDriverVersion();
+    printdata("ThinkGear DLL version: "+QString::number(dllVersion));
+    connectionId = TG_GetNewConnectionId();
+    if( connectionId < 0 )
+        printdata("ERROR: TG_GetNewConnectionId() returned: "+QString::number(connectionId));
+    else
+        printdata("ThinkGear Connection ID is: "+QString::number(connectionId));
+
+    printdata("Scanning COM ports 0 to "+QString::number(MAX_PORT));
+    comPortBase = "\\\\.\\COM";
+    length = strlen(comPortBase);
+    comPortName = (char *)realloc (comPortName, (length + 5)*sizeof(char));
+
+    for(i=0; i <= MAX_PORT && comPortFound == 0; i++)
+    {
+
+        portNumber = itoa(i, portNumber, 10);
+        strcpy(comPortName,comPortBase);
+
+        for(j=0; j<(int)strlen(portNumber); j++)
+            comPortName[length+j] = portNumber[j];
+
+        comPortName[length+strlen(portNumber)] = '\0';
+
+        printdata("trying to connect on "+QString::fromUtf8(comPortName));
+        errCode = TG_Connect( connectionId,comPortName,TG_BAUD_9600,TG_STREAM_PACKETS );
+        if( errCode < 0 )
+            printdata("ERROR: TG_Connect() returned");
+        else
+        {
+            // Trying to read one packet to check the connection.
+            printdata("Connection available... wait...");
+            Sleep(3000); // sometimes we need to wait a little...
+            errCode = TG_ReadPackets(connectionId, 1);
+            if(errCode >= 0)
+            {
+                printdata("OK");
+                comPortFound = 1;
+                break;
+            }
+        }
+    } 	/* end: "Attempt to connect the connection ID handle to serial ports between COM0 and "COM16"" */
+
+    if (comPortFound == 1)
+    {
+        printdata("Connection with MindWave established! :)");
+        ui->pushButton_2->setEnabled(false);
+        simulateEEG->stop();
+        simeeg=false;
+        plotw->srfr=512;     // sampling rate
+        plotw->imlength=256; // length of single EEG interval
+        mindwt->start();
+        plotw->mindwstart=true;
+        plotw->simeeg=false;
+        rs->starting();
+        ui->pushButton_5->setEnabled(false);
+        if (!estattention)
+            estattention=true;
+        rs->show();
+        mwconnected=true;
+    }
+    else
+        printdata("Connection with MindWave could not be established! :(");
+    packetsRead = 0;
+}
+
 void MainWindow::mindwtUpdate() // processing data from MindWave device
 {
     //int c=0;
@@ -1500,7 +1518,7 @@ void MainWindow::mindwtUpdate() // processing data from MindWave device
             mw_raw = TG_GetValue(connectionId, TG_DATA_RAW);
             if (abs(mw_raw)<180)
             if (plotw->start)
-                plotw->bcidata(mw_raw/2);
+                plotw->getandprocess_eeg_data(mw_raw/2);
             if (rs->start)
                 rs->updatesignal(mw_raw/2);
             if (abs(mw_raw)<100) // anti blink artifacts for drawing
@@ -1625,7 +1643,7 @@ void MainWindow::keys_processing()      // processing keys pressing
 {
     char key = cv::waitKey(5) % 256;
     if (key == 't') // test stuff button    
-        ocvform->directionswitch_by_att=!ocvform->directionswitch_by_att;
+    { }
     else if (key == 'a') // save and add current overlay to pictures
     {
         save_and_add_overlaypic();
@@ -1653,7 +1671,7 @@ void MainWindow::keys_processing()      // processing keys pressing
         if (plotw->start)
         {
             QPixmap pm = QPixmap::fromImage(Mat2QImageRGB(dst));
-            plotw->graboverlay(pm);
+            plotw->setbackimage(pm);
         }
         if (paintw_started)
         {
@@ -1661,13 +1679,13 @@ void MainWindow::keys_processing()      // processing keys pressing
             paintw->setbackimageoverlay(pm);
         }
     }
-    else if (key == 'v') // show/hide openCV filters control form
+    else if (key == 'v')  // show/hide openCV filters control form
     {
-        if (ocvcontrshow)
+        if (ocvform->formshown)
             ocvform->hide();
         else
             ocvform->show();
-        ocvcontrshow=!ocvcontrshow;
+        ocvform->formshown = !ocvform->formshown;
     }
     else if (key == 27)  // 'ESC' press start/stop overlay-hue flow / dreamflow
     {
@@ -1675,7 +1693,7 @@ void MainWindow::keys_processing()      // processing keys pressing
         if (activeflow)
         {
             ocvform->hide();
-            ocvcontrshow=false;
+            ocvform->formshown=false;
             keepfiltering=false;
             if (ocvform->dreamflow)
                 ocvform->stopdreamflow();
@@ -1686,7 +1704,7 @@ void MainWindow::keys_processing()      // processing keys pressing
             clear_dst = dst.clone();
             ocvform->setcameracheckbox(false);
             ocvform->show();
-            ocvcontrshow=true;            
+            ocvform->formshown=true;
             if (ocvform->camerainp)
             {
                 cam.release();
@@ -1736,7 +1754,6 @@ void MainWindow::keys_processing()      // processing keys pressing
         ocvform->plotdroprect=!ocvform->plotdroprect;
         ocvform->updateformvals();
     }
-
     else if ((key == 'z') && (!activeflow))     // change filter on the left one
     {
         if (ocvform->currfilttype==1)
@@ -1753,7 +1770,7 @@ void MainWindow::keys_processing()      // processing keys pressing
             ocvform->currfilttype++;
         ocvform->updateformvals();
     }
-    else if ((key == 'r') && (activeflow))      // start receiving camera input
+    else if ((key == 'r') && (activeflow))      // start receiving camera input for overlay flow
     {
         if (!ocvform->camerainp)
         {
@@ -1761,17 +1778,28 @@ void MainWindow::keys_processing()      // processing keys pressing
             ocvform->camerainp = true;
             ocvform->updateformvals();
         }
-       // cameraflow->start();
     }
-    else if ((key == 's') && (activeflow))        // stop receiving camera input
+    else if ((key == 's') && (activeflow))        // stop receiving camera input for overlay flow
     {
-      //  cameraflow->stop();
         cam.release();
         ocvform->camerainp = false;
         ocvform->updateformvals();
+    }    
+    else if ((key == '-') && (!activeflow) && (plotw->start)) // start streaming camera to MindPlay
+    {
+        if (!ocvform->camerainp)
+        {
+            cam.open(0);
+            ocvform->camerainp = true;
+        }
+        cameraflow->start();
     }
-    else if (key == 'h')  // story mode: main pic is fixed, overlay pic change by attention > border
-        storymode=!storymode;
+    else if ((key == '=') && (!activeflow) && (plotw->start)) // stop streaming camera to MindPlay
+    {
+        cameraflow->stop();
+        cam.release();
+        ocvform->camerainp = false;
+    }
     else if ((key == '.') && (ocvform->transp>1))        // decrease transparency for mixer filter
     {
         ocvform->transp--;
@@ -1789,6 +1817,19 @@ void MainWindow::keys_processing()      // processing keys pressing
         ocvform->hueonly=!ocvform->hueonly;
         ocvform->updateformvals();
     }
+    else if ((key == 'f') && (!activeflow)) // start / stop timer for pics change
+    {
+        ocvform->changepic_bytime=!ocvform->changepic_bytime;
+        if (ocvform->changepic_bytime)
+            ocvform->pichngT->start();
+        else
+            ocvform->pichngT->stop();
+        ocvform->updateformvals();
+    }
+    else if (key == 'g')                   // switch flow direction by attention > border
+        ocvform->directionswitch_by_att=!ocvform->directionswitch_by_att;
+    else if (key == 'h')                    // story mode: main pic is fixed, overlay pic change by attention > border
+        storymode=!storymode;
 }
 
 void MainWindow::picfiltUpdate() // function for MindOCV hue-overlay flow updates
@@ -1832,7 +1873,7 @@ void MainWindow::picfiltUpdate() // function for MindOCV hue-overlay flow update
             setTrackbarPos("Overlay", "image", elem5);
         }
 
-        checkoverlay(); // check if should change pictures
+        checkoverlay(); // check if should change pictures        
     }
 }
 
@@ -1932,7 +1973,7 @@ vector<float> gethistogram(Mat image, Mat maskx)
 float MainWindow::chi2_distance(vector<float> f1, vector<float> f2)
 {
     float res = 0;
-    for (int i=0; i<f1.size(); i++)
+    for (int i=0; i<(int)f1.size(); i++)
         res += pow(f1[i]-f2[i],2)/(f1[i]+f2[i]+1e-8);
     return res / 2;
 }

@@ -1,3 +1,6 @@
+/* header file for MindDraw window class -
+   resposible for MindDraw parameters and actions */
+
 #ifndef PAINTFORM_H
 #define PAINTFORM_H
 
@@ -14,6 +17,7 @@
 class paintScene;
 class plotwindow;
 class MainWindow;
+class ocvcontrols;
 
 namespace Ui {
 class paintform;
@@ -42,29 +46,30 @@ public:
     QGraphicsScene* scene13;
     QGraphicsScene* scene14;
     QGraphicsScene* scene15;
-    plotwindow *pw;
-    MainWindow *mww;
+    plotwindow* pw;
+    MainWindow* mww;
+    ocvcontrols* ocvfm;
     QPolygonF plane;
     int poltypearr[108];
     int centercoord[108][2];
     QDir fd;
     QPalette sp1,sp2;
     QString folderpath;
-    bool adaptivebord, firstpuzzle, spacedflow;
+    bool music_adaptive_bord, firstpuzzle, spacedflow;
     int activatedcell;
     double thet;
     double bet;
-    int pt;
+    int pointsfor_estattention;
     double avgv;
     QPixmap pmg;
-    bool collectiveflow, updateback;
+    bool collectiveflow, grabmindplayflow;
     int picsrestored;
     double estattn;
     set<int> stpic0, stpic1, stres;
     set<int>::iterator iterst;
     vector<int> puzzlelocs, randpuzzlelocs, sortpuzzlelocs;
     QString fnameattent,fnamefreq;
-    int puzzlew, puzzleh, borderlevel, borderpicchange, setsize;
+    int puzzlew, puzzleh, soundborderlevel, borderpicchange, setsize;
     int numsamples, numfrsamples, lenofinterval, laststop;
     QVector<double> attent_arr, medit_arr, border_arr, xc, fxc, estatt_arr, delta_arr, theta_arr, alpha_arr, beta_arr, gamma_arr, hgamma_arr;
     QStringList imglist;
@@ -82,20 +87,25 @@ public:
     Qt::AspectRatioMode rationmode;
     int timepics, picsforchange, mainindex,polycount;
     int* currentindexes;
-    bool gamemode, flowmode, puzzlegrabed, updatingpuzzle, canpuzzlechange, backloaded, showestatt;
+    bool gamemode, flowmode, puzzlegrabed, canpuzzlechange, backloaded, showestatt;
     vector<int> randnumb;
     int eegsize, pensize, temppensize;
     int prevpict, prevpuzzle;
-    bool erasepen, qimload, bfiltmode, puzzlemode, fixedmain, changingpics, iconsready, attentmodu, limitpicschange, setloaded, musicactiv;
+    bool erasepen, bfiltmode, puzzlemode, fixedmain, changingpics, iconsready, attent_modulaion, limitpicschange, setloaded, musicactiv;
     bool eventFilter(QObject *target, QEvent *event);
+
+    void configure_ui();
+    void init_brainwaves_arrays();
     void delay(int temp);
     void getimg1();
     void getimg2();
     void updateattention(int t);
     void updateattentionplot(int t);
     void updatemeditation(int t);
+    void setpicfolder(QString fpath);
     void randompics();
     void initpics();
+    void graphicsviews_init();
     void setdflowtime(int t);
     void setflowspace(int t);
     bool getattentmode();
@@ -128,6 +138,9 @@ public:
     int getgraphicview_width();
     int getgraphicview_height();
     void updateset_allpics_similarly(int* picnums);
+    void swappuzzles(int t1, int t2);
+    void mainpuzzle_update(int t);
+    void updatepuzzles();
     ~paintform();
 
 

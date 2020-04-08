@@ -1,3 +1,6 @@
+/* source file for left panel class -
+   resposible for main image choice for MindOCV / MindPlay / MindDraw */
+
 #include "leftpanel.h"
 #include "ui_leftpanel.h"
 

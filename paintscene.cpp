@@ -1,3 +1,6 @@
+/* source file for paintScene class -
+   resposible for drawing with brain waves */
+
 #include "paintscene.h"
 #include "random"
 #include "QtAlgorithms"
@@ -5,7 +8,6 @@
 #include "qmath.h"
 
 // TO DO:
-// add transparency control
 // 1. attention game with overcoming set of lines
 // 2. drawing continuos structure with complexity dependent on attention
 
@@ -14,11 +16,13 @@ paintScene::paintScene(QObject *parent) : QGraphicsScene(parent)
     qDeleteAll(this->items());
     pos=0;
     t0=0;
-    randcolor=false;
-    drawbpoints=false;
+    freqcolor = false;
+    randcolor = false;
+    drawbpoints = false;
     startedline = false;
     drawcontours = false;
-    randfixcolor=true;
+    randfixcolor = true;
+    attentt = 0;
     fxcolor="orange";
     linecoords = new QPointF[2000];
     linesarr.resize(1000);
@@ -37,12 +41,13 @@ paintScene::paintScene(QObject *parent) : QGraphicsScene(parent)
     pointnum = 0; currnumpoint = 0;
     curx = 600; cury=900;
     drawrate = 5;
+    randfixcolor = true;
     previousPoint.setX(curx);
     previousPoint.setY(cury-2);
-    randfixcolor = false;
     sceneforfilt.addItem(&itemforfilt);
     resforfilt=QImage(QSize(1500, 800), QImage::Format_ARGB32);
     ptr = new QPainter(&resforfilt);
+    pmv = new QPixmap();
     drawflow=false;
     //resforfilt.load("D:/PICS/881.jpg");
     //pm = new QPixmap(NULL);
@@ -51,22 +56,11 @@ paintScene::paintScene(QObject *parent) : QGraphicsScene(parent)
   //  qApp->installEventFilter(this);
 }
 
-bool paintScene::eventFilter(QObject *target, QEvent *event)
-{
-
-}
-
-paintScene::~paintScene()
-{
-
-}
-
 void paintScene::init(plotwindow* pww, MainWindow* mw)
 {
     pw=pww;
     mww=mw;
-    mww->paintw_started=true;
-  //  pw->pssstart=true;
+    mww->paintw_started=true;  
     startedline=false;
     attmodul=false;
     horizline=false; vertline=false;
@@ -80,86 +74,17 @@ void paintScene::init(plotwindow* pww, MainWindow* mw)
   //  tim->start();
 }
 
-QImage paintScene::blurred(const QImage& image, const QRect& rect, int radius, bool alphaOnly = false)
-{
-    int tab[] = { 14, 10, 8, 6, 5, 5, 4, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2 };
-    int alpha = (radius < 1)  ? 16 : (radius > 17) ? 1 : tab[radius-1];
-
-    QImage result = image.convertToFormat(QImage::Format_ARGB32_Premultiplied);
-    int r1 = rect.top();
-    int r2 = rect.bottom();
-    int c1 = rect.left();
-    int c2 = rect.right();
-
-    int bpl = result.bytesPerLine();
-    int rgba[4];
-    unsigned char* p;
-
-    int i1 = 0;
-    int i2 = 3;
-
-    if (alphaOnly)
-        i1 = i2 = (QSysInfo::ByteOrder == QSysInfo::BigEndian ? 0 : 3);
-
-    for (int col = c1; col <= c2; col++) {
-        p = result.scanLine(r1) + col * 4;
-        for (int i = i1; i <= i2; i++)
-            rgba[i] = p[i] << 4;
-
-        p += bpl;
-        for (int j = r1; j < r2; j++, p += bpl)
-            for (int i = i1; i <= i2; i++)
-                p[i] = (rgba[i] += ((p[i] << 4) - rgba[i]) * alpha / 16) >> 4;
-    }
-
-    for (int row = r1; row <= r2; row++) {
-        p = result.scanLine(row) + c1 * 4;
-        for (int i = i1; i <= i2; i++)
-            rgba[i] = p[i] << 4;
-
-        p += 4;
-        for (int j = c1; j < c2; j++, p += 4)
-            for (int i = i1; i <= i2; i++)
-                p[i] = (rgba[i] += ((p[i] << 4) - rgba[i]) * alpha / 16) >> 4;
-    }
-
-    for (int col = c1; col <= c2; col++) {
-        p = result.scanLine(r2) + col * 4;
-        for (int i = i1; i <= i2; i++)
-            rgba[i] = p[i] << 4;
-
-        p -= bpl;
-        for (int j = r1; j < r2; j++, p -= bpl)
-            for (int i = i1; i <= i2; i++)
-                p[i] = (rgba[i] += ((p[i] << 4) - rgba[i]) * alpha / 16) >> 4;
-    }
-
-    for (int row = r1; row <= r2; row++) {
-        p = result.scanLine(row) + c2 * 4;
-        for (int i = i1; i <= i2; i++)
-            rgba[i] = p[i] << 4;
-
-        p -= 4;
-        for (int j = c1; j < c2; j++, p -= 4)
-            for (int i = i1; i <= i2; i++)
-                p[i] = (rgba[i] += ((p[i] << 4) - rgba[i]) * alpha / 16) >> 4;
-    }
-
-    return result;
-}
-
-
 QImage paintScene::applyEffectToImage(QImage src, QGraphicsEffect *effect, int extent)
 {
     if(src.isNull()) return QImage();   //No need to do anything else!
-    if(!effect) return src;             //No need to do anything else!
-    if (pmv)
-        delete pmv;
+    if(!effect) return src;             //No need to do anything else!    
+    if (!pmv->isNull())
+        delete pmv;    
     pmv = new QPixmap(QPixmap::fromImage(src));
-    itemforfilt.setPixmap(*pmv);
+    itemforfilt.setPixmap(*pmv);    
     itemforfilt.setGraphicsEffect(effect);
     resforfilt.fill(Qt::transparent);
-    sceneforfilt.render(ptr, QRectF(), QRectF( -extent, -extent, src.width()+extent*2, src.height()+extent*2 ),paintf->rationmode);
+    sceneforfilt.render(ptr, QRectF(), QRectF( -extent, -extent, src.width()+extent*2, src.height()+extent*2 ),paintf->rationmode);    
     return resforfilt;
 }
 
@@ -189,8 +114,7 @@ void paintScene::applyfilteronbackimg()
 
     //qbim1 = applyEffectToImage(paintf->qim, blur, 0);
     qbim1 = applyEffectToImage(bkgndimg.toImage(), blur, 0);
-    qbim2 = applyEffectToImage(qbim1, colorize, 0);
-  // qbim2 = blurred(paintf->qim,QRect(previousPoint.x(),previousPoint.y(),previousPoint.x()+200,previousPoint.y()+200),10,false);
+    qbim2 = applyEffectToImage(qbim1, colorize, 0);  
 
     qptr.setBrush(QPalette::Background, QPixmap::fromImage(qbim2).scaled(paintf->size(), Qt::IgnoreAspectRatio));
     paintf->setPalette(qptr);
@@ -200,7 +124,7 @@ void paintScene::applyfilteronbackimg()
 
 void paintScene::applyfilter()
 {    
-    if ((paintf->qimload) && (paintf->bfiltmode))
+    if (paintf->bfiltmode)
     {
         if (!paintf->qim.isNull())
         {      
@@ -213,21 +137,16 @@ void paintScene::applyfilter()
         colorize->setColor(qcl);//QColor(pw->theta*4,pw->beta*4,pw->gamma*4,pw->alpha*4));
         colorize->setStrength((double)pw->attent/50);
 
-        //qbim1 = applyEffectToImage(paintf->qim, blur, 0);
-        qbim1 = applyEffectToImage(paintf->qim, blur, 0);
-        qbim2 = applyEffectToImage(qbim1, colorize, 0);
-
-      // qbim2 = blurred(paintf->qim,QRect(previousPoint.x(),previousPoint.y(),previousPoint.x()+200,previousPoint.y()+200),10,false);
+        qbim1 = applyEffectToImage(paintf->qim, blur, 0);        
+        qbim2 = applyEffectToImage(qbim1, colorize, 0);       
 
         paintf->pmain = QPixmap::fromImage(qbim2);
-    //    if (!paintf->curpic.isNull())
-  //           paintf->qim=paintf->pmain.toImage();
+
         this->clear();
         if (paintf->puzzlemode)
             addPixmap(paintf->pmain.scaled(300,200,paintf->rationmode,Qt::SmoothTransformation));
         else
-            addPixmap(paintf->pmain.scaled(1500,800,paintf->rationmode,Qt::SmoothTransformation));
-        // addPixmap(paintf->pm.scaledToHeight(this->height()));
+            addPixmap(paintf->pmain.scaled(1500,800,paintf->rationmode,Qt::SmoothTransformation)); 
         }
     }
 }
@@ -389,7 +308,7 @@ void paintScene::setcolor()
       //      gc=255;
         bc=(pw->beta+pw->alpha)*2;
            if (bc>255) bc=255;
-        if (paintf->attentmodu)
+        if (paintf->attent_modulaion)
             ac=255-attentt*2;
         else
             ac=255-meditt*2;

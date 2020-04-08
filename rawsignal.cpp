@@ -1,3 +1,6 @@
+/* source file for rawsignal class -
+   resposible for plotting raw EEG signal */
+
 #include "rawsignal.h"
 #include "ui_rawsignal.h"
 

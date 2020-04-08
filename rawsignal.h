@@ -1,3 +1,6 @@
+/* header file for rawsignal class -
+   resposible for plotting raw EEG signal */
+
 #ifndef RAWSIGNAL_H
 #define RAWSIGNAL_H
 

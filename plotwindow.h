@@ -1,197 +1,141 @@
+/* header file for MindPlay window class -
+   responsible for raw EEG signal processing,
+   brain waves flow drawing, image filters application and sound translations */
+
 #ifndef PLOT_H
 #define PLOT_H
 
 #include <QWidget>
-#include <qcustomplot.h>
 #include <vector>
-#include "mainwindow.h"
-#include "omp.h"
-#include "stdio.h"
-#include <Eigen/Dense>
-#include <paintscene.h>
-#include <QAudioRecorder>
-#include "qsound.h"
-#include "QSoundEffect"
-#include "QMediaPlayer"
-#include "rawsignal.h"
-#include "soundplayer.h"
 #include <valarray>
 #include "complex"
+#include <Eigen/Dense>
+#include <qcustomplot.h>
+#include "mainwindow.h"
+#include "stdio.h"
+#include "paintscene.h"
+#include "rawsignal.h"
+#include "soundplayer.h"
+#include "filters.h"
 
-#define NMAX 15360  // 15360 5 min for 512 s.r.
-#define PMAX 32000
-#define LMAX  10000
-#define LMFILT 1024
+#define NMAX 15360 // max length of single EEG line, 15360: 30 sec for 512 sampling rate
 
 namespace Ui {
 class plot;
 }
 
-using namespace Eigen;
-
-typedef std::vector<int> vectori;
-typedef std::vector<double> vectord;
 typedef complex<double> ComplexM;
 typedef valarray<ComplexM> CArray;
 
-struct coords {
-    QVector<double> xc,amp0,amp1,amp2,of1,of2,of3,of4;
-    int lscale,lmax,posstim;   
-};
-
-struct freqband {
-    int lf,hf;
-};
-
-static const int shift=100;
+struct coords { QVector<double> xc,amp0; };
 
 class appconnect;
 class MainWindow;
 class Settings;
 class paintScene;
+class paintform;
+class ocvcontrols;
+class filters;
 
 class plotwindow : public QWidget
 {
     Q_OBJECT       
 
-public:  
-    int srfr, numst, imlength, stlength, posstim, osfr, stampl;
-    int stepsPerPress, drawshift, graphcount, recnumb, baseshift, scaletimeout, tonenumbers, maxtones, chorddelay, mxttimeout, curmodval;
-    int counter, stims, startpos, tscale, ampval, corrprednumb, recparts, daqscalevalue, transdelay, flength, chnums, sampleblock, exch, sourcech;
-    QString daqport;
-    QString folderpath;
-    rawsignal* rws;
-    soundplayer splayer;
+public:      
+    // description of most variables in plotwindow.cpp //
+
+    MainWindow* mw;         // pointer on MainWindow class
+    Settings* sw;           // pointer on settings class window
+    paintScene* pss;        // pointer on paintScene class
+    rawsignal* rws;         // pointer on raw signal plot window
+    paintform* paintf;      // pointer on MindDraw window class
+    ocvcontrols* ocvf;      // pointer on MindOCV window class
+    appconnect* appcn;      // pointer on AppConnect class (BCI2000)
+    filters* filtercl;      // pointer on class with standard signal filters
+
+    soundplayer splayer;    // sound player class with sound samples and timers associated with own thread
+    QStringList strLst2; QStringListModel *strLstM2;  // list of playing tones
+    QString tones, lasttones;
+
     QGraphicsBlurEffect *blurp;
     QGraphicsColorizeEffect *colorizep;
-    bool bfiltmode,adaptivenumparts;
-    QDir fd;
-    bool backimageloaded,canbackchange;
-    bool filteringback, blurback;
-    bool hidebutt, soundmodul, fixback;
-    QStringList imglist;
-    int picchangeborder, colorizeback;
-    bool opencvstart;
-    QPixmap pm, pmx;
-    QPalette sp1, sp2;
-    QImage QM, qbim1, qbim2;   
-    bool readyfortones;    
-    qreal volume;
-    int simsrfr;
-    int maxtonerepeats, memorylength, attent;
-    bool paintfstart, attentmodul, recplaying;
-    bool start, offlinedata, addmode, addmodeon, estimation, adaptampl, addmoderec, hideardata, usefiltering, filterardata, carfilter, zerocr, phasepr;
-    bool showprediction, estimpredstim, filtereddata, correctdelay, maxentropy, leastsqr, regforstim, hronar, hronarrun, filtfir;
-    double plv, averopttime, fsampr, flowpass;
-    int *exlchannels;
-    bool recurbutter, zerobutter, mindplay, blink, playsaved, scalechange, spacemode, tank1mode, tank2mode, recordstarted, micrecord, antirepeat, randmxt;
-    QAudioRecorder* audioRecorder;
-    int loopnum;
-    int volumebord, meditt;
-    bool mindwstart, fftfreqs, attentionvolume, startnmmode, simeeg;
-    QVector<double> eegdata[20];
-    vectord acoeffs, bcoeffs, ac, bc, b_f, a_f, b_s, a_s;
-    int butterord, lcutoff, hcutoff;
-    double offsetcomp, intlen;
-    double** rawdata;
-    int* indexes;
-    double* DenC;
-    double* NumC;
-    int nextdrawshift;
-    int samplenums, samplesize, eegintervals, intervallength, xraw, edge, delta, theta, alpha, beta, gamma, hgamma;
-    int deltanum, thetanum, alphanum, betanum, gammanum, hgammanum, tonedelay, nums;
-    int sdelta, stheta, salpha, sbeta, sgamma, shgamma, tv1, tv2, tv3, tv4, tv5, tv6, tv7, tv8, tv9, tv10;
-    int* tvals;
-    int pushshift, psleep;
-    double meandelta, meantheta, meanalpha, meanbeta, meangamma, meanhgamma;
-    bool tunemode, pssstart, initfilterback, rawsignalabove;
-    QSet<int> pressedKeys;
-    CArray cdata;
-    QPixmap* pmvr;
-    QPainter* ptr;
+    QStringList imglist; QString folderpath; QDir fd;
+    QPixmap* pmvr; QPainter* ptr;
     QGraphicsPixmapItem itemforfilt;
-    QImage resforfilt;
     QGraphicsScene sceneforfilt;
-    freqband sigb, noibp, noibs;
-    MainWindow* mw;
-    Settings* sw;
-    paintScene* pss;
-    QImage qimj;
+    QImage resforfilt;
+
+    QPixmap pm, pmx, backimg;
+    QPalette sp1, sp2;
+    QImage QM, qbim1, qbim2;
+    qreal volume;
+    QVector<double> eegdata[20];
+
+    double** rawdata; int* indexes; int* tvals;
+    int srfr, numst, nums, imlength, stlength, drawshift, graphcount, scaletimeout, tonedelay;
+    int stepsPerPress, tonenumbers, maxtones, chorddelay, mxttimeout, curmodval;
+    int counter, stims, recparts, chnums, sampleblock, sourcech, picchangeborder;
+    int simsrfr, maxtonerepeats, memorylength, attent, minvolumebord, meditt;
+    int maxshown_eeglines, xraw, delta, theta, alpha, beta, gamma, hgamma;
+    double meandelta, meantheta, meanalpha, meanbeta, meangamma, meanhgamma;
+    int sdelta, stheta, salpha, sbeta, sgamma, shgamma;
+    int tv1, tv2, tv3, tv4, tv5, tv6, tv7, tv8, tv9, tv10;
+    int lcutoff, hcutoff, butterord;
+    int pushshift, psleep;
+    int nextdrawshift;
+    int tonescheck;
+
+    bool adaptivenumparts, backimageloaded, canbackchange, opencvstart;
+    bool filteringback, blurback, hidebutt, attention_interval, fixback, colorizeback;
+    bool attention_modulation, start, brainflow_on, estimation;
+    bool usefiltering, musicmode_on, flowblinking, scalechange;
+    bool spacemode, tank1mode, tank2mode, recordstarted, antirepeat, randmxt;       
+    bool mindwstart, fftfreqs, attention_volume, keys_emulated, simeeg;
+    bool tunemode, paintfstart, rawsignalabove;
+
+    QString tank1[10] = {"b","B","g","G","d","D","E","C","f#","a"};
+    QString tank2[10] = {"c#","C#","b","B","f#","F#","g#","G#","d#","D#"};
+    QString space[8] = {"F4","F3","D3","E4","D4","C4","A3","A4"};
+
+    QSet<int> pressedKeys;
+    CArray cdata; ComplexM t[2048]; // arrays for FFT calculation
+
     QElapsedTimer timer;
-    QTimer* tim;
     QTimer* scaletim;
     QTimer* mxttim;   
-    QTimer* checkstates;
-    QTimer* colorchange;
-    QByteArray stimarr;
-    coords arrc;
-    appconnect* appcn;
-    ComplexM t[2048];
-    QSound* Bells;
-    QString tones;
-    QString lasttones;
-    QStringList strLst1, strLst2, strLst3;
-    QStringListModel *strLstM1, *strLstM2, *strLstM3;
-    QPixmap backimg;
+    QTimer* neuro_neMehanika_camera;
+    QTimer* neuro_neMehanika_colors;    
+    QTimer* tn1;  QTimer* tn2;  QTimer* tn3;  QTimer* tn4;  QTimer* tn5;
+    QTimer* tn6;  QTimer* tn7;  QTimer* tn8;  QTimer* tn9;  QTimer* tn10;
+    QThread* tr1; QTimer* tryplay;
+    coords arrc;            
+
     explicit plotwindow(QWidget *parent = 0);    
-    ~plotwindow();
+    ~plotwindow();    
+    bool eventFilter(QObject *target, QEvent *event);           
     void plot(QCustomPlot *customPlot);
-    bool eventFilter(QObject *target, QEvent *event);          
-    void clearstim(int posstim, int length);
-    void doplot();
-    void singlestim();
-    void clearstim();
-    void cleareeg(int start, int end);
-    void clearfiltered();
+    void doplot();   
+
     void updatedata(int start);
-    void bcidata(double d1);
-    void analysemeandata();
-    void analysepart();
-    void gettones();
+    void getandprocess_eeg_data(double d1);
+    void get_multichan_rawdata(int chn, double val);
+    void determine_brainwaves_expression();
+    void analyse_interval();
+    void plot_interval();
     void playtank1(QString tonesset);
     void playtank2(QString tonesset);
     void playspace(QString tonesset);
     void randomtone();
     void letsplay();
+    void init_timersinthread();
 
+    void setpicfolder(QString fp);
     void savescaletofile(QString fname);
     void loadscalefromfile(QString fname);
     void setrandomscale();
-    void refresh(); 
-    void setaddmode(bool f);  
-    int maxabsstim(int pos);
-    double offlinevaluation(int pos, int i);    
-    double zcdifference(int pos);
-    void printtoresultstring(QString str);
-    void printtoresultbox(QString str);
-    void printtoresultmean(QString str);
-    void cleareegdata();
-
-    void cleanmem();
-
-    void getrawdata(int chn, double val);
-
-    double* ComputeLP(int FilterOrder );
-    double* ComputeHP(int FilterOrder );
-    double* TrinomialMultiply(int FilterOrder, double *b, double *c );
-    double* ComputeNumCoeffs(int FilterOrder);
-    double* ComputeNumCoeffs(int FilterOrder, double Lcutoff, double Ucutoff, double *DenC);
-    double* ComputeDenCoeffs(int FilterOrder, double Lcutoff, double Ucutoff);
-    void filter(int ord, double *a, double *b, int np, double *x, double *y);
-    void butterfiltcoefs(int lcut, int hcut, int order, int sampr);
-
-    void filtfilt(vectord B, vectord A, const vectord &X, vectord &Y);
-    void filter(vectord B, vectord A, const vectord &X, vectord &Y, vectord &Zi);
-    vectord subvector_reverse(const vectord &vec, int idx_end, int idx_start);
-    void append_vector(vectord &vec, const vectord &tail);
-    void add_index_const(vectori &indices, int value, size_t numel);
-    void add_index_range(vectori &indices, int beg, int end);
-    void zerophaseinit(int lcut, int hcut, int order, int sampr);
-    void zerophasefilt(int posstim, int length);
-
-    void getcoeffs(vectord& acc, vectord& bcc, int ord);
-    MatrixXf covarian(MatrixXf mat);
-    MatrixXf readdata(int intlen, int length);
+    void update_intervals_spinboxes();
+    void print_tones(QString str);
+    void update_brainexp_levels(int d, int md, int t, int mt, int a, int ma, int b, int mb, int g, int mg);
 
     void pushleft();
     void pushright();
@@ -210,8 +154,10 @@ public:
     void play_b();
     void play_Blow();
     void play_g();
+    void tonenumbers_increase();
     void cleanbuttons();
     void settonesvolume();
+    void quitthreads();
 
     void update_attention(int t);
     void update_meditation(int t);
@@ -219,33 +165,37 @@ public:
     void radiobut1();
     void radiobut2();
     void radiobut3();
-    void enablenumparts(bool fl);
+    void enable_num_intervals(bool fl);
     void enablehue();
 
-    void setpicfolder(QString fp);
-    void applyfilteronback();
     QImage applyEffectToImage(QImage src, QGraphicsEffect *effect, int extent);
+    void applyfilteronback();
     void setbackimage(QPixmap pm);
-    void grabopencv(QString fpath);
-    void graboverlay(QPixmap pmg);
-    void setbackfromcamera();
-    void pauseflow();
+    void setbackimg_fromleftpanel(QString fpath);
     void updateimlength(int t);
+    void playtones();
+    void process_eeg_data();
 
 private slots:
-
-    void timerUpdate();
 
     void scaletimerUpdate();
 
     void mxttimerUpdate();
 
-    void checkstatesUpdate();
-    void colorchangesUpdate();
+    void neuro_neMeh_camera_update();
 
-    void on_widget_destroyed();
+    void neuro_neMeh_colors_update();
 
-    void on_pushButton_clicked();
+    void tn1Update();
+    void tn2Update();
+    void tn3Update();
+    void tn4Update();
+    void tn5Update();
+    void tn6Update();
+    void tn7Update();
+    void tn8Update();
+    void tn9Update();
+    void tn10Update();
 
     void on_checkBox_3_clicked();
 
@@ -258,8 +208,6 @@ private slots:
     void on_spinBox_7_valueChanged(int arg1);
 
     void on_spinBox_5_valueChanged(int arg1);
-
-    void on_spinBox_6_valueChanged(int arg1);
 
     void on_spinBox_8_valueChanged(int arg1);
 
@@ -285,19 +233,13 @@ private slots:
 
     void on_pushButton_8_clicked();
 
-    void on_spinBox_7_editingFinished();
-
-    void on_spinBox_5_editingFinished();
-
     void on_checkBox_5_clicked();
 
     void on_checkBox_6_clicked();
 
     void on_checkBox_7_clicked();
 
-    void on_horizontalSlider_valueChanged(int value);
-
-    void on_horizontalSlider_sliderReleased();
+    void on_horizontalSlider_valueChanged(int value); 
 
     void on_spinBox_2_valueChanged(int arg1);
 
@@ -332,12 +274,6 @@ private slots:
     void on_checkBox_2_clicked();
 
     void on_spinBox_16_valueChanged(int arg1);
-
-    void on_checkBox_8_clicked();
-
-    void on_pushButton_21_clicked();
-
-    void on_pushButton_22_clicked();
 
     void on_spinBox_17_valueChanged(int arg1);
 

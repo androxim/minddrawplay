@@ -1,3 +1,6 @@
+/* header file for MindDraw->Settings window class -
+   resposible for some MindDraw parameters */
+
 #ifndef SETTINGS_H
 #define SETTINGS_H
 

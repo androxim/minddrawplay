@@ -23,7 +23,8 @@ SOURCES += main.cpp\
     soundplayer.cpp \
     leftpanel.cpp \
     rightpanel.cpp \
-    ocvcontrols.cpp
+    ocvcontrols.cpp \
+    filters.cpp
 
 HEADERS  += mainwindow.h \
             qcustomplot.h \
@@ -38,7 +39,8 @@ HEADERS  += mainwindow.h \
     soundplayer.h \
     leftpanel.h \
     rightpanel.h \
-    ocvcontrols.h
+    ocvcontrols.h \
+    filters.h
 
 FORMS    += mainwindow.ui \
             plotwindow.ui \

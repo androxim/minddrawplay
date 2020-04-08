@@ -1,3 +1,6 @@
+/* source file for right panel class -
+   resposible for overlay image choice for MindOCV */
+
 #include "rightpanel.h"
 #include "ui_rightpanel.h"
 

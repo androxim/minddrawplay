@@ -25,6 +25,9 @@
  * $END_BCI2000_LICENSE$
  ***************************************************************************/
 
+/* source file for AppConnect class -
+   responsible for signal acqusition from BCI2000 streaming */
+
 #include "appconnect.h"
 #include <sstream>
 #include "QDebug"
@@ -171,7 +174,7 @@ void appconnect::ReceivingThread::run()
                     if (parent.mw->paintw_started)
                         parent.ps->getdata(stod(value)*2);
                     if (parent.wd->start)
-                        parent.wd->bcidata(stod(value)*2);
+                        parent.wd->getandprocess_eeg_data(stod(value)*2);
                 }
             }
         }

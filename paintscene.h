@@ -1,3 +1,6 @@
+/* header file for paintScene class -
+   resposible for drawing with brain waves */
+
 #ifndef PAINTSCENE_H
 #define PAINTSCENE_H
 
@@ -81,11 +84,8 @@ public:
     void filllines();
     void applyfilteronbackimg();
 
-    QImage applyEffectToImage(QImage src, QGraphicsEffect *effect, int extent);
-    QImage blurred(const QImage& image, const QRect& rect, int radius, bool alphaOnly);
-    bool eventFilter(QObject *target, QEvent *event);
-    explicit paintScene(QObject *parent = 0);
-    ~paintScene();
+    QImage applyEffectToImage(QImage src, QGraphicsEffect *effect, int extent);     
+    explicit paintScene(QObject *parent = 0); 
 
 private:
     void drawBackground(QPainter *p, const QRectF &rect);

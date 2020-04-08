@@ -1,3 +1,7 @@
+/* header file for MainWindow class -
+   resposible for connecting to EEG device, starting EEG generator,
+   starting MindPlay / MindDraw / MindOCV windows, processing most MindOCV actions */
+
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
@@ -44,6 +48,7 @@ public:
     QTimer* cameraflow;
     QTimer* simulateEEG;
     QTimer* dreamflow_timer;
+    QTimer* streamflows;
     int packetsRead;
     int connectionId;
     int currentsimdata;
@@ -81,7 +86,7 @@ public:
     void setborder(int i);
     void checkoverlay();
     void makeicons();
-    void shuffleiconss(bool left);
+    void shuffleiconss(bool left);    
     int geticonnum(int t, bool left);
     int getmainpic();
     int getoverpic();
@@ -99,7 +104,6 @@ public:
     void setprevdfrect(int x, int y, int w, int h);
     QImage grabopcvpic();
     QString getimagepath(int t);
-    void Webcamsource();
     void gethistfeatures();
     float chi2_distance(vector<float> f1, vector<float> f2);
     void getchi2dists(int t);
@@ -126,7 +130,8 @@ private slots:
     void mindwtUpdate();
     void simulateEEGUpdate();    
     void dreamflow_Update();
-    void transfert_Update();
+    void streamcameraflow_Update();
+    void streamflows_Update();
 
     void on_pushButton_6_clicked();
 

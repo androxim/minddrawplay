@@ -1,3 +1,6 @@
+/* source file for sounplayer class -
+   resposible for sound samples configuration and playing in separate thread */
+
 #include "soundplayer.h"
 
 void soundplayer::setvolume(qreal volume)

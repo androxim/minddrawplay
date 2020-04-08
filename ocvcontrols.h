@@ -1,3 +1,6 @@
+/* header file for ocvcontrols class -
+   resposible for MindOCV parameters and actions */
+
 #ifndef OCVCONTROLS_H
 #define OCVCONTROLS_H
 
@@ -20,7 +23,8 @@ class ocvcontrols : public QWidget
     Q_OBJECT
 
 public:
-    bool camerainp = false; bool drawbrushcontour = true; QPoint currmousepos;
+    bool camerainp = false; bool drawbrushcontour = true; bool formshown = true;
+    QPoint currmousepos;
     int picwidth = 2000, picheight = 1125;
     int currfilterarea = 250, currfilterrate = 12, currfilttype = 5, totalfilts = 5;    
     int sigma_color = 25, sigma_space = 50, kernel_s = 5;                              // cartoonize params
@@ -33,12 +37,12 @@ public:
     bool dreamflow = false; int dreamflowrate = 77; bool polygonmask = true;           // mixer params
     bool changepic_bytime = false; int changepic_interval = 3; QTimer* pichngT;        // mixer params
     QPoint seed; int x_left, x_right, y_top, y_bottom, drops_interval = 50;            // mixer params
-    bool dropsmode = false; QTimer* dropsT; int dropsgrow_step = 24;                   // mixer params
+    bool dropsmode = false; QTimer* dropsT; int dropsgrow_step = 24; Scalar wcolor;    // mixer params
     int firstdrop_size = 30; bool plotdroprect = true; bool drops_byatt = false;       // mixer params
     bool poly_by_att = true; int pointsinpoly = 3; bool seed_frommousepos = false;     // mixer params
     bool attmodul_area = false; bool attent_modulated_dreams = false;    // attention modulated filter area and rate of dreamflow
     bool hueonly = false; bool transp_by_att = false;                    // hue only, without overlay; transparency by attention
-    int flowdirection = 0; Mat randpic; int allngb = 32, ngbarea = 25; // area of neighbours for nearest / farest pic
+    int flowdirection = 0; Mat randpic; int allngb = 30, ngbarea = 20; // area of neighbours for nearest / farest pic
     // 0: "random" - next pic is randomly from all, 1: "similar" - from N nearest, -1: "opposite" - from N farest
     bool directionswitch_by_att = false;
 

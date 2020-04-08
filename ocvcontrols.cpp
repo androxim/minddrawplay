@@ -1,3 +1,6 @@
+/* source file for ocvcontrols class -
+   resposible for MindOCV parameters and actions */
+
 #include "ocvcontrols.h"
 #include "ui_ocvcontrols.h"
 
@@ -23,6 +26,8 @@ ocvcontrols::ocvcontrols(QWidget *parent) :
     x_right = seed.x()+firstdrop_size/2;
     y_top = seed.y()-firstdrop_size/2;
     y_bottom = seed.y()+firstdrop_size/2;
+
+    wcolor = Scalar(255,255,255);
 
     ui->spinBox_16->setStyleSheet("QSpinBox { background-color: yellow; }");      
 
@@ -54,6 +59,7 @@ void ocvcontrols::updateformvals()
     ui->checkBox_15->setChecked(seed_frommousepos);
     ui->checkBox_16->setChecked(drawbrushcontour);
     ui->checkBox_17->setChecked(camerainp);
+    ui->checkBox_9->setChecked(changepic_bytime);
     if (flowdirection==1)
         ui->comboBox->setCurrentIndex(1);
     else if (flowdirection==-1)
@@ -106,9 +112,10 @@ void ocvcontrols::windowsize_Update()
         y_top = seed.y()-firstdrop_size/2;
         y_bottom = seed.y()+firstdrop_size/2;
         changerandpic();
+        wcolor = Scalar(qrand()%256,qrand()%256,qrand()%256);
     }
-    if (plotdroprect)
-        mww->drawwindow(x_left,y_top,x_right-x_left,y_bottom-y_top);
+    if (plotdroprect)        
+        mww->drawwindow(x_left,y_top,x_right-x_left,y_bottom-y_top);    
     mww->setprevdfrect(x_left+3,y_top+3,x_right-x_left-3,y_bottom-y_top-3);
 }
 
@@ -332,7 +339,7 @@ void ocvcontrols::on_checkBox_5_clicked()
     if (dreamflow)
     {
         mww->setdream0();
-        mww->dreamflow_timer->start();    
+        mww->dreamflow_timer->start();
         if (dropsmode)
         {
             dropsT->start();

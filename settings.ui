@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>435</width>
-    <height>535</height>
+    <height>385</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,7 +17,7 @@
    <property name="geometry">
     <rect>
      <x>50</x>
-     <y>390</y>
+     <y>340</y>
      <width>151</width>
      <height>31</height>
     </rect>
@@ -30,7 +30,7 @@
    <property name="geometry">
     <rect>
      <x>230</x>
-     <y>390</y>
+     <y>340</y>
      <width>151</width>
      <height>31</height>
     </rect>
@@ -45,7 +45,7 @@
      <x>20</x>
      <y>100</y>
      <width>391</width>
-     <height>91</height>
+     <height>61</height>
     </rect>
    </property>
    <property name="frameShape">
@@ -67,36 +67,10 @@
      <string>Filtering options</string>
     </property>
    </widget>
-   <widget class="QRadioButton" name="radioButton_8">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>60</y>
-      <width>91</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>zero phase</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_25">
-    <property name="geometry">
-     <rect>
-      <x>130</x>
-      <y>30</y>
-      <width>31</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>order</string>
-    </property>
-   </widget>
    <widget class="QSpinBox" name="spinBox_14">
     <property name="geometry">
      <rect>
-      <x>170</x>
+      <x>150</x>
       <y>30</y>
       <width>31</width>
       <height>21</height>
@@ -118,8 +92,8 @@
    <widget class="QLabel" name="label_26">
     <property name="geometry">
      <rect>
-      <x>110</x>
-      <y>60</y>
+      <x>190</x>
+      <y>30</y>
       <width>51</width>
       <height>20</height>
      </rect>
@@ -131,8 +105,8 @@
    <widget class="QSpinBox" name="spinBox_15">
     <property name="geometry">
      <rect>
-      <x>160</x>
-      <y>60</y>
+      <x>240</x>
+      <y>30</y>
       <width>41</width>
       <height>21</height>
      </rect>
@@ -153,8 +127,8 @@
    <widget class="QLabel" name="label_27">
     <property name="geometry">
      <rect>
-      <x>210</x>
-      <y>60</y>
+      <x>290</x>
+      <y>30</y>
       <width>51</width>
       <height>20</height>
      </rect>
@@ -166,8 +140,8 @@
    <widget class="QSpinBox" name="spinBox_16">
     <property name="geometry">
      <rect>
-      <x>260</x>
-      <y>60</y>
+      <x>340</x>
+      <y>30</y>
       <width>41</width>
       <height>21</height>
      </rect>
@@ -190,102 +164,12 @@
      <rect>
       <x>20</x>
       <y>30</y>
-      <width>101</width>
+      <width>121</width>
       <height>20</height>
      </rect>
     </property>
     <property name="text">
-     <string>Butterworth filter</string>
-    </property>
-   </widget>
-  </widget>
-  <widget class="QFrame" name="frame_11">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>440</y>
-     <width>391</width>
-     <height>81</height>
-    </rect>
-   </property>
-   <property name="frameShape">
-    <enum>QFrame::Box</enum>
-   </property>
-   <property name="frameShadow">
-    <enum>QFrame::Raised</enum>
-   </property>
-   <widget class="QLabel" name="label_24">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>10</y>
-      <width>111</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Recording options</string>
-    </property>
-   </widget>
-   <widget class="QSpinBox" name="spinBox_17">
-    <property name="geometry">
-     <rect>
-      <x>300</x>
-      <y>30</y>
-      <width>41</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="minimum">
-     <number>1</number>
-    </property>
-    <property name="maximum">
-     <number>50</number>
-    </property>
-    <property name="singleStep">
-     <number>1</number>
-    </property>
-    <property name="value">
-     <number>10</number>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_29">
-    <property name="geometry">
-     <rect>
-      <x>260</x>
-      <y>32</y>
-      <width>41</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Loops</string>
-    </property>
-   </widget>
-   <widget class="QRadioButton" name="radioButton">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>30</y>
-      <width>221</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>stereo mix (all windows sounds)</string>
-    </property>
-   </widget>
-   <widget class="QRadioButton" name="radioButton_2">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>50</y>
-      <width>101</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>microphone</string>
+     <string>Butterworth filt order</string>
     </property>
    </widget>
   </widget>
@@ -357,7 +241,7 @@
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>290</y>
+     <y>260</y>
      <width>391</width>
      <height>61</height>
     </rect>
@@ -425,7 +309,7 @@
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>200</y>
+     <y>170</y>
      <width>391</width>
      <height>80</height>
     </rect>

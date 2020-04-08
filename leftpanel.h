@@ -1,3 +1,6 @@
+/* header file for left panel class -
+   resposible for main image choice for MindOCV / MindPlay / MindDraw */
+
 #ifndef LEFTPANEL_H
 #define LEFTPANEL_H
 
