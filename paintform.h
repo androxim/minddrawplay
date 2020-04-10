@@ -30,71 +30,55 @@ class paintform : public QWidget
     Q_OBJECT
 
 public:
+    // description of most variables in paintform.cpp //
+
     explicit paintform(QWidget *parent = 0);
-    paintScene *scene;
-    QGraphicsScene* scene2;
-    QGraphicsScene* scene3;
-    QGraphicsScene* scene4;
-    QGraphicsScene* scene5;
-    QGraphicsScene* scene6;
-    QGraphicsScene* scene7;
-    QGraphicsScene* scene8;
-    QGraphicsScene* scene9;
-    QGraphicsScene* scene10;
-    QGraphicsScene* scene11;
-    QGraphicsScene* scene12;
-    QGraphicsScene* scene13;
-    QGraphicsScene* scene14;
-    QGraphicsScene* scene15;
-    plotwindow* pw;
-    MainWindow* mww;
-    ocvcontrols* ocvfm;
-    QPolygonF plane;
-    int poltypearr[108];
-    int centercoord[108][2];
-    QDir fd;
-    QPalette sp1,sp2;
-    QString folderpath;
-    bool music_adaptive_bord, firstpuzzle, spacedflow;
-    int activatedcell;
-    double thet;
-    double bet;
-    int pointsfor_estattention;
-    double avgv;
-    QPixmap pmg;
-    bool collectiveflow, grabmindplayflow;
-    int picsrestored;
-    double estattn;
-    set<int> stpic0, stpic1, stres;
-    set<int>::iterator iterst;
-    vector<int> puzzlelocs, randpuzzlelocs, sortpuzzlelocs;
-    QString fnameattent,fnamefreq;
-    int puzzlew, puzzleh, soundborderlevel, borderpicchange, setsize;
-    int numsamples, numfrsamples, lenofinterval, laststop;
-    QVector<double> attent_arr, medit_arr, border_arr, xc, fxc, estatt_arr, delta_arr, theta_arr, alpha_arr, beta_arr, gamma_arr, hgamma_arr;
-    QStringList imglist;
-    QVector<QString> currimglist;
-    QSet<int> pressedKeys;
-    QPalette qpr;
-    QPixmap pm, pmain, prevpic, curpic, pmtemp, mainpic;
+    MainWindow* mww;        // pointer on MainWindow class
+    plotwindow* pw;         // pointer on MindPlay window class
+    ocvcontrols* ocvfm;     // pointer on MindOCV controls class
+    paintScene *scene;      // pointer on paintScene class (drawing functions)
+
+    QGraphicsScene* scene2; QGraphicsScene* scene3; QGraphicsScene* scene4; QGraphicsScene* scene5;
+    QGraphicsScene* scene6; QGraphicsScene* scene7; QGraphicsScene* scene8; QGraphicsScene* scene9;
+    QGraphicsScene* scene10; QGraphicsScene* scene11; QGraphicsScene* scene12;
+    QGraphicsScene* scene13; QGraphicsScene* scene14;  QGraphicsScene* scene15;
+
+    int puzzlew, puzzleh, soundborderlevel, borderpicchange, setsize, picsrestored;
+    int numsamples, numfrsamples, lenofinterval, laststop, pointsfor_estattention;
+    int eegsize, pensize, temppensize, prevpict, prevpuzzle;
+    int timepics, picsforchange, mainindex, polycount;
+    double thet, bet, avgv, estattn;
+
+    bool music_adaptive_bord, firstpuzzle, spacedflow, collectiveflow, grabmindplayflow;
+    bool gamemode, flowmode, puzzlegrabed, canpuzzlechange, backloaded, showestatt;
+    bool erasepen, bfiltmode, puzzlemode, fixedmain, changingpics, iconsready;
+    bool attent_modulaion, limitpicschange, setloaded, musicactiv;
+
+    QVector<double> attent_arr, medit_arr, border_arr, xc, fxc, estatt_arr;
+    QVector<double> delta_arr, theta_arr, alpha_arr, beta_arr, gamma_arr, hgamma_arr;
+    vector<int> puzzlelocs, randpuzzlelocs, sortpuzzlelocs, randnumb;
+    QPixmap pm, pmg, pmain, prevpic, curpic, pmtemp, mainpic, pixMap; QImage qim;
     QVector<QPixmap> pmarray;
     QVector<QPixmap> onepicarr;
-    QImage qim;
+    int* currentindexes;
+
+    QPolygonF plane; int poltypearr[108]; int centercoord[108][2];  // polygons variables (experimental mode, not finished)
+    QDir fd; QString folderpath; QStringList imglist; QVector<QString> currimglist;
+    QPalette sp1,sp2, qpr;
+
+    set<int> stpic0, stpic1, stres;
+    set<int>::iterator iterst;                      
+    QSet<int> pressedKeys;    
+
     QPen mypen;
     QTimer* tpicschange;
-    QTimer* polyt;
-    QPixmap pixMap;
     Qt::AspectRatioMode rationmode;
-    int timepics, picsforchange, mainindex,polycount;
-    int* currentindexes;
-    bool gamemode, flowmode, puzzlegrabed, canpuzzlechange, backloaded, showestatt;
-    vector<int> randnumb;
-    int eegsize, pensize, temppensize;
-    int prevpict, prevpuzzle;
-    bool erasepen, bfiltmode, puzzlemode, fixedmain, changingpics, iconsready, attent_modulaion, limitpicschange, setloaded, musicactiv;
+
     bool eventFilter(QObject *target, QEvent *event);
 
     void configure_ui();
+    void graphicsviews_init();
+
     void init_brainwaves_arrays();
     void delay(int temp);
     void getimg1();
@@ -105,13 +89,13 @@ public:
     void setpicfolder(QString fpath);
     void randompics();
     void initpics();
-    void graphicsviews_init();
+
     void setdflowtime(int t);
     void setflowspace(int t);
     bool getattentmode();
     void updatefreqarrs(double deltat, double thetat, double alphat, double betat, double gammat, double hgammat);
-    void wheelEvent(QWheelEvent *event);
-    void updateplots(bool fl);
+    void wheelEvent(QWheelEvent *event);    
+
     QImage applyEffectToImage(QImage src, QGraphicsEffect *effect, int extent);
     void filtering_puzzle(QGraphicsView *gv, QPixmap pm, int grade);
     void filteringmain_ingame(int grade);
@@ -121,26 +105,24 @@ public:
     void updateset_singlepuzzle();
     void updateset_fillcorrectpuzzles();
     void updateset_fillcorrectpuzzles_single();
+
     void startround();
     void setactiveflowtime(int t);
     void setbackimage(QPixmap pm);
     void puzzle_onepic_switch();
     void grabpuzzles();
     void matchpuzzle();
-    void startpolyt();
     void loadempty();
     void setsoundtype(int index);
     double getestattval();
     void update_estrate(int t);
-    void setbackimageocv(QString filename);
-    void setbackimageoverlay(QPixmap pmg);
+    void setbackimageocv(QString filename);   
     void adaptivespinrate(bool fl);
-    int getgraphicview_width();
-    int getgraphicview_height();
     void updateset_allpics_similarly(int* picnums);
     void swappuzzles(int t1, int t2);
     void mainpuzzle_update(int t);
     void updatepuzzles();
+
     ~paintform();
 
 
@@ -249,10 +231,6 @@ private slots:
 private:
     Ui::paintform *ui;
     QPointF previousPoint;
-
-    void resizeEvent(QResizeEvent *);
-    void showEvent(QShowEvent *);
-    void fitView();
 
 };
 

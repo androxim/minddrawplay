@@ -50,7 +50,7 @@ paintform::paintform(QWidget *parent) :
     prevpict = -1;               // previous pictures index with puzzle clicks
     picsforchange = 4;           // default value for number of puzzles changing in flow mode or around main pic
     eegsize = 2; pensize = 3;    // parameters for brain waves drawing
-    soundborderlevel = 85;       // border for playing tones from MindPlay by attention / meditation > border
+    soundborderlevel = 80;       // border for playing tones from MindPlay by attention / meditation > border
     borderpicchange = 75;        // border for changing back image by attention / meditation > border
     numsamples = 0;              // number of samples in attention / meditation arrays / plot
     numfrsamples = 0;            // number of samples in brain waves expression arrays / plot
@@ -89,14 +89,14 @@ paintform::paintform(QWidget *parent) :
     tpicschange->connect(tpicschange, SIGNAL(timeout()), this, SLOT(tpicschangeUpdate()));
     tpicschange->setInterval(timepics);
 
-    for (int i=0; i<108; i++)   // arrays of polygons (experimental drawing mode)
+    for (int i=0; i<108; i++)   // arrays of polygons (for experimental drawing mode)
     {
         centercoord[i][0]=qrand()%1500;
         centercoord[i][1]=qrand()%800;
         poltypearr[i]=3+qrand()%6;
     }   
 
-    configure_ui();
+    configure_ui(); // configure ui elements
 
     pmain.load(":/pics/pics/empty.jpg");
     mainpic.load(":/pics/pics/empty.jpg");
@@ -148,7 +148,7 @@ void paintform::init_brainwaves_arrays()
         fxc[j]=0;
 }
 
-void paintform::configure_ui()
+void paintform::configure_ui() // configure ui elements
 {
     ui->radioButton_6->setChecked(true);
     ui->checkBox_16->setEnabled(false);
@@ -242,10 +242,9 @@ void paintform::configure_ui()
     ui->checkBox_13->setEnabled(false);
     ui->checkBox_11->setEnabled(false);
 
-
     ui->widget->xAxis->setRange(0,32);
     ui->widget->yAxis->setRange(0,101);
-    ui->widget->legend->setVisible(true);
+    ui->widget->legend->setVisible(true);    
     QFont legendFont = font();
     legendFont.setPointSize(6);
     legendFont.setBold(false);
@@ -276,6 +275,7 @@ void paintform::configure_ui()
 
     ui->widget_2->xAxis->setRange(0,32);
     ui->widget_2->legend->setVisible(true);
+    ui->widget_2->legend->setBrush(QBrush(QColor(255,255,255,190)));
     ui->widget_2->setInteraction(QCP::iSelectPlottables, true);
     ui->widget_2->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignLeft|Qt::AlignTop);
     ui->widget_2->legend->setFont(legendFont);
@@ -328,7 +328,6 @@ void paintform::configure_ui()
 
     sp1.setColor(QPalette::Window, Qt::white);
     sp1.setColor(QPalette::WindowText, Qt::red);
-
     sp2.setColor(QPalette::Window, Qt::white);
     sp2.setColor(QPalette::WindowText, Qt::darkGreen);
 
@@ -344,7 +343,7 @@ void paintform::configure_ui()
     ui->spinBox_6->setValue(borderpicchange);
 }
 
-void paintform::graphicsviews_init()
+void paintform::graphicsviews_init() // initialize puzzles graphicsview geometry and properties
 {
     ui->graphicsView->setGeometry(50,50,1500,800);
     ui->graphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -503,7 +502,7 @@ void paintform::graphicsviews_init()
     ui->graphicsView_15->installEventFilter(this);
 }
 
-void paintform::setpicfolder(QString fpath)
+void paintform::setpicfolder(QString fpath) // set folder for pictures
 {
     folderpath = fpath;
     fd.setPath(folderpath);
@@ -516,7 +515,7 @@ void paintform::setpicfolder(QString fpath)
     pmarray.resize(imglist.length());
 }
 
-void paintform::setdflowtime(int t)
+void paintform::setdflowtime(int t) // set flow time - delay for chaning puzzles
 {
     if (t<30)
         tpicschange->setInterval(300);
@@ -537,11 +536,12 @@ void paintform::setdflowtime(int t)
     ui->spinBox_3->setValue(tpicschange->interval());
 }
 
-void paintform::setflowspace(int t)
+void paintform::setflowspace(int t) // set flow space - number of puzzles for change
 {
-    if ((t<85) && (!canpuzzlechange))
+    if ((t<80) && (!canpuzzlechange))
     {
-        delay(200);
+        // when puzzle is completed and attention/meditation goes below border
+        delay(100);
         on_pushButton_6_clicked();
         on_checkBox_16_clicked();
         canpuzzlechange=true;
@@ -553,23 +553,23 @@ void paintform::setflowspace(int t)
        }
        else if ((t>20) && (t<30))
        {
-           picsforchange=9;
+           picsforchange=10;
            ui->spinBox_4->setValue(picsforchange);
        }
        else if ((t>30) && (t<40))
        {
            if (collectiveflow)
-               picsforchange=7;
-           else
                picsforchange=8;
+           else
+               picsforchange=9;
            ui->spinBox_4->setValue(picsforchange);
        }
        else if ((t>40) && (t<50))
        {
            if (collectiveflow)
-               picsforchange=5;
-           else
                picsforchange=6;
+           else
+               picsforchange=7;
            ui->spinBox_4->setValue(picsforchange);
        }
        else if ((t>50) && (t<60))
@@ -588,7 +588,7 @@ void paintform::setflowspace(int t)
                picsforchange=4;
            ui->spinBox_4->setValue(picsforchange);
        }
-       else if ((t>70) && (t<80))
+       else if ((t>70) && (t<75))
        {
            if (collectiveflow)
                picsforchange=2;
@@ -596,7 +596,7 @@ void paintform::setflowspace(int t)
                picsforchange=3;
            ui->spinBox_4->setValue(picsforchange);
        }
-       else if ((t>80) && (t<85))
+       else if ((t>75) && (t<80))
        {
            if (collectiveflow)
                picsforchange=1;
@@ -604,7 +604,7 @@ void paintform::setflowspace(int t)
                picsforchange=2;
            ui->spinBox_4->setValue(picsforchange);
        }
-       else if (t>85)
+       else if (t>80)
        {
            picsforchange=0;
            ui->spinBox_4->setValue(picsforchange);
@@ -617,12 +617,12 @@ void paintform::setflowspace(int t)
        }
 }
 
-bool paintform::getattentmode()
+bool paintform::getattentmode()  // return attention modulation (for paintScene color modulation)
 {
     return attent_modulaion;
 }
 
-double paintform::getestattval()
+double paintform::getestattval()  // return estimated attention value (for MindOCV controls)
 {
     if (numfrsamples>0)
         return estattn;
@@ -631,26 +631,14 @@ double paintform::getestattval()
 }
 
 void paintform::update_estrate(int t)
+// update brain waves estimation rate spinBox (interval length), invoked from MindPlay
 {
     ui->spinBox_7->setValue(t);
 }
 
 void paintform::updatefreqarrs(double deltat, double thetat, double alphat, double betat, double gammat, double hgammat)
-{
-  //  qDebug()<<numfrsamples;
-  //  if (numfrsamples>TFMAX)
-   //     numfrsamples=0;
-
-    /*
-    QFile outputFile(fnamefreq);
-    outputFile.open( QIODevice::Append);
-    QTextStream fout(&outputFile);
-    fout<<deltat<<",";
-    fout<<thetat<<",";
-    fout<<alphat<<",";
-    fout<<betat<<",";
-    fout<<gammat<<" "; */
-
+// update brain waves expression arrays and plot
+{  
     if (numfrsamples>2000)
     {
         numfrsamples-=2001;
@@ -668,6 +656,11 @@ void paintform::updatefreqarrs(double deltat, double thetat, double alphat, doub
 
     thet=0;
     bet=0;
+
+    if (pw->imlength>=256)
+        pointsfor_estattention = 5;     // estimation based on last [ >= 2.5] sec
+    else
+        pointsfor_estattention = 12;    // estimation based on last [ >= 1.4] sec
 
     if (numfrsamples<pointsfor_estattention)
         estattn=(1-thetat/betat)*100;
@@ -687,7 +680,7 @@ void paintform::updatefreqarrs(double deltat, double thetat, double alphat, doub
     estatt_arr[numfrsamples]=estattn;    
     fxc[numfrsamples]=numfrsamples;
 
-  /*  if ((bfiltmode) || (!canpuzzlechange))
+  /*  if ((bfiltmode) || (!canpuzzlechange)) // if estimated attention is used for flow parameters
     {
         setdflowtime(estattn);
         setflowspace(estattn);
@@ -706,17 +699,15 @@ void paintform::updatefreqarrs(double deltat, double thetat, double alphat, doub
     numfrsamples++;
 }
 
-void paintform::startpolyt()
+void paintform::loadempty() // load empty white main image
 {
-    polyt->start();
+    pmain.load(":/pics/pics/empty.jpg");
+    mainpic.load(":/pics/pics/empty.jpg");
+    qim.load(":/pics/pics/empty.jpg");
+    scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
 }
 
-void paintform::loadempty()
-{
-    on_pushButton_clicked();
-}
-
-void paintform::initpics()
+void paintform::initpics() // make puzzles from images
 {
     QString filename;
     QPixmap temp;
@@ -726,9 +717,7 @@ void paintform::initpics()
     for (int i=0; i<imglist.length(); i++)
     {
         filename=folderpath+"/"+imglist.at(i);
-        pm.load(filename);
-       // ui->graphicsView_2->setStyleSheet("border: 0px");
-       // ui->graphicsView_2->setContentsMargins(0,0,0,0);
+        pm.load(filename); 
         ui->graphicsView_2->scene()->clear();  
         ui->graphicsView_2->scene()->addPixmap(pm.scaled(puzzlew,puzzleh,rationmode,Qt::SmoothTransformation));       
         pmarray[i] = ui->graphicsView_2->grab(ui->graphicsView_2->sceneRect().toRect());
@@ -742,9 +731,9 @@ void paintform::initpics()
         ui->graphicsView_2->setVisible(false);
 }
 
-void paintform::updateattentionplot(int t)
+void paintform::updateattentionplot(int t) // update attention (values from EEG device) array and plot
 {
-    if (numsamples>7200) // 2 hours
+    if (numsamples>7200) // shift of the plot after 2 hours to zero point (avoid limit on array length)
     {
         numsamples-=7201;
         ui->widget->xAxis->moveRange(-7168);
@@ -766,7 +755,7 @@ void paintform::updateattentionplot(int t)
     updateattention(t);
 }
 
-void paintform::updateattention(int t)
+void paintform::updateattention(int t) // update attention dependent variables
 {
     scene->attentt=t;
 
@@ -785,6 +774,7 @@ void paintform::updateattention(int t)
        }
 
        if ((numsamples-laststop>lenofinterval) && (music_adaptive_bord))
+       // adaptive border for music activation
        {
            avgv = 0;
            for (int i = numsamples-lenofinterval; i<numsamples; i++)
@@ -822,8 +812,9 @@ void paintform::updateattention(int t)
        ui->radioButton_4->setStyleSheet("QRadioButton { color : red; }");
 
        ui->label_5->setText(QString::number(t)+"%");
-
        ui->label_23->setText("ATTENTION: "+QString::number(t)+"%");
+
+       // change of back image randomly by attention > border
        if ((!fixedmain) && (!flowmode) && (!gamemode) && (t>borderpicchange) && (bfiltmode))
            on_pushButton_6_clicked();
     }
@@ -832,7 +823,7 @@ void paintform::updateattention(int t)
  //   scene->drawpolygon(scene->attentt/10,700,400,scene->meditt,0.5);
 }
 
-void paintform::updatemeditation(int t)
+void paintform::updatemeditation(int t) // update meditation array, plot and dependent variables
 {
     scene->meditt=t;
 
@@ -887,14 +878,15 @@ void paintform::updatemeditation(int t)
        ui->radioButton_5->setStyleSheet("QRadioButton { color : darkGreen; }");
 
        ui->label_5->setText(QString::number(t)+"%");
-
        ui->label_24->setText("MEDITATION: "+QString::number(t)+"%");
+
        if ((!fixedmain) && (!flowmode) && (!gamemode) && (t>borderpicchange) && (bfiltmode))
            on_pushButton_6_clicked();
     }
 }
 
 void paintform::updateset_withlimitpics()
+// update limit number of puzzles: some currentin indexes are changed, some stays the same
 {
     ui->graphicsView_2->scene()->clear();
     ui->graphicsView_2->scene()->addPixmap(pmarray[currentindexes[0]]);
@@ -953,7 +945,7 @@ void paintform::updateset_withlimitpics()
     currimglist[13]=folderpath+"/"+imglist.at(currentindexes[13]);
 }
 
-void paintform::updateset_allpics()
+void paintform::updateset_allpics() // update all puzzles
 {
     ui->graphicsView_2->scene()->clear();
     ui->graphicsView_2->scene()->addPixmap(pmarray[randnumb[0]]);
@@ -1027,6 +1019,8 @@ void paintform::updateset_allpics()
 }
 
 void paintform::updateset_allpics_similarly(int* picnums)
+// update puzzles based on histogramm similarity:
+// picnums contains indexes of nearest / farest pics to the main (central) one
 {
     ui->graphicsView_2->scene()->clear();
     ui->graphicsView_2->scene()->addPixmap(pmarray[picnums[0]]);
@@ -1099,7 +1093,7 @@ void paintform::updateset_allpics_similarly(int* picnums)
     currentindexes[13]=picnums[13];
 }
 
-void paintform::updateset_singlepuzzle()
+void paintform::updateset_singlepuzzle() // update puzzles with random shuffling of one pic fragments
 {
     random_shuffle(randpuzzlelocs.begin(), randpuzzlelocs.end());
 
@@ -1150,20 +1144,23 @@ void paintform::updateset_singlepuzzle()
 }
 
 void paintform::updateset_fillcorrectpuzzles()
+// fill correct puzzle fragments (positions) of a single image
 {
     stpic0.clear();
-    for (int i=0; i<picsrestored; i++)
+    for (int i=0; i<picsrestored; i++) // picsrestored - number of correctly placed puzzles
     {
+        // stpic0 - set used further for determining remaining puzzles indexes (not correctly placed)
+        // (by difference with set of all puzzle indexes) and random shuffling of their position
         stpic0.insert(puzzlelocs[i]);
-        //   int t = qrand() % 15;
         switch (puzzlelocs[i])
         {
         case 0:
-        {
+        {            
             if (collectiveflow)
+            // in collective flow - all correct fragments (free of overlay) are colorized in the same way
             {
                 pmtemp = scene->filterpuzzle(onepicarr[0],scene->attentt,theta_arr[numsamples-1],beta_arr[numsamples-1],gamma_arr[numsamples-1],alpha_arr[numsamples-1]);
-                ui->graphicsView_6->scene()->addPixmap(pmtemp.scaled(300,200));//pmarray[randnumb[i]]);
+                ui->graphicsView_6->scene()->addPixmap(pmtemp.scaled(300,200));
             } else
             {
                 ui->graphicsView_6->scene()->clear();
@@ -1372,6 +1369,7 @@ void paintform::updateset_fillcorrectpuzzles()
 }
 
 void paintform::updateset_fillcorrectpuzzles_single()
+// fill correct puzzles in case of only single image parts (not collective flow, no overlays)
 {    
     stres.clear();
     set_difference(stpic1.begin(), stpic1.end(), stpic0.begin(), stpic0.end(),inserter(stres, stres.end()));
@@ -1488,7 +1486,7 @@ void paintform::updateset_fillcorrectpuzzles_single()
     }
 }
 
-void paintform::randompics()
+void paintform::randompics() // filling puzzles with random pics according to different modes
 {
     random_shuffle(randnumb.begin(), randnumb.end());
     if (!limitpicschange)
@@ -1536,7 +1534,7 @@ void paintform::randompics()
     setloaded=true;
 }
 
-void paintform::matchpuzzle()
+void paintform::matchpuzzle()  // filling correctly placed puzzles
 {
     ui->graphicsView_6->scene()->addPixmap(onepicarr[0]);   
     ui->graphicsView_7->scene()->addPixmap(onepicarr[1]);  
@@ -1555,17 +1553,7 @@ void paintform::matchpuzzle()
     ui->graphicsView_15->scene()->addPixmap(onepicarr[14]);   
 }
 
-void paintform::resizeEvent(QResizeEvent *)
-{
-    fitView();
-}
-
-void paintform::showEvent(QShowEvent *)
-{
-    fitView();
-}
-
-void paintform::updatepuzzles()
+void paintform::updatepuzzles() // updating puzzles with current pics indexes
 {
     ui->graphicsView_2->scene()->clear();
     ui->graphicsView_2->scene()->addPixmap(pmarray[currentindexes[0]]);
@@ -1597,7 +1585,7 @@ void paintform::updatepuzzles()
     ui->graphicsView_15->scene()->addPixmap(pmarray[currentindexes[13]]);
 }
 
-void paintform::swappuzzles(int t1, int t2)
+void paintform::swappuzzles(int t1, int t2)     // swapping puzzle pics
 {
     if (t1==14) // main puzzle case
     {
@@ -1624,7 +1612,7 @@ void paintform::swappuzzles(int t1, int t2)
     updatepuzzles();
 }
 
-void paintform::mainpuzzle_update(int t)
+void paintform::mainpuzzle_update(int t)    // updating main puzzle
 {
     pmain.load(currimglist[t]);
     qim.load(currimglist[t]);
@@ -1694,10 +1682,9 @@ void paintform::mainpuzzle_update(int t)
         ui->graphicsView_15->scene()->addPixmap(pmarray[tr]);
         break;
     }
-
 }
 
-bool paintform::eventFilter(QObject *target, QEvent *event)
+bool paintform::eventFilter(QObject *target, QEvent *event)  // processing key / mouse events
 {
     QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
 
@@ -1728,7 +1715,7 @@ bool paintform::eventFilter(QObject *target, QEvent *event)
             ui->spinBox_2->setValue(pensize);
         }
 
-        if (keyEvent->key() == Qt::Key_L)
+        if (keyEvent->key() == Qt::Key_L)   // show / hide estimated attention
         {
             showestatt=!showestatt;
             if (showestatt)
@@ -1742,7 +1729,7 @@ bool paintform::eventFilter(QObject *target, QEvent *event)
             }
         }
 
-        if ((keyEvent->key() == Qt::Key_N) && (pw->opencvstart))
+        if ((keyEvent->key() == Qt::Key_N) && (pw->opencvstart)) // show / hide MindOCV controls form
         {
             if (ocvfm->formshown)
                 ocvfm->hide();
@@ -1770,31 +1757,33 @@ bool paintform::eventFilter(QObject *target, QEvent *event)
 
         pressedKeys += ((QKeyEvent*)event)->key();
 
-        if ( (keyEvent->key() == Qt::Key_Q) && (!scene->horizline) && (!scene->vertline) )
+        // drawing brain waves on horizontal line
+        if ( (keyEvent->key() == Qt::Key_H) && (!scene->horizline) && (!scene->vertline) )
         {
             scene->horizline=true;
             ui->checkBox_4->setChecked(true);
         }
-        else
-        if ( (keyEvent->key() == Qt::Key_Q) && (scene->horizline) )
+        else            
+        if ( (keyEvent->key() == Qt::Key_H) && (scene->horizline) )
         {
             scene->horizline=false;
             ui->checkBox_4->setChecked(false);
         }
-
-        if ( (keyEvent->key() == Qt::Key_W) && (!scene->vertline) && (!scene->horizline) )
+        // drawing brain waves on vertical line
+        if ( (keyEvent->key() == Qt::Key_V) && (!scene->vertline) && (!scene->horizline) )
         {
             scene->vertline=true;
             ui->checkBox_5->setChecked(true);
         }
         else
-        if ( (keyEvent->key() == Qt::Key_W) && (scene->vertline) )
+        if ( (keyEvent->key() == Qt::Key_V) && (scene->vertline) )
         {
             scene->vertline=false;
             ui->checkBox_5->setChecked(false);
         }
     }
 
+    // switch to puzzle mode and back to one pic
     if ((target == ui->graphicsView) && (event->type() == QEvent::MouseButtonDblClick))
     {
        if ((!gamemode) && (!flowmode) && (!scene->drawflow) && (iconsready))
@@ -1808,16 +1797,17 @@ bool paintform::eventFilter(QObject *target, QEvent *event)
        }
     }
 
+    // processing on mouse events on main pic / central puzzle
     if ((target == ui->graphicsView) && (event->type() == QEvent::MouseButtonPress) && (!flowmode))
     {
         QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
 
-        if (mouseEvent->button() == Qt::RightButton)
+        if (mouseEvent->button() == Qt::RightButton)    // change of pen color
         {
             if ((scene->randfixcolor))
                 scene->randfxcl=QColor(qrand()%256,qrand()%256,qrand()%256,255-scene->attentt*2);
         }
-        if (mouseEvent->button() == Qt::MiddleButton)
+        if (mouseEvent->button() == Qt::MiddleButton)   // switch to erase pen
         {
             if (!erasepen)
                 temppensize=pensize;
@@ -1831,7 +1821,7 @@ bool paintform::eventFilter(QObject *target, QEvent *event)
         }
         if (mouseEvent->button() == Qt::LeftButton)
         {
-            if (gamemode)
+            if (gamemode)           // processing of click in game mode
             {
                 if ((currentindexes[14]==prevpict) && (prevpuzzle!=1))
                     startround();
@@ -1841,7 +1831,7 @@ bool paintform::eventFilter(QObject *target, QEvent *event)
                     prevpuzzle = 1;
                 }
             }
-            else if (!flowmode)
+            else if (!flowmode)     // processing of click for puzze swapping
             {
                 if ((prevpict!=-1) && (prevpict!=14))
                 {
@@ -1856,9 +1846,12 @@ bool paintform::eventFilter(QObject *target, QEvent *event)
     if ((setloaded) && (target == ui->graphicsView_2) && (event->type() == QEvent::MouseButtonPress) && (!flowmode))
     {
         QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
+
         if ((mouseEvent->button() == Qt::MiddleButton) && (!gamemode) && (!flowmode))        
+        // middle click - make current puzzle pic as main pic / central puzzle, update current puzzle with random pic
             mainpuzzle_update(0);
         if ((mouseEvent->button() == Qt::RightButton) && (!gamemode) && (!flowmode))
+        // right click - change pic of current puzzle on random pic
         {
             int t = qrand() % imglist.length();
             currentindexes[0]=t;
@@ -1866,6 +1859,8 @@ bool paintform::eventFilter(QObject *target, QEvent *event)
             currimglist[0]=folderpath+"/"+imglist.at(t);
         }
         if (mouseEvent->button() == Qt::LeftButton)
+        // left click - game mode (check for identity of pic with previously clicked puzzle)
+        // not game mode: swapping of puzzle pics
         {
             if (gamemode)
             {
@@ -2360,7 +2355,7 @@ bool paintform::eventFilter(QObject *target, QEvent *event)
     return false;
 }
 
-void paintform::wheelEvent(QWheelEvent *event)
+void paintform::wheelEvent(QWheelEvent *event) // processing mouse wheel
 {
     QPoint numDegrees = event->angleDelta() / 8;
 
@@ -2382,23 +2377,11 @@ void paintform::wheelEvent(QWheelEvent *event)
         ui->spinBox->setValue(eegsize);
         ui->spinBox_2->setValue(pensize);
     }
-     event->accept();
-}
-
-void paintform::updateplots(bool fl)
-{
-    if (fl)
-    {
-        ui->widget_2->setVisible(true);
-        ui->widget->setVisible(true);
-    } else
-    {
-        ui->widget_2->setVisible(false);
-        ui->widget->setVisible(false);
-    }
+    event->accept();
 }
 
 QImage paintform::applyEffectToImage(QImage src, QGraphicsEffect *effect, int extent)
+// applying QGraphicsEffect to image
 {
     if(src.isNull()) return QImage();   //No need to do anything else!
     if(!effect) return src;             //No need to do anything else!
@@ -2415,6 +2398,7 @@ QImage paintform::applyEffectToImage(QImage src, QGraphicsEffect *effect, int ex
 }
 
 void paintform::filtering_puzzle(QGraphicsView* gv, QPixmap pm, int grade)
+// filtering (blurring) puzzles in game mode
 {
     QGraphicsBlurEffect *blur = new QGraphicsBlurEffect;
     if (attent_modulaion)
@@ -2436,6 +2420,7 @@ void paintform::filtering_puzzle(QGraphicsView* gv, QPixmap pm, int grade)
 }
 
 void paintform::filteringmain_ingame(int grade)
+// // filtering (blurring) main puzzle in game mode
 {
     QGraphicsBlurEffect *blur = new QGraphicsBlurEffect;
     if (attent_modulaion)
@@ -2463,7 +2448,6 @@ void paintform::filteringmain_ingame(int grade)
         scene->addPixmap(pmain.scaled(300,200,rationmode,Qt::SmoothTransformation));
     else
         scene->addPixmap(pmain.scaled(1500,800,rationmode,Qt::SmoothTransformation));
-
 }
 
 void paintform::filtering_allpuzzles(int grade)
@@ -2487,7 +2471,7 @@ void paintform::filtering_allpuzzles(int grade)
     }
 }
 
-void paintform::startround()
+void paintform::startround()  // start new round of game
 {
     randompics();
 
@@ -2503,9 +2487,11 @@ void paintform::startround()
     iota(randnums.begin(), randnums.end(), 0);
     random_shuffle(randnums.begin(), randnums.end());
 
+    // define indexes of puzzles with the same pic
     int picn1 = randnums[0];
     int picn2 = randnums[1];        
 
+    // define index of pic for these puzzles
     int puzzlepic1 = randnumb[16];
 
     if ((picn1==14) || (picn2==14))
@@ -2518,7 +2504,6 @@ void paintform::startround()
         qim.load(filename);
         scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
     }
-
 
     switch (picn1)
     {
@@ -2713,26 +2698,26 @@ void paintform::startround()
     pw->letsplay();
 }
 
-void paintform::setbackimageoverlay(QPixmap pmg)
+void paintform::setbackimage(QPixmap pm) // set back image from Pixmap (MindPlay / MindOCV image)
 {
-    mainpic = pmg;
-    pmain = pmg;
-    qim = pmg.toImage();
-   // currimglist[14]=filename;
+    pmain=pm;
+    qim=pm.toImage();
     backloaded = true;
-    if (scene->drawflow)
+    if (!scene->drawflow)
     {
-        scene->bkgndimg = pmg;
+        scene->clear();
+        scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
+    }
+    else
+    {
+        scene->bkgndimg=pm;
         qpr.setBrush(QPalette::Background, scene->bkgndimg.scaled(this->size(),rationmode,Qt::SmoothTransformation));
         this->setPalette(qpr);
-        scene->clear();
-        this->repaint();
-    } else
-        scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
-
+    }
 }
 
 void paintform::adaptivespinrate(bool fl)
+// set spinbox back yellow for adaptive intervals (invoked from MindPlay)
 {
     if (fl)
         ui->spinBox_7->setStyleSheet("QSpinBox { background-color: yellow; }");
@@ -2740,7 +2725,7 @@ void paintform::adaptivespinrate(bool fl)
         ui->spinBox_7->setStyleSheet("QSpinBox { background-color: white; }");
 }
 
-void paintform::setbackimageocv(QString filename)
+void paintform::setbackimageocv(QString filename) // set back image from left panel click
 {
     mainpic.load(filename);
     pmain.load(filename);
@@ -2767,44 +2752,8 @@ void paintform::setbackimageocv(QString filename)
 
 }
 
-void paintform::setbackimage(QPixmap pm)
+void paintform::grabpuzzles() // make puzzles from single image
 {
-    pmain=pm;
-    qim=pm.toImage();    
-    backloaded = true;
-    if (!scene->drawflow)
-    {
-        scene->clear();
-        scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
-    }
-    else
-    {
-        scene->bkgndimg=pm;
-        qpr.setBrush(QPalette::Background, scene->bkgndimg.scaled(this->size(),rationmode,Qt::SmoothTransformation));
-        this->setPalette(qpr);
-    }
-}
-
-void paintform::fitView()
-{
-  //  QRectF rect = QRectF(1,1, ui->graphicsView->width()-2, ui->graphicsView->height()-2); // 0,0,-2,-2
-  //  ui->graphicsView->fitInView(rect, rationmode);
- //   ui->graphicsView->setSceneRect(rect);
-   // qDebug()<<scene->itemsBoundingRect().width();
-}
-
-
-void paintform::on_checkBox_clicked()
-{
-    if (!ui->checkBox->isChecked())
-        scene->randcolor=false;
-    else
-        scene->randcolor=true;
-}
-
-void paintform::grabpuzzles()
-{
-  //  if ((!puzzlemode) && (!pmain.isNull()))
     {
         onepicarr[0] = ui->graphicsView->grab(QRect(0,0,300,200));
         onepicarr[1] = ui->graphicsView->grab(QRect(300,0,300,200));
@@ -2823,19 +2772,55 @@ void paintform::grabpuzzles()
         onepicarr[14] = ui->graphicsView->grab(QRect(1200,400,300,200));
         puzzlegrabed=true;
     }
-    //    if (puzzlemode)
-     //   {
-      //      scene->addPixmap(onepicarr[14]);
-      //      scene->paintf->repaint();
-     //   }
 }
 
-void paintform::on_pushButton_clicked()
+void paintform::puzzle_onepic_switch()
+// switch of central puzzle / main pic and hide/show all other puzzles
+{
+    if (puzzlemode)
+    {
+        if (flowmode)
+        {
+            scene->clear();
+            scene->addPixmap(onepicarr[7]);
+        }
+        ui->graphicsView->setGeometry(650,250,300,200);
+    }
+    else
+        ui->graphicsView->setGeometry(50,50,1500,800);
+
+    if (!flowmode)
+        scene->addPixmap(mainpic.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
+
+    ui->graphicsView_2->setVisible(puzzlemode);
+    ui->graphicsView_3->setVisible(puzzlemode);
+    ui->graphicsView_4->setVisible(puzzlemode);
+    ui->graphicsView_5->setVisible(puzzlemode);
+    ui->graphicsView_6->setVisible(puzzlemode);
+    ui->graphicsView_7->setVisible(puzzlemode);
+    ui->graphicsView_8->setVisible(puzzlemode);
+    ui->graphicsView_9->setVisible(puzzlemode);
+    ui->graphicsView_10->setVisible(puzzlemode);
+    ui->graphicsView_11->setVisible(puzzlemode);
+    ui->graphicsView_12->setVisible(puzzlemode);
+    ui->graphicsView_13->setVisible(puzzlemode);
+    ui->graphicsView_14->setVisible(puzzlemode);
+    ui->graphicsView_15->setVisible(puzzlemode);
+}
+
+void paintform::delay(int temp)
+{
+    QTime dieTime = QTime::currentTime().addMSecs(temp);
+    while (QTime::currentTime() < dieTime)
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
+}
+
+// processing ui
+
+void paintform::on_pushButton_clicked() // load clean main pic (not filtered and without drawing)
 {
     if (!pmain.isNull())
-    {
-     //   scene->addPixmap(pm.scaledToWidth(ui->graphicsView->width()));
-      //  scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
+    {     
         if (!scene->drawflow)
         {            
             pmain = mainpic.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation);
@@ -2860,17 +2845,7 @@ void paintform::on_pushButton_clicked()
   //  }
 }
 
-int paintform::getgraphicview_width()
-{
-    return ui->graphicsView->width();
-}
-
-int paintform::getgraphicview_height()
-{
-    return ui->graphicsView->height();
-}
-
-void paintform::on_pushButton_2_clicked()
+void paintform::on_pushButton_2_clicked() // load main image from file
 {
     QString filename=QFileDialog::getOpenFileName(this,tr("Open File"),"D://","Images (*.png *.bmp *.jpg)");
     if (filename!="")
@@ -2889,9 +2864,6 @@ void paintform::on_pushButton_2_clicked()
             this->repaint();
         } else
             scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
-
-       // if (puzzlemode)
-       //     randompics();
     }
 }
 
@@ -2905,28 +2877,12 @@ void paintform::on_spinBox_2_valueChanged(int arg1)
     pensize=arg1;
 }
 
-void paintform::delay(int temp)
+void paintform::on_pushButton_3_clicked()  // choice of pen color
 {
-    QTime dieTime = QTime::currentTime().addMSecs(temp);
-    while (QTime::currentTime() < dieTime)
-        QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
+    scene->fxcolor = QColorDialog::getColor(Qt::green, this, "Select Color", QColorDialog::DontUseNativeDialog);   
 }
 
-void paintform::on_pushButton_3_clicked()
-{
-    scene->fxcolor = QColorDialog::getColor(Qt::green, this, "Select Color", QColorDialog::DontUseNativeDialog);
-
-    //scene->clearlast();
-    //scene->drawline();
-   // int t=0;
-  //  while (t<200)
-   // {
-   //     QCursor::setPos(500, 100 + t);
-    //    delay(10);
-   //     t++;
-   // }
-}
-
+// save previous image for cancel last drawing action
 void paintform::getimg1()
 {
     prevpic=ui->graphicsView->grab();
@@ -2939,7 +2895,7 @@ void paintform::getimg2()
         pmain=curpic;
 }
 
-void paintform::on_pushButton_4_clicked()
+void paintform::on_pushButton_4_clicked() // save image to file
 {
     QString fileName=QFileDialog::getSaveFileName(this, "Save image", QCoreApplication::applicationDirPath(), "BMP Files (*.bmp);;JPEG (*.JPEG);;PNG (*.png)" );
     if (!fileName.isNull())
@@ -2947,6 +2903,14 @@ void paintform::on_pushButton_4_clicked()
         QPixmap pixMap = this->ui->graphicsView->grab();
         pixMap.save(fileName);
     }
+}
+
+void paintform::on_checkBox_clicked()
+{
+    if (!ui->checkBox->isChecked())
+        scene->randcolor=false;
+    else
+        scene->randcolor=true;
 }
 
 void paintform::on_checkBox_2_clicked()
@@ -2981,7 +2945,7 @@ void paintform::on_radioButton_3_clicked()
     scene->randfixcolor=false;
 }
 
-void paintform::on_pushButton_5_clicked()
+void paintform::on_pushButton_5_clicked() // restore last image (cancel last drawing)
 {
     if (!prevpic.isNull())
         scene->addPixmap(prevpic.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
@@ -2995,7 +2959,7 @@ void paintform::on_checkBox_3_clicked()
         erasepen=true;
 }
 
-void paintform::on_checkBox_4_clicked()
+void paintform::on_checkBox_4_clicked() // drawing on horizontal line
 {
     if (!ui->checkBox_5->isChecked())
     {
@@ -3014,7 +2978,7 @@ void paintform::on_checkBox_4_clicked()
     }
 }
 
-void paintform::on_checkBox_5_clicked()
+void paintform::on_checkBox_5_clicked()  // drawing on vertical line
 {
     if (!ui->checkBox_4->isChecked())
     {
@@ -3034,11 +2998,13 @@ void paintform::on_checkBox_5_clicked()
 }
 
 void paintform::on_checkBox_6_clicked()
+// brain filtering mode: attention determines blurring effect
+// and flow parameters (number of puzzles for change and delay)
 {
     bfiltmode=!bfiltmode;    
 }
 
-void paintform::on_pushButton_6_clicked()
+void paintform::on_pushButton_6_clicked() // set main pic as random from folder
 {
     int rimg = qrand() % imglist.length();
     QString filename=folderpath+"/"+imglist.at(rimg);
@@ -3064,45 +3030,12 @@ void paintform::on_pushButton_6_clicked()
 }
 
 void paintform::on_checkBox_7_clicked()
+// attention modulation for paintScene (if on - modulates amplitude of brain waves with drawing)
 {
     scene->attmodul=!scene->attmodul;
-
 }
 
-void paintform::puzzle_onepic_switch()
-{
-    if (puzzlemode)
-    {
-        if (flowmode)
-        {
-            scene->clear();
-            scene->addPixmap(onepicarr[7]);
-        }
-        ui->graphicsView->setGeometry(650,250,300,200);
-    }
-    else
-        ui->graphicsView->setGeometry(50,50,1500,800);
-
-    if (!flowmode)
-        scene->addPixmap(mainpic.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
-
-    ui->graphicsView_2->setVisible(puzzlemode);
-    ui->graphicsView_3->setVisible(puzzlemode);
-    ui->graphicsView_4->setVisible(puzzlemode);
-    ui->graphicsView_5->setVisible(puzzlemode);
-    ui->graphicsView_6->setVisible(puzzlemode);
-    ui->graphicsView_7->setVisible(puzzlemode);
-    ui->graphicsView_8->setVisible(puzzlemode);
-    ui->graphicsView_9->setVisible(puzzlemode);
-    ui->graphicsView_10->setVisible(puzzlemode);
-    ui->graphicsView_11->setVisible(puzzlemode);
-    ui->graphicsView_12->setVisible(puzzlemode);
-    ui->graphicsView_13->setVisible(puzzlemode);
-    ui->graphicsView_14->setVisible(puzzlemode);
-    ui->graphicsView_15->setVisible(puzzlemode);
-}
-
-void paintform::on_checkBox_8_clicked()
+void paintform::on_checkBox_8_clicked()  // puzzle mode on / off
 {
     puzzlemode=!puzzlemode;
 
@@ -3128,12 +3061,12 @@ void paintform::on_checkBox_8_clicked()
     }
 }
 
-void paintform::on_pushButton_7_clicked()
+void paintform::on_pushButton_7_clicked()   // load random pics in puzzles
 {
     randompics();
 }
 
-void paintform::on_checkBox_9_clicked()
+void paintform::on_checkBox_9_clicked()     // fix/unfix main pic for change by attention > border
 {
     fixedmain=!fixedmain;
 }
@@ -3143,7 +3076,7 @@ void paintform::tpicschangeUpdate()
     randompics();
 }
 
-void paintform::on_spinBox_3_valueChanged(int arg1)
+void paintform::on_spinBox_3_valueChanged(int arg1)   // rate / delay of puzzle change flow
 {
     if (puzzlemode)
     {
@@ -3152,7 +3085,7 @@ void paintform::on_spinBox_3_valueChanged(int arg1)
     }
 }
 
-void paintform::on_checkBox_10_clicked()
+void paintform::on_checkBox_10_clicked()    // changing pics in puzzles
 {
     changingpics=!changingpics;
     ui->checkBox_13->setEnabled(!changingpics);
@@ -3164,7 +3097,7 @@ void paintform::on_checkBox_10_clicked()
         tpicschange->stop();
 }
 
-void paintform::on_pushButton_8_clicked()
+void paintform::on_pushButton_8_clicked()   // make icons for puzzles from raw images
 {
     fd.setPath(folderpath);
     fd.entryList(QStringList() << "*.jpg" << "*.JPG",QDir::Files);
@@ -3183,7 +3116,7 @@ void paintform::on_pushButton_8_clicked()
     }
 }
 
-void paintform::on_radioButton_4_clicked()
+void paintform::on_radioButton_4_clicked()  // attention modulation
 {
     ui->radioButton_5->setStyleSheet("QRadioButton { color : black; }");
     ui->label_24->setVisible(false);
@@ -3192,7 +3125,7 @@ void paintform::on_radioButton_4_clicked()
     attent_modulaion=true;
  }
 
-void paintform::on_radioButton_5_clicked()
+void paintform::on_radioButton_5_clicked()  // meditation modulation
 {
     ui->radioButton_4->setStyleSheet("QRadioButton { color : black; }");
     ui->label_23->setVisible(false);
@@ -3201,7 +3134,7 @@ void paintform::on_radioButton_5_clicked()
     attent_modulaion=false;
 }
 
-void paintform::on_checkBox_11_clicked()
+void paintform::on_checkBox_11_clicked()    // changing only limit number of puzzles
 {
     limitpicschange=!limitpicschange;
 }
@@ -3221,13 +3154,13 @@ void paintform::on_comboBox_currentIndexChanged(int index)
         rationmode=Qt::KeepAspectRatioByExpanding;
 }
 
-void paintform::on_checkBox_12_clicked()
+void paintform::on_checkBox_12_clicked()    // hide / show plots
 {
      ui->widget_2->setVisible(ui->checkBox_12->isChecked());
      ui->widget->setVisible(ui->checkBox_12->isChecked());
 }
 
-void paintform::on_checkBox_13_clicked()
+void paintform::on_checkBox_13_clicked()    // start / stop game mode
 {
     gamemode = !gamemode;
     prevpict = -1;
@@ -3249,6 +3182,7 @@ void paintform::on_checkBox_13_clicked()
 }
 
 void paintform::on_checkBox_14_clicked()
+// mode for drawing by contours: firstly line is drawn by mouse, then it fills by brain waves amplitude
 {
     scene->drawcontours=!scene->drawcontours;
 }
@@ -3261,7 +3195,7 @@ void paintform::on_radioButton_6_clicked()
     scene->randfixcolor=true;
 }
 
-void paintform::on_checkBox_15_clicked()
+void paintform::on_checkBox_15_clicked()    // music activation (from MindPlay) by border
 {
     if (musicactiv)
     {
@@ -3291,6 +3225,7 @@ void paintform::on_verticalSlider_2_sliderMoved(int position)
 }
 
 void paintform::setsoundtype(int index)
+// update sound samples set label in combobox (invoked from MindPlay)
 {
     if (index==0)
         ui->comboBox_2->setCurrentIndex(0);
@@ -3301,6 +3236,7 @@ void paintform::setsoundtype(int index)
 }
 
 void paintform::on_comboBox_2_currentIndexChanged(int index)
+// change sound samples set (tankdrum1 / tankdrum2 / spacedrum)
 {
     if (pw->start)
     {
@@ -3313,7 +3249,7 @@ void paintform::on_comboBox_2_currentIndexChanged(int index)
     }
 }
 
-void paintform::on_pushButton_9_clicked()
+void paintform::on_pushButton_9_clicked()   // transfer main pic to MindPlay and switch to MindPlay
 {
     if (puzzlemode)    
         pixMap = mainpic;        
@@ -3333,7 +3269,7 @@ void paintform::on_spinBox_6_valueChanged(int arg1)
     borderpicchange=arg1;
 }
 
-void paintform::on_checkBox_16_clicked()
+void paintform::on_checkBox_16_clicked() // activate puzzle flow (puzzle gathering)
 {
     if (!puzzlemode)
     {
@@ -3377,7 +3313,10 @@ void paintform::on_checkBox_16_clicked()
             ui->graphicsView->setGeometry(50,50,1500,800);       
         ui->graphicsView->repaint();
     }
-//    pw->bfiltmode=bfiltmode;
+    // make attention modulated interval in MindPlay
+    // to have sound duration synchronized with delay for puzzle change
+    pw->attention_interval = flowmode;
+    adaptivespinrate(flowmode);
 }
 
 void paintform::on_checkBox_17_clicked()
@@ -3385,7 +3324,7 @@ void paintform::on_checkBox_17_clicked()
     collectiveflow=!collectiveflow;
 }
 
-void paintform::on_pushButton_10_clicked()
+void paintform::on_pushButton_10_clicked() // set new pictures folder
 {
     QString filePath=QFileDialog::getExistingDirectory(this, "Get Any Folder", "D://");    
     if (filePath!="")
@@ -3397,7 +3336,7 @@ void paintform::on_pushButton_10_clicked()
     }
 }
 
-void paintform::on_checkBox_19_clicked()
+void paintform::on_checkBox_19_clicked() // adaptive border for music activation
 {
     music_adaptive_bord=!music_adaptive_bord;
     ui->verticalSlider_2->setEnabled(!music_adaptive_bord);
@@ -3405,6 +3344,7 @@ void paintform::on_checkBox_19_clicked()
 }
 
 void paintform::on_checkBox_20_clicked()
+// spaced mode: main pic is filling as the whole form background image
 {    
     scene->drawflow=!scene->drawflow;
     if (iconsready)
@@ -3431,7 +3371,7 @@ void paintform::on_checkBox_20_clicked()
     }
 }
 
-void paintform::on_checkBox_21_clicked()
+void paintform::on_checkBox_21_clicked()  // mode for autonomous drawing (currently removed)
 {
     spacedflow=!spacedflow;
     if (spacedflow)
@@ -3440,7 +3380,7 @@ void paintform::on_checkBox_21_clicked()
         scene->tim->stop();
 }
 
-void paintform::on_checkBox_18_clicked()
+void paintform::on_checkBox_18_clicked()    // grab flow from MindPlay
 {
     grabmindplayflow=!grabmindplayflow;
     if (grabmindplayflow)
@@ -3459,7 +3399,7 @@ void paintform::on_checkBox_18_clicked()
     }
 }
 
-void paintform::on_pushButton_11_clicked()
+void paintform::on_pushButton_11_clicked() // load empty white main image
 {
     pmain.load(":/pics/pics/empty.jpg");
     mainpic.load(":/pics/pics/empty.jpg");
@@ -3467,7 +3407,7 @@ void paintform::on_pushButton_11_clicked()
     scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
 }
 
-void paintform::on_pushButton_12_clicked()
+void paintform::on_pushButton_12_clicked()  // transfer current main pic to MindOCV
 {
     if (mww->opencvstart)
     {
@@ -3481,7 +3421,7 @@ void paintform::on_pushButton_12_clicked()
     }
 }
 
-void paintform::on_spinBox_7_valueChanged(int arg1)
+void paintform::on_spinBox_7_valueChanged(int arg1) // change length of interval in MindPlay
 {
     pw->updateimlength(arg1);
 }
