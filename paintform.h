@@ -58,8 +58,9 @@ public:
     QVector<double> delta_arr, theta_arr, alpha_arr, beta_arr, gamma_arr, hgamma_arr;
     vector<int> puzzlelocs, randpuzzlelocs, sortpuzzlelocs, randnumb;
     QPixmap pm, pmg, pmain, prevpic, curpic, pmtemp, mainpic, pixMap; QImage qim;
+    QFutureWatcher<QImage> *imageScaling;
     QVector<QPixmap> pmarray;
-    QVector<QPixmap> onepicarr;
+    QVector<QPixmap> onepicarr;    
     int* currentindexes;
 
     QPolygonF plane; int poltypearr[108]; int centercoord[108][2];  // polygons variables (experimental mode, not finished)
@@ -94,7 +95,6 @@ public:
     void setflowspace(int t);
     bool getattentmode();
     void updatefreqarrs(double deltat, double thetat, double alphat, double betat, double gammat, double hgammat);
-    void wheelEvent(QWheelEvent *event);    
 
     QImage applyEffectToImage(QImage src, QGraphicsEffect *effect, int extent);
     void filtering_puzzle(QGraphicsView *gv, QPixmap pm, int grade);
@@ -113,6 +113,7 @@ public:
     void grabpuzzles();
     void matchpuzzle();
     void loadempty();
+    void updatemusicmode(bool fl);
     void setsoundtype(int index);
     double getestattval();
     void update_estrate(int t);
@@ -125,6 +126,9 @@ public:
 
     ~paintform();
 
+public slots:
+    void addScaledImage(int num);
+    void scalingFinished();
 
 private slots:
 
@@ -227,6 +231,8 @@ private slots:
     void on_pushButton_12_clicked();
 
     void on_spinBox_7_valueChanged(int arg1);
+
+    void on_checkBox_22_clicked();
 
 private:
     Ui::paintform *ui;

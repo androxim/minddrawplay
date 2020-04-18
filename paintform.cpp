@@ -10,6 +10,7 @@
 #include <QPixmap>
 #include <QLabel>
 #include "random"
+#include <QtConcurrent>
 
 // TO DO:
 // adaptive border for puzzle change
@@ -49,7 +50,7 @@ paintform::paintform(QWidget *parent) :
     prevpuzzle = -1;             // previous puzzle number with puzzle clicks
     prevpict = -1;               // previous pictures index with puzzle clicks
     picsforchange = 4;           // default value for number of puzzles changing in flow mode or around main pic
-    eegsize = 2; pensize = 3;    // parameters for brain waves drawing
+    eegsize = 1; pensize = 2;    // parameters for brain waves drawing
     soundborderlevel = 80;       // border for playing tones from MindPlay by attention / meditation > border
     borderpicchange = 75;        // border for changing back image by attention / meditation > border
     numsamples = 0;              // number of samples in attention / meditation arrays / plot
@@ -150,7 +151,10 @@ void paintform::init_brainwaves_arrays()
 
 void paintform::configure_ui() // configure ui elements
 {
-    ui->radioButton_6->setChecked(true);
+    ui->radioButton->setChecked(scene->randcolor);
+    ui->radioButton_2->setChecked(scene->fixcolor);
+    ui->radioButton_3->setChecked(scene->freqcolor);
+    ui->radioButton_6->setChecked(scene->randfixcolor);
     ui->checkBox_16->setEnabled(false);
     ui->checkBox_9->setChecked(true);
     ui->checkBox_17->setEnabled(false);
@@ -185,10 +189,10 @@ void paintform::configure_ui() // configure ui elements
     ui->pushButton_10->setGeometry(1410,900,100,20);
     ui->checkBox_11->setGeometry(1310,929,120,20);
     ui->spinBox_4->setGeometry(1410,929,35,20);
-    ui->pushButton_7->setEnabled(false);
+    ui->pushButton_7->setEnabled(false);    
+    ui->checkBox_22->setGeometry(1452,920,95,20);
     ui->comboBox->setGeometry(1420,900,130,25);
     ui->comboBox->setVisible(false);
-    ui->label_6->setGeometry(1455,920,80,20);
     ui->comboBox_2->setGeometry(1450,940,100,20);
     ui->checkBox->setGeometry(550,860,110,20);
     ui->checkBox_2->setGeometry(550,880,110,20);
@@ -217,6 +221,7 @@ void paintform::configure_ui() // configure ui elements
     ui->checkBox_5->setGeometry(400,905,120,20);
     ui->checkBox_5->setVisible(false);
     ui->checkBox_3->setGeometry(80,858,120,20);
+    ui->spinBox_5->setValue(soundborderlevel);
 
     ui->widget->setGeometry(50,656,740,195);
     ui->widget->setVisible(true);
@@ -226,6 +231,14 @@ void paintform::configure_ui() // configure ui elements
     ui->widget_2->rescaleAxes();
     ui->widget->yAxis->setLabel("%");
     ui->widget->rescaleAxes();
+
+    sp1.setColor(QPalette::Window, Qt::white);
+    sp1.setColor(QPalette::WindowText, Qt::red);
+    sp2.setColor(QPalette::Window, Qt::white);
+    sp2.setColor(QPalette::WindowText, Qt::darkGreen);
+
+    ui->progressBar->setGeometry(700,26,236,20);
+    ui->progressBar->setPalette(sp1);
 
     ui->checkBox_6->setGeometry(80,883,140,20);
     ui->checkBox_7->setGeometry(80,908,140,20);
@@ -241,6 +254,10 @@ void paintform::configure_ui() // configure ui elements
     ui->checkBox_8->setChecked(puzzlemode);
     ui->checkBox_13->setEnabled(false);
     ui->checkBox_11->setEnabled(false);
+
+    ui->horizontalSlider_2->setGeometry(700,26,160,20);
+    ui->horizontalSlider_2->setValue(80);
+    ui->horizontalSlider_2->setVisible(false);
 
     ui->widget->xAxis->setRange(0,32);
     ui->widget->yAxis->setRange(0,101);
@@ -324,12 +341,7 @@ void paintform::configure_ui() // configure ui elements
 
     ui->widget->setAttribute(Qt::WA_TranslucentBackground,true);
     ui->widget->setWindowOpacity(0.5);
-    ui->widget_2->replot();
-
-    sp1.setColor(QPalette::Window, Qt::white);
-    sp1.setColor(QPalette::WindowText, Qt::red);
-    sp2.setColor(QPalette::Window, Qt::white);
-    sp2.setColor(QPalette::WindowText, Qt::darkGreen);
+    ui->widget_2->replot();  
 
     ui->label_23->setGeometry(50,25,181,26);
     ui->label_23->setPalette(sp1);
@@ -429,6 +441,7 @@ void paintform::graphicsviews_init() // initialize puzzles graphicsview geometry
     scene->setSceneRect(ui->graphicsView->rect());
     ui->graphicsView->setScene(scene);
     scene2 = new QGraphicsScene();
+    scene2->setSceneRect(ui->graphicsView_2->rect());
     ui->graphicsView_2->setScene(scene2);
     scene3 = new QGraphicsScene();
     scene3->setSceneRect(ui->graphicsView_3->rect());
@@ -660,7 +673,7 @@ void paintform::updatefreqarrs(double deltat, double thetat, double alphat, doub
     if (pw->imlength>=256)
         pointsfor_estattention = 5;     // estimation based on last [ >= 2.5] sec
     else
-        pointsfor_estattention = 12;    // estimation based on last [ >= 1.4] sec
+        pointsfor_estattention = 10;    // estimation based on last [ >= 1.4] sec
 
     if (numfrsamples<pointsfor_estattention)
         estattn=(1-thetat/betat)*100;
@@ -679,6 +692,13 @@ void paintform::updatefreqarrs(double deltat, double thetat, double alphat, doub
     if (estattn>100) estattn=100;
     estatt_arr[numfrsamples]=estattn;    
     fxc[numfrsamples]=numfrsamples;
+
+    if (gamemode)
+    {
+        ui->verticalSlider->setValue((int)estattn);
+        ui->label_5->setText(QString::number((int)estattn)+"%");
+        ui->label_23->setText("ATTENTION: "+QString::number((int)estattn)+"%");
+    }
 
   /*  if ((bfiltmode) || (!canpuzzlechange)) // if estimated attention is used for flow parameters
     {
@@ -707,28 +727,46 @@ void paintform::loadempty() // load empty white main image
     scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
 }
 
-void paintform::initpics() // make puzzles from images
+void paintform::addScaledImage(int num) // add rescaled image
 {
-    QString filename;
-    QPixmap temp;
-    ui->graphicsView_2->setVisible(true);
-    if ((puzzlemode) && (setloaded))
-        temp = ui->graphicsView_2->grab(ui->graphicsView_2->sceneRect().toRect());
-    for (int i=0; i<imglist.length(); i++)
-    {
-        filename=folderpath+"/"+imglist.at(i);
-        pm.load(filename); 
-        ui->graphicsView_2->scene()->clear();  
-        ui->graphicsView_2->scene()->addPixmap(pm.scaled(puzzlew,puzzleh,rationmode,Qt::SmoothTransformation));       
-        pmarray[i] = ui->graphicsView_2->grab(ui->graphicsView_2->sceneRect().toRect());
-    }
-    iconsready=true;
-    firstpuzzle=true;
-    ui->graphicsView_2->scene()->clear();
-    if ((puzzlemode) && (setloaded))
-        ui->graphicsView_2->scene()->addPixmap(temp.scaled(puzzlew,puzzleh,rationmode,Qt::SmoothTransformation));
+    pmarray[num]=QPixmap::fromImage(imageScaling->resultAt(num));
+}
+
+void paintform::scalingFinished()  // when all rescaling through QtConcurrent is finished
+{
+    iconsready = true;
+    firstpuzzle = true;
+    ui->spinBox_3->setMinimum(100);
     if (!puzzlemode)
-        ui->graphicsView_2->setVisible(false);
+    {
+        ui->checkBox_16->setEnabled(true);
+        ui->checkBox_17->setEnabled(true);
+        ui->checkBox_8->setEnabled(true);
+    }
+}
+
+void paintform::initpics() // make puzzles from images
+{                    
+    imageScaling = new QFutureWatcher<QImage>(this);    // rescaling images, making icons
+    connect(imageScaling, &QFutureWatcher<QImage>::resultReadyAt, this, &paintform::addScaledImage);
+    connect(imageScaling, &QFutureWatcher<QImage>::finished, this, &paintform::scalingFinished);
+
+    QString fpath = folderpath;
+    std::function<QImage(const QString&)> rescale = [fpath](const QString &imageFileName)
+    {
+        QString picst = fpath+"/"+imageFileName;
+        Mat tempimg = imread(picst.toStdString());
+        Mat dstr, temp;
+        Size size(300,200);
+        cv::resize(tempimg,dstr,size);
+        cvtColor(dstr, temp, COLOR_BGR2RGB);
+        QImage dest((const uchar *) temp.data, temp.cols, temp.rows, temp.step, QImage::Format_RGB888);
+        dest.bits();
+        return dest;
+        //  QImage image(picst);  // ~ 2 times slower
+        //  return image.scaled(QSize(imageSize, imageSize), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    };
+    imageScaling->setFuture(QtConcurrent::mapped(imglist, rescale));
 }
 
 void paintform::updateattentionplot(int t) // update attention (values from EEG device) array and plot
@@ -764,60 +802,63 @@ void paintform::updateattention(int t) // update attention dependent variables
         scene->drawrate=80-t;       // contour mode drawing rate
         if (scene->drawrate<5)
             scene->drawrate=5;
-        scene->tim->setInterval(scene->drawrate);
-        ui->verticalSlider->setValue(t);
+        scene->tim->setInterval(scene->drawrate);        
 
-       if ((bfiltmode) || (!canpuzzlechange))
-       {
-           setdflowtime(t);
-           setflowspace(t);
-       }
+        if ((bfiltmode) || (!canpuzzlechange))
+        {
+            setdflowtime(t);
+            setflowspace(t);
+        }
 
-       if ((numsamples-laststop>lenofinterval) && (music_adaptive_bord))
-       // adaptive border for music activation
-       {
-           avgv = 0;
-           for (int i = numsamples-lenofinterval; i<numsamples; i++)
-               avgv+=attent_arr[i];
-           avgv/=lenofinterval;
-           if (avgv<95)
-               soundborderlevel=avgv;
-           else
-               soundborderlevel=99;
-           laststop=numsamples;
-           ui->verticalSlider_2->setValue(soundborderlevel);
-           ui->spinBox_5->setValue(soundborderlevel);
-       }
+        if ((numsamples-laststop>lenofinterval) && (music_adaptive_bord))
+        // adaptive border for music activation
+        {
+            avgv = 0;
+            for (int i = numsamples-lenofinterval; i<numsamples; i++)
+                avgv+=attent_arr[i];
+            avgv/=lenofinterval;
+            if (avgv<95)
+                soundborderlevel=avgv;
+            else
+                soundborderlevel=99;
+            laststop=numsamples;
+            ui->verticalSlider_2->setValue(soundborderlevel);
+            ui->spinBox_5->setValue(soundborderlevel);
+        }
 
-       if (musicactiv)
-       {
-           if (t>soundborderlevel)
-           {
-               pw->brainflow_on=true;
-               pw->musicmode_on=true;
-               mypen = ui->widget->graph(2)->pen();
-               mypen.setWidth(3);
-               ui->widget->graph(2)->setPen(mypen);
-           } else
-           {
-               mypen.setWidth(1);
-               ui->widget->graph(2)->setPen(mypen);
-               ui->widget->graph(2)->pen().setWidth(1);
-               pw->brainflow_on=false;
-               pw->musicmode_on=false;
-           }
-       }
+        if (musicactiv)
+        {
+            if (t>soundborderlevel)
+            {
+                pw->brainflow_on=true;
+                pw->musicmode_on=true;
+                mypen = ui->widget->graph(2)->pen();
+                mypen.setWidth(3);
+                ui->widget->graph(2)->setPen(mypen);
+            } else
+            {
+                mypen.setWidth(1);
+                ui->widget->graph(2)->setPen(mypen);
+                ui->widget->graph(2)->pen().setWidth(1);
+                pw->brainflow_on=false;
+                pw->musicmode_on=false;
+            }
+        }
 
-       ui->label_23->setStyleSheet("QLabel { color : red; }");
-       ui->radioButton_4->setStyleSheet("QRadioButton { color : red; }");
+        ui->label_23->setStyleSheet("QLabel { color : red; }");
+        ui->radioButton_4->setStyleSheet("QRadioButton { color : red; }");
 
-       ui->label_5->setText(QString::number(t)+"%");
-       ui->label_23->setText("ATTENTION: "+QString::number(t)+"%");
+        if (!gamemode)
+        {
+            ui->verticalSlider->setValue(t);
+            ui->label_5->setText(QString::number(t)+"%");
+            ui->label_23->setText("ATTENTION: "+QString::number(t)+"%");
+        }
 
-       // change of back image randomly by attention > border
-       if ((!fixedmain) && (!flowmode) && (!gamemode) && (t>borderpicchange) && (bfiltmode))
-           on_pushButton_6_clicked();
-    }
+        // change of back image randomly by attention > border
+        if ((!fixedmain) && (!flowmode) && (!gamemode) && (t>borderpicchange) && (bfiltmode))
+            on_pushButton_6_clicked();
+     }
 
   //  scene->clear();
  //   scene->drawpolygon(scene->attentt/10,700,400,scene->meditt,0.5);
@@ -1159,7 +1200,7 @@ void paintform::updateset_fillcorrectpuzzles()
             if (collectiveflow)
             // in collective flow - all correct fragments (free of overlay) are colorized in the same way
             {
-                pmtemp = scene->filterpuzzle(onepicarr[0],scene->attentt,theta_arr[numsamples-1],beta_arr[numsamples-1],gamma_arr[numsamples-1],alpha_arr[numsamples-1]);
+                pmtemp = scene->filterpuzzle(onepicarr[0],scene->attentt);
                 ui->graphicsView_6->scene()->addPixmap(pmtemp.scaled(300,200));
             } else
             {
@@ -1172,7 +1213,7 @@ void paintform::updateset_fillcorrectpuzzles()
         {
             if (collectiveflow)
             {
-                pmtemp = scene->filterpuzzle(onepicarr[1],scene->attentt,theta_arr[numsamples-1],beta_arr[numsamples-1],gamma_arr[numsamples-1],alpha_arr[numsamples-1]);
+                pmtemp = scene->filterpuzzle(onepicarr[1],scene->attentt);
                 ui->graphicsView_7->scene()->addPixmap(pmtemp.scaled(300,200));
             }
             else
@@ -1186,7 +1227,7 @@ void paintform::updateset_fillcorrectpuzzles()
         {
             if (collectiveflow)
             {
-                pmtemp = scene->filterpuzzle(onepicarr[2],scene->attentt,theta_arr[numsamples-1],beta_arr[numsamples-1],gamma_arr[numsamples-1],alpha_arr[numsamples-1]);
+                pmtemp = scene->filterpuzzle(onepicarr[2],scene->attentt);
                 ui->graphicsView_8->scene()->addPixmap(pmtemp.scaled(300,200));
             }
             else
@@ -1200,7 +1241,7 @@ void paintform::updateset_fillcorrectpuzzles()
         {
             if (collectiveflow)
             {
-                pmtemp = scene->filterpuzzle(onepicarr[3],scene->attentt,theta_arr[numsamples-1],beta_arr[numsamples-1],gamma_arr[numsamples-1],alpha_arr[numsamples-1]);
+                pmtemp = scene->filterpuzzle(onepicarr[3],scene->attentt);
                 ui->graphicsView_9->scene()->addPixmap(pmtemp.scaled(300,200));
             }
             else
@@ -1214,7 +1255,7 @@ void paintform::updateset_fillcorrectpuzzles()
         {
             if (collectiveflow)
             {
-                pmtemp = scene->filterpuzzle(onepicarr[4],scene->attentt,theta_arr[numsamples-1],beta_arr[numsamples-1],gamma_arr[numsamples-1],alpha_arr[numsamples-1]);
+                pmtemp = scene->filterpuzzle(onepicarr[4],scene->attentt);
                 ui->graphicsView_10->scene()->addPixmap(pmtemp.scaled(300,200));
             }
             else
@@ -1228,7 +1269,7 @@ void paintform::updateset_fillcorrectpuzzles()
         {
             if (collectiveflow)
             {
-                pmtemp = scene->filterpuzzle(onepicarr[5],scene->attentt,theta_arr[numsamples-1],beta_arr[numsamples-1],gamma_arr[numsamples-1],alpha_arr[numsamples-1]);
+                pmtemp = scene->filterpuzzle(onepicarr[5],scene->attentt);
                 ui->graphicsView_3->scene()->addPixmap(pmtemp.scaled(300,200));
             }
             else
@@ -1242,7 +1283,7 @@ void paintform::updateset_fillcorrectpuzzles()
         {
             if (collectiveflow)
             {
-                pmtemp = scene->filterpuzzle(onepicarr[6],scene->attentt,theta_arr[numsamples-1],beta_arr[numsamples-1],gamma_arr[numsamples-1],alpha_arr[numsamples-1]);
+                pmtemp = scene->filterpuzzle(onepicarr[6],scene->attentt);
                 ui->graphicsView_2->scene()->addPixmap(pmtemp.scaled(300,200));
             }
             else
@@ -1256,7 +1297,7 @@ void paintform::updateset_fillcorrectpuzzles()
         {
             if (collectiveflow)
             {
-                pmtemp = scene->filterpuzzle(onepicarr[7],scene->attentt,theta_arr[numsamples-1],beta_arr[numsamples-1],gamma_arr[numsamples-1],alpha_arr[numsamples-1]);
+                pmtemp = scene->filterpuzzle(onepicarr[7],scene->attentt);
                 scene->addPixmap(pmtemp.scaled(300,200));
             }
             else
@@ -1270,7 +1311,7 @@ void paintform::updateset_fillcorrectpuzzles()
         {
             if (collectiveflow)
             {
-                pmtemp = scene->filterpuzzle(onepicarr[8],scene->attentt,theta_arr[numsamples-1],beta_arr[numsamples-1],gamma_arr[numsamples-1],alpha_arr[numsamples-1]);
+                pmtemp = scene->filterpuzzle(onepicarr[8],scene->attentt);
                 ui->graphicsView_4->scene()->addPixmap(pmtemp.scaled(300,200));
             }
             else
@@ -1284,7 +1325,7 @@ void paintform::updateset_fillcorrectpuzzles()
         {
             if (collectiveflow)
             {
-                pmtemp = scene->filterpuzzle(onepicarr[9],scene->attentt,theta_arr[numsamples-1],beta_arr[numsamples-1],gamma_arr[numsamples-1],alpha_arr[numsamples-1]);
+                pmtemp = scene->filterpuzzle(onepicarr[9],scene->attentt);
                 ui->graphicsView_5->scene()->addPixmap(pmtemp.scaled(300,200));
             }
             else
@@ -1298,7 +1339,7 @@ void paintform::updateset_fillcorrectpuzzles()
         {
             if (collectiveflow)
             {
-                pmtemp = scene->filterpuzzle(onepicarr[10],scene->attentt,theta_arr[numsamples-1],beta_arr[numsamples-1],gamma_arr[numsamples-1],alpha_arr[numsamples-1]);
+                pmtemp = scene->filterpuzzle(onepicarr[10],scene->attentt);
                 ui->graphicsView_11->scene()->addPixmap(pmtemp.scaled(300,200));
             }
             else
@@ -1312,7 +1353,7 @@ void paintform::updateset_fillcorrectpuzzles()
         {
             if (collectiveflow)
             {
-                pmtemp = scene->filterpuzzle(onepicarr[11],scene->attentt,theta_arr[numsamples-1],beta_arr[numsamples-1],gamma_arr[numsamples-1],alpha_arr[numsamples-1]);
+                pmtemp = scene->filterpuzzle(onepicarr[11],scene->attentt);
                 ui->graphicsView_12->scene()->addPixmap(pmtemp.scaled(300,200));
             }
             else
@@ -1326,7 +1367,7 @@ void paintform::updateset_fillcorrectpuzzles()
         {
             if (collectiveflow)
             {
-                pmtemp = scene->filterpuzzle(onepicarr[12],scene->attentt,theta_arr[numsamples-1],beta_arr[numsamples-1],gamma_arr[numsamples-1],alpha_arr[numsamples-1]);
+                pmtemp = scene->filterpuzzle(onepicarr[12],scene->attentt);
                 ui->graphicsView_13->scene()->addPixmap(pmtemp.scaled(300,200));
             }
             else
@@ -1340,7 +1381,7 @@ void paintform::updateset_fillcorrectpuzzles()
         {
             if (collectiveflow)
             {
-                pmtemp = scene->filterpuzzle(onepicarr[13],scene->attentt,theta_arr[numsamples-1],beta_arr[numsamples-1],gamma_arr[numsamples-1],alpha_arr[numsamples-1]);
+                pmtemp = scene->filterpuzzle(onepicarr[13],scene->attentt);
                 ui->graphicsView_14->scene()->addPixmap(pmtemp.scaled(300,200));
             }
             else
@@ -1354,7 +1395,7 @@ void paintform::updateset_fillcorrectpuzzles()
         {
             if (collectiveflow)
             {
-                pmtemp = scene->filterpuzzle(onepicarr[14],scene->attentt,theta_arr[numsamples-1],beta_arr[numsamples-1],gamma_arr[numsamples-1],alpha_arr[numsamples-1]);
+                pmtemp = scene->filterpuzzle(onepicarr[14],scene->attentt);
                 ui->graphicsView_15->scene()->addPixmap(pmtemp.scaled(300,200));
             }
             else
@@ -1698,7 +1739,7 @@ bool paintform::eventFilter(QObject *target, QEvent *event)  // processing key /
         }
         if (keyEvent->key() == Qt::Key_X)
         {
-            if (eegsize<12)
+            if (eegsize<40)
                 eegsize++;
             ui->spinBox->setValue(eegsize);
         }
@@ -1710,7 +1751,7 @@ bool paintform::eventFilter(QObject *target, QEvent *event)  // processing key /
         }
         if (keyEvent->key() == Qt::Key_S)
         {
-            if (pensize<50)
+            if (pensize<20)
                 pensize++;
             ui->spinBox_2->setValue(pensize);
         }
@@ -1737,6 +1778,9 @@ bool paintform::eventFilter(QObject *target, QEvent *event)  // processing key /
                 ocvfm->show();
             ocvfm->formshown = !ocvfm->formshown;
         }
+
+        if (keyEvent->key()==Qt::Key_K)     // start / stop camera input
+            pw->camerainp_on_off();
 
         if (keyEvent->key() == Qt::Key_O)  // clear all drawings
             on_pushButton_clicked();
@@ -2355,31 +2399,6 @@ bool paintform::eventFilter(QObject *target, QEvent *event)  // processing key /
     return false;
 }
 
-void paintform::wheelEvent(QWheelEvent *event) // processing mouse wheel
-{
-    QPoint numDegrees = event->angleDelta() / 8;
-
-     if (!numDegrees.isNull()) {
-        QPoint numSteps = numDegrees / 15;
-        if (erasepen)
-        {
-            if ((numSteps.ry()==1) && (pensize<29))
-                pensize+=1;
-            else if ((numSteps.ry()==-1) && (pensize>1))
-                pensize+=-1;
-        } else
-        {
-            if ((numSteps.ry()==1) && (eegsize<11))
-                eegsize+=1;
-            else if ((numSteps.ry()==-1) && (eegsize>1))
-                eegsize+=-1;
-        }
-        ui->spinBox->setValue(eegsize);
-        ui->spinBox_2->setValue(pensize);
-    }
-    event->accept();
-}
-
 QImage paintform::applyEffectToImage(QImage src, QGraphicsEffect *effect, int extent)
 // applying QGraphicsEffect to image
 {
@@ -2704,7 +2723,7 @@ void paintform::setbackimage(QPixmap pm) // set back image from Pixmap (MindPlay
     qim=pm.toImage();
     backloaded = true;
     if (!scene->drawflow)
-    {
+    {        
         scene->clear();
         scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
     }
@@ -2806,6 +2825,11 @@ void paintform::puzzle_onepic_switch()
     ui->graphicsView_13->setVisible(puzzlemode);
     ui->graphicsView_14->setVisible(puzzlemode);
     ui->graphicsView_15->setVisible(puzzlemode);
+}
+
+void paintform::updatemusicmode(bool fl) // update music mode checkBox (invoked from MindPlay)
+{
+    ui->checkBox_22->setChecked(fl);
 }
 
 void paintform::delay(int temp)
@@ -3032,7 +3056,7 @@ void paintform::on_pushButton_6_clicked() // set main pic as random from folder
 void paintform::on_checkBox_7_clicked()
 // attention modulation for paintScene (if on - modulates amplitude of brain waves with drawing)
 {
-    scene->attmodul=!scene->attmodul;
+    scene->attmodul=!scene->attmodul;  
 }
 
 void paintform::on_checkBox_8_clicked()  // puzzle mode on / off
@@ -3105,15 +3129,8 @@ void paintform::on_pushButton_8_clicked()   // make icons for puzzles from raw i
     pmarray.resize(imglist.length());
     randnumb = vector<int>(imglist.length());
     iota(randnumb.begin(), randnumb.end(), 0);
-    random_shuffle(randnumb.begin(), randnumb.end());
-    initpics();
-    ui->spinBox_3->setMinimum(100);
-    if (!puzzlemode)
-    {
-        ui->checkBox_16->setEnabled(true);
-        ui->checkBox_17->setEnabled(true);
-        ui->checkBox_8->setEnabled(true);
-    }
+    random_shuffle(randnumb.begin(), randnumb.end());    
+    initpics();      
 }
 
 void paintform::on_radioButton_4_clicked()  // attention modulation
@@ -3121,6 +3138,7 @@ void paintform::on_radioButton_4_clicked()  // attention modulation
     ui->radioButton_5->setStyleSheet("QRadioButton { color : black; }");
     ui->label_24->setVisible(false);
     ui->label_23->setVisible(true);
+    ui->progressBar->setPalette(sp1);
     pw->attention_modulation=true;
     attent_modulaion=true;
  }
@@ -3130,6 +3148,7 @@ void paintform::on_radioButton_5_clicked()  // meditation modulation
     ui->radioButton_4->setStyleSheet("QRadioButton { color : black; }");
     ui->label_23->setVisible(false);
     ui->label_24->setVisible(true);
+    ui->progressBar->setPalette(sp2);
     pw->attention_modulation=false;
     attent_modulaion=false;
 }
@@ -3258,7 +3277,7 @@ void paintform::on_pushButton_9_clicked()   // transfer main pic to MindPlay and
         pixMap = ui->graphicsView->grab();            
     else    
         pixMap = scene->bkgndimg; 
-    pw->setbackimage(pixMap);
+    pw->setbackimage(pixMap,true);
     this->hide();
     pw->show();
     pw->setFocus();
@@ -3312,7 +3331,9 @@ void paintform::on_checkBox_16_clicked() // activate puzzle flow (puzzle gatheri
         else
             ui->graphicsView->setGeometry(50,50,1500,800);       
         ui->graphicsView->repaint();
-    }
+    }    
+    ui->horizontalSlider_2->setVisible(flowmode);
+
     // make attention modulated interval in MindPlay
     // to have sound duration synchronized with delay for puzzle change
     pw->attention_interval = flowmode;
@@ -3424,4 +3445,9 @@ void paintform::on_pushButton_12_clicked()  // transfer current main pic to Mind
 void paintform::on_spinBox_7_valueChanged(int arg1) // change length of interval in MindPlay
 {
     pw->updateimlength(arg1);
+}
+
+void paintform::on_checkBox_22_clicked()
+{
+    pw->setmusicmode(ui->checkBox_22->isChecked());
 }

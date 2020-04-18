@@ -32,8 +32,10 @@
 #include "qmath.h"
 #include <QDate>
 #include "algorithm"
+#include <QtConcurrent>
 
 using namespace cv;
+using namespace cv::dnn;
 typedef std::pair<int,float> pairt;
 
 // ==== openCV functions ====
@@ -59,6 +61,7 @@ Mat waves(Rect srcRect);                // waves filter
 Mat cartoon(Rect srcRect);              // cartoonize filter
 Mat orbdetect(Rect srcRect);            // ORB features detector
 Mat mixfilt(Rect srcRect);              // mixer of pics with transparency
+Mat ripples(Rect srcRect);             // ripples effect filter
 // ==== openCV functions end ====
 
 // ==== openCV variables ====
@@ -66,8 +69,11 @@ Mat mixfilt(Rect srcRect);              // mixer of pics with transparency
 // src - main pic on which HUE change applying, chosen from left panel, more clear when attention high
 // srccopy - overlay pic, chosen from right panel, more clear when attention low
 // dst - resulting overlay pic for area filtering
-Mat src, srccopy, dst, dstcopy, prev_dst, clear_dst, img, image, dstg, edges, mask, trp, randpic;
-Mat tempimg, dstemp, dst0, srg, srct, srwt, dstt, svd_img, gray_element, element, dream0, imghist, pichist;
+Mat src, srccopy, dst, dstcopy, prev_dst, clear_dst, img, image, dstg;
+Mat edges, mask, trp, randpic, stinp, blob, stpic;
+Mat tempimg, dstemp, dst0, dst1, srg, srct, srwt, dstt, svd_img, gray_element;
+Mat element, dream0, imghist, pichist, elfont;
+vector<Mat> channels;
 int currmainpic, curroverpic, prevmainpic = -1, prevoverpic = -1;
 Rect df_srcDstRect;
 
@@ -98,7 +104,7 @@ int curr_iter = 0; // variable defines how often filter is applied during mousem
 
 // ==== SVD variables ====
 cv::SVD svdtr;
-Mat trimg[3], resimg[3];
+Mat trimg[3], resimg[3], temptrio[3];
 Mat svd_w[3], svd_u[3], svd_vt[3], svd_W[3];
 Mat t_W,t_u,t_vt;
 int svdt = 80; // number of eigen values for picture compression
@@ -119,6 +125,8 @@ QString folderpath;     // path to pictures folder
 QStringList imglist;    // list of pictures paths
 QStringList strList1;
 QStringListModel *strListM1;
+
+std::thread thr; // separate thread for making image icons for panels
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -173,11 +181,13 @@ MainWindow::MainWindow(QWidget *parent) :
     picsarr = vector<int>(imglist.length());
     ocvform->randpicn = qrand()%imglist.length();
     ui->lineEdit->setText(folderpath);
+    for (int i=0; i<imglist.length(); i++)
+        imgpaths.push_back(imglist[i]);
 
     //ocvcontrshow = true;             // if openCV filters control form shown
 
     pwstart = false;                 // MindPlay window run detector
-    paintw_started = false;                 // MindDraw window run detector
+    paintw_started = false;          // MindDraw window run detector
     opencvstart = false;             // MindOCV window run detector
     storymode = false;
 
@@ -218,15 +228,10 @@ MainWindow::MainWindow(QWidget *parent) :
     curhue = prevhue = 255;
     curoverl = prevoverl = 50;   
 
-    opencvinterval = 40;      // timer for openCV transitions in HUE, overlay flow
+    opencvinterval = 40;      // timer for key process and color-overlay flow
     picfilt = new QTimer(this);
     picfilt->connect(picfilt,SIGNAL(timeout()), this, SLOT(picfiltUpdate()));
     picfilt->setInterval(opencvinterval);    
-
-    transfert_interval = 50;      // timer for camera flow
-    cameraflow = new QTimer(this);
-    cameraflow->connect(cameraflow,SIGNAL(timeout()), this, SLOT(streamcameraflow_Update()));
-    cameraflow->setInterval(transfert_interval);
 
     dreamflow_timer = new QTimer(this);     // timer for auto dreamflow mode, when new picture appears by fragments
     dreamflow_timer->connect(dreamflow_timer,SIGNAL(timeout()), this, SLOT(dreamflow_Update()));
@@ -240,7 +245,48 @@ MainWindow::MainWindow(QWidget *parent) :
     QTime time = QTime::currentTime();
     qsrand((uint)time.msec());      
 
-    makeicons(); // function for making icons of pictures
+    connect(this,&MainWindow::histFinished,this,&MainWindow::enablenewfolder);
+
+    // making icons of pics (via QtConcurrent), computing color histogram features (in separate thread)
+    makeIconsAndHists();
+}
+
+void MainWindow::makeIconsAndHists()
+{
+    int imageSize = 138;
+
+    imgarray.resize(imglist.length());
+    imageScaling = new QFutureWatcher<QImage>(this);    // rescaling images, making icons
+    connect(imageScaling, &QFutureWatcher<QImage>::resultReadyAt, this, &MainWindow::addScaledImage);
+    connect(imageScaling, &QFutureWatcher<QImage>::finished, this, &MainWindow::scalingFinished);
+
+    std::function<QImage(const QString&)> rescale = [imageSize](const QString &imageFileName)
+    {
+        QString picst = folderpath+"/"+imageFileName;
+        Mat tempimg = imread(picst.toStdString());
+        Mat dstr, temp;
+        Size size(imageSize,imageSize);
+        cv::resize(tempimg,dstr,size);
+        cvtColor(dstr, temp, COLOR_BGR2RGB);
+        QImage dest((const uchar *) temp.data, temp.cols, temp.rows, temp.step, QImage::Format_RGB888);
+        dest.bits();
+        return dest;
+        //  QImage image(picst);  // ~ 2 times slower
+        //  return image.scaled(QSize(imageSize, imageSize), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    };
+   // time_take.start();
+    imageScaling->setFuture(QtConcurrent::mapped(imglist, rescale));
+
+    histfinished = false; // computing color histogram features in a separate thread
+    enablenewfolder();
+    thr = std::thread(&MainWindow::makeHistFeatures,this);
+    thr.detach();
+}
+
+// enable choice of new folder (if color histogram features are computed for current folder)
+void MainWindow::enablenewfolder()
+{
+    ui->pushButton_7->setEnabled(histfinished);
 }
 
 void delay(int temp)
@@ -279,6 +325,11 @@ void applyfilt(int type, Rect rt)   // choice of filter type on area around mous
         case 5:
         {
             dstt = mixfilt(rt);
+            break;
+        }
+        case 6:
+        {
+            dstt = ripples(rt);
             break;
         }
     }
@@ -359,6 +410,9 @@ void Processing() // processing of HUE, Saturation, Value changes
 
     cvtColor(img,image,COLOR_HSV2RGB);
 
+    if ((!ocvform->dreamflow) && (ocvform->showlabel))
+        sprintf(ocvform->l_str,"Attention: %d",elem4);
+
     if (!ocvform->hueonly)
     {
         if (ocvform->camerainp)  // grab input from camera as overlay (strcopy) pic
@@ -368,11 +422,27 @@ void Processing() // processing of HUE, Saturation, Value changes
             addWeighted(image, alphaval, trp, 1 - alphaval, 0, dst);
         }
         else
-            addWeighted(image, alphaval, srccopy, 1 - alphaval, 0, dst);
+            addWeighted(image, alphaval, srccopy, 1 - alphaval, 0, dst);                
+
+        if (ocvform->showlabel)
+        {
+            elfont = dst(Rect(ocvform->l_posx-5,ocvform->l_posy-60,ocvform->lw,ocvform->lh)).clone();
+            if (!ocvform->dreamflow)
+                putText(dst, ocvform->l_str, Point2f(ocvform->l_posx,ocvform->l_posy), FONT_HERSHEY_PLAIN, ocvform->lfont_scale, Scalar(0,0,255,255), ocvform->lfont_size);
+        }
+
         imshow("image", dst);
     }
     else
+    {
+        if (ocvform->showlabel)
+        {
+            elfont = image(Rect(ocvform->l_posx-5,ocvform->l_posy-60,ocvform->lw,ocvform->lh)).clone();
+            if (!ocvform->dreamflow)
+                putText(image, ocvform->l_str, Point2f(ocvform->l_posx,ocvform->l_posy), FONT_HERSHEY_PLAIN, ocvform->lfont_scale, Scalar(0,0,255,255), ocvform->lfont_size);
+        }
         imshow( "image", image );
+    }
 }
 
 void ProcessingMix() // processing of overlay changes, alphaval - transparency
@@ -398,6 +468,16 @@ void ProcessingMix() // processing of overlay changes, alphaval - transparency
         addWeighted(src, alphaval, srccopy, 1 - alphaval, 0, dst);    
     clear_dst.release();
     clear_dst = dst.clone();
+
+    if (ocvform->showlabel)
+    {
+        elfont = dst(Rect(ocvform->l_posx-5,ocvform->l_posy-60,ocvform->lw,ocvform->lh)).clone();
+        if (!ocvform->dreamflow)
+        {
+            sprintf(ocvform->l_str,"Attention: %d",elem4);
+            putText(dst, ocvform->l_str, Point2f(ocvform->l_posx,ocvform->l_posy), FONT_HERSHEY_PLAIN, ocvform->lfont_scale, Scalar(0,0,255,255), ocvform->lfont_size);
+        }
+    }
     imshow("image", dst);    
 }
 
@@ -451,7 +531,7 @@ void onMouse( int event, int x, int y, int flags, void* )   // Mouse clicks and 
 
             applyfilt(ocvform->currfilttype,srcDstRect);
 
-            Mat mask_image(dstt.size(), CV_8U, Scalar(0)); // mask to have only circle of region                        
+            Mat mask_image(dstt.size(), CV_8U, Scalar(0)); // mask to have only circle of region
             circle(mask_image, Point(mask_image.rows / 2, mask_image.cols / 2), ocvform->currfilterarea/2, CV_RGB(255, 255, 255),-1,LINE_AA);
 
             if (ocvform->currfilttype==5)
@@ -459,6 +539,7 @@ void onMouse( int event, int x, int y, int flags, void* )   // Mouse clicks and 
 
             dstt.copyTo(dst(srcDstRect),mask_image);
             imshow("image", dst);
+
             curr_iter=0;
         }
     }
@@ -472,7 +553,7 @@ void onMouse( int event, int x, int y, int flags, void* )   // Mouse clicks and 
 
         applyfilt(ocvform->currfilttype,srcDstRect);
 
-        Mat mask_image( dstt.size(), CV_8U, Scalar(0));                
+        Mat mask_image( dstt.size(), CV_8U, Scalar(0));
         circle(mask_image, Point(mask_image.rows / 2, mask_image.cols / 2), ocvform->currfilterarea/2, CV_RGB(255, 255, 255),-1,LINE_AA);
 
         prev_dst = dst.clone(); // for keeping state before last action (using in "cancel last")
@@ -481,7 +562,7 @@ void onMouse( int event, int x, int y, int flags, void* )   // Mouse clicks and 
             addWeighted(dst(srcDstRect), (double)ocvform->transp / 100, dstt, 1 - (double)ocvform->transp / 100, 0, dstt);
 
         dstt.copyTo(dst(srcDstRect),mask_image);
-        imshow("image", dst);   
+        imshow("image", dst);
     } else
     if (event == EVENT_MBUTTONDOWN)
     {
@@ -496,7 +577,7 @@ void onMouse( int event, int x, int y, int flags, void* )   // Mouse clicks and 
         rightpw->fillpics();
         QString ocvpic=folderpath+"/"+imglist.at(currmainpic);
         src = imread(ocvpic.toStdString());        
-        cv::resize(src, src, cv::Size(ocvform->picwidth,ocvform->picheight), 0, 0, cv::INTER_LINEAR);
+        cv::resize(src, src, cv::Size(ocvform->picwidth,ocvform->picheight), 0, 0, cv::INTER_NEAREST);
         if ((activeflow) && (!ocvform->hueonly))
         {
             addWeighted(src, alphaval, srccopy, 1 - alphaval, 0, dst);
@@ -544,6 +625,62 @@ void onMouse( int event, int x, int y, int flags, void* )   // Mouse clicks and 
         }
         rs->changefsize(fullscr);
     }
+}
+
+Mat ripples(Rect srcRect)  // ripples effect filter
+{
+    Mat dstg = clear_dst(srcRect).clone();
+    Mat dstw = dstg.clone();
+    Mat tt1, tt2;
+    int bshift = 2, k = 0;
+    float damping = 0.995;
+
+    dstg.convertTo(tt1, CV_32FC3);
+    split(tt1,trimg);
+    dstw.convertTo(tt2, CV_32FC3);
+    split(tt2,resimg);
+
+    while (k<3)
+    {
+        for (int t=0; t<3; t++)
+        {
+            for (int i=bshift; i<dstg.rows-bshift; i++)
+            {
+                for (int j=bshift; j<dstg.cols-bshift; j++)
+                {
+                    resimg[t].at<float>(i,j) =
+                            ( trimg[t].at<float>(i-bshift,j) + trimg[t].at<float>(i+bshift,j)  +
+                              trimg[t].at<float>(i,j-bshift) + trimg[t].at<float>(i,j+bshift) ) / 2 -
+                                resimg[t].at<float>(i,j);
+                    resimg[t].at<float>(i,j) = resimg[t].at<float>(i,j) * damping;
+                }
+            }
+        }
+
+      //  Mat mask_image(dstg.size(), CV_8U, Scalar(0));
+      //  circle(mask_image, Point(mask_image.rows / 2, mask_image.cols / 2), ocvform->currfilterarea/2, CV_RGB(255, 255, 255),-1,LINE_AA);
+      //  dst1.copyTo(dst(srcRect));
+      //  imshow("image", dst);
+
+        for (int t=0; t<3; t++)
+        {
+            temptrio[t] = resimg[t].clone();
+            resimg[t] = trimg[t].clone();
+            trimg[t] = temptrio[t].clone();
+        }
+
+      //  delay(50);
+        k++;
+    }
+
+    channels.clear();
+    channels.push_back(resimg[0]);
+    channels.push_back(resimg[1]);
+    channels.push_back(resimg[2]);
+    merge(channels, dst1);
+
+    dst1.convertTo(dst1, CV_8UC3);
+    return dst1;
 }
 
 Mat waves(Rect srcRect) // waves filter
@@ -737,7 +874,7 @@ void MainWindow::streamflows_Update() // streaming flows to MindPlay
             pm = QPixmap::fromImage(Mat2QImageRGB(dst));
         else
             pm = QPixmap::fromImage(Mat2QImageRGB(image));
-        plotw->setbackimage(pm);
+        plotw->setbackimage(pm,true);       
     }
 }
 
@@ -770,7 +907,9 @@ QString MainWindow::getimagepath(int t) // return image path for ocvcontrol form
 }
 
 void MainWindow::setdream0() // grab initial image before starting expanding mode in dreamflow
-{
+{   
+    if (ocvform->showlabel)
+        elfont.copyTo(dst(Rect(ocvform->l_posx-5,ocvform->l_posy-60,ocvform->lw,ocvform->lh)));
     dream0 = dst.clone();
 }
 
@@ -781,11 +920,11 @@ void MainWindow::setprevdfrect(int x, int y, int w, int h) // save prev expandin
 
 void MainWindow::drawwindow(int x, int y, int w, int h) // draw rect of window for expanding mode in dreamflow
 {
-    dst(df_srcDstRect).copyTo(dream0(df_srcDstRect)); // copy updated rect on image without window box
+    dst(df_srcDstRect).copyTo(dream0(df_srcDstRect)); // copy updated rect on image without window box    
     dst = dream0.clone();
-    dream0.release();
+    dream0.release();  
     dream0 = dst.clone();
-    rectangle(dst, Point(x-2,y-2), Point(x+w+2,y+h+2),ocvform->wcolor,2);
+    rectangle(dst, Point(x-2,y-2), Point(x+w+2,y+h+2),ocvform->wcolor,2);    
     imshow("image",dst);
 }
 
@@ -829,6 +968,13 @@ void MainWindow::dreamflow_Update() // timer for dreamflow mode, when new pic ap
 {
     int x,y, area;
     Rect srcDstRect;
+
+    if (ocvform->showlabel)
+    {
+        elfont.copyTo(dst(Rect(ocvform->l_posx-5,ocvform->l_posy-60,ocvform->lw,ocvform->lh)));
+        elfont.copyTo(dream0(Rect(ocvform->l_posx-5,ocvform->l_posy-60,ocvform->lw,ocvform->lh)));
+    }
+
     if (!ocvform->dropsmode)
     {
         x = ocvform->currfilterarea/2 + qrand() % (dst.cols - ocvform->currfilterarea);
@@ -859,14 +1005,15 @@ void MainWindow::dreamflow_Update() // timer for dreamflow mode, when new pic ap
     addWeighted(dst(srcDstRect), (double)ocvform->transp / 100, dstt, 1 - (double)ocvform->transp / 100, 0, dstt);
     dstt.copyTo(dst(srcDstRect),mask_image);
 
-    imshow("image", dst);   
-}
+    if (ocvform->showlabel)
+    {
+        elfont = dst(Rect(ocvform->l_posx-5,ocvform->l_posy-60,ocvform->lw,ocvform->lh)).clone();
+        sprintf(ocvform->l_str,"Attention: %d",elem4);
+        putText(dst, ocvform->l_str, Point2f(ocvform->l_posx,ocvform->l_posy), FONT_HERSHEY_PLAIN, ocvform->lfont_scale, Scalar(0,0,255,255), ocvform->lfont_size);
+        putText(dream0, ocvform->l_str, Point2f(ocvform->l_posx,ocvform->l_posy), FONT_HERSHEY_PLAIN, ocvform->lfont_scale, Scalar(0,0,255,255), ocvform->lfont_size);
+    }
 
-void MainWindow::streamcameraflow_Update() // streams pic from camera to MindPlay window
-{
-    cam>>trp;
-    QPixmap pm = QPixmap::fromImage(Mat2QImageRGB(trp));
-    plotw->setbackimage(pm);
+    imshow("image", dst);
 }
 
 inline cv::Mat QImageToCvMat( const QImage &inImage, bool inCloneImageData = true )
@@ -1009,8 +1156,9 @@ void MainWindow::printdata(QString str) // updating execution log
 
 void MainWindow::on_pushButton_clicked() // close the App
 {
+    activeflow = false;
     if (mwconnected)
-        TG_FreeConnection( connectionId );
+        TG_FreeConnection(connectionId);
     if (plotw->start)
         plotw->quitthreads();
     cv::destroyAllWindows();
@@ -1117,8 +1265,8 @@ void MainWindow::setattent(int i)
     elem4=i;           
     setTrackbarPos("Attention","image",elem4);
 
-    opencvinterval = 25;// + (100 - elem4)/2;
-    picfilt->setInterval(opencvinterval);
+    // opencvinterval = 25;// + (100 - elem4)/2;
+    //picfilt->setInterval(opencvinterval);
 
     if ((ocvform->attmodul_area) && (!activeflow))
     {
@@ -1165,7 +1313,7 @@ void MainWindow::setattent(int i)
     {
         ocvform->transp = 100 - elem4/2;
         ocvform->updateformvals();
-    }
+    }  
 }
 
 void MainWindow::setoverlay(int i)
@@ -1214,7 +1362,7 @@ void MainWindow::run_opencvform()   // MindOCV window run
 }
 
 void MainWindow::on_pushButton_6_clicked()
-{
+{  
     run_opencvform();
 }
 
@@ -1380,37 +1528,40 @@ void MainWindow::checkoverlay()
         canchangepic=true;
 }
 
-void MainWindow::makeicons() // make icons of pictures from folder
+void MainWindow::makeHistFeatures()     // computing image histogram features
 {
     QString picst;
-    imgarray.resize(imglist.length());
     for (int i=0; i<imglist.length(); i++)
     {
-        picst = folderpath+"/"+imglist.at(i);                                
+        picst = folderpath+"/"+imglist.at(i);
         tempimg = imread(picst.toStdString());
         pichist = tempimg;
         gethistfeatures();
-        Size size(138,138);        
-        cv::resize(tempimg,dstemp,size);
-        QImage qm = Mat2QImageRGB(dstemp);
-        imgarray[i]=QPixmap::fromImage(qm);      
     }
+    histfinished = true;
+    emit histFinished();
+    ocvform->histFeaturesReady = true;
+    if (opencvstart)
+        emit ocvform->flow_direction_available();
+}
 
-  /*  QFile outputFile("D:/Androxim/histfeatures.dat");
-    outputFile.open(QIODevice::WriteOnly);
-    QTextStream fout(&outputFile);
-    float tchival;
-    for (int i=0; i<imglist.length(); i++)
+void MainWindow::addScaledImage(int num) // add rescaled image
+{
+    imgarray[num]=QPixmap::fromImage(imageScaling->resultAt(num));
+}
+
+void MainWindow::scalingFinished()  // when all rescaling through QtConcurrent is finished
+{
+   // qDebug() << time_take.elapsed();
+    ui->pushButton_6->setEnabled(true);
+    if (opencvstart)
     {
-        tchival = chi2_distance(hist_features[5],hist_features[i]);
-        for (int j=0; j<hist_features[i].size(); j++)
-        {
-            fout << tchival << " ";
-            fout << hist_features[i][j] << ",";
-        }
-        fout<<endl;
+        shuffleicons(true);
+        leftpw->fillpics();
+        shuffleicons(false);
+        rightpw->fillpics();
+        ProcessingMix();
     }
-    outputFile.close(); */
 }
 
 void MainWindow::shuffleiconss(bool left) // shuffling icons by click on panels "random" button
@@ -1643,7 +1794,9 @@ void MainWindow::keys_processing()      // processing keys pressing
 {
     char key = cv::waitKey(5) % 256;
     if (key == 't') // test stuff button    
-    { }
+    {
+      //  neurostyle();
+    }
     else if (key == 'a') // save and add current overlay to pictures
     {
         save_and_add_overlaypic();
@@ -1671,12 +1824,12 @@ void MainWindow::keys_processing()      // processing keys pressing
         if (plotw->start)
         {
             QPixmap pm = QPixmap::fromImage(Mat2QImageRGB(dst));
-            plotw->setbackimage(pm);
+            plotw->setbackimage(pm,true);
         }
         if (paintw_started)
         {
             QPixmap pm = QPixmap::fromImage(Mat2QImageRGB(dst));
-            paintw->setbackimageoverlay(pm);
+            paintw->setbackimage(pm);
         }
     }
     else if (key == 'v')  // show/hide openCV filters control form
@@ -1754,6 +1907,8 @@ void MainWindow::keys_processing()      // processing keys pressing
         ocvform->plotdroprect=!ocvform->plotdroprect;
         ocvform->updateformvals();
     }
+    else if (key == '-')                        // hide / show label of attention
+        ocvform->showlabel=!ocvform->showlabel;
     else if ((key == 'z') && (!activeflow))     // change filter on the left one
     {
         if (ocvform->currfilttype==1)
@@ -1784,23 +1939,8 @@ void MainWindow::keys_processing()      // processing keys pressing
         cam.release();
         ocvform->camerainp = false;
         ocvform->updateformvals();
-    }    
-    else if ((key == '-') && (!activeflow) && (plotw->start)) // start streaming camera to MindPlay
-    {
-        if (!ocvform->camerainp)
-        {
-            cam.open(0);
-            ocvform->camerainp = true;
-        }
-        cameraflow->start();
-    }
-    else if ((key == '=') && (!activeflow) && (plotw->start)) // stop streaming camera to MindPlay
-    {
-        cameraflow->stop();
-        cam.release();
-        ocvform->camerainp = false;
-    }
-    else if ((key == '.') && (ocvform->transp>1))        // decrease transparency for mixer filter
+    }       
+    else if ((key == '.') && (ocvform->transp>1))      // decrease transparency for mixer filter
     {
         ocvform->transp--;
         ocvform->updateformvals();
@@ -1833,7 +1973,7 @@ void MainWindow::keys_processing()      // processing keys pressing
 }
 
 void MainWindow::picfiltUpdate() // function for MindOCV hue-overlay flow updates
-{        
+{
     try
     {
         keys_processing();
@@ -1885,7 +2025,13 @@ void MainWindow::on_pushButton_7_clicked()
     if (fPath!="")
     {
         setfolderpath(fPath);
-        makeicons();
+        imgarray.clear();
+
+        ui->pushButton_6->setEnabled(false);
+        ocvform->histFeaturesReady=false;
+        if (opencvstart)
+            emit ocvform->flow_direction_available();
+        makeIconsAndHists();
 
         firstrun=true;
         currmainpic = qrand() % imglist.length();
@@ -1907,12 +2053,7 @@ void MainWindow::on_pushButton_7_clicked()
         srccopy =  imread(stp.toStdString());
         cv::resize(srccopy, srccopy, cv::Size(ocvform->picwidth,ocvform->picheight), 0, 0, cv::INTER_LINEAR);
         firstrun = false;
-        defineiconsarr();
-        shuffleicons(true);
-        leftpw->fillpics();
-        shuffleicons(false);
-        rightpw->fillpics();
-        ProcessingMix();
+        defineiconsarr();       
     }
 }
 
@@ -1929,7 +2070,7 @@ void getsvdimage(int r) // get image from SVD compressed to rank r
         resimg[k]=t_u*t_W*t_vt;
     }
 
-    vector<Mat> channels;
+    channels.clear();
     channels.push_back(resimg[0]);
     channels.push_back(resimg[1]);
     channels.push_back(resimg[2]);
@@ -1960,8 +2101,8 @@ vector<float> gethistogram(Mat image, Mat maskx)
     float vranges[] = {0, 256};
     const float* ranges[] = {hranges, sranges, vranges};
     Mat hist;
-    int channels[] = {0, 1, 2};
-    cv::calcHist(&image, 1, channels,maskx,hist,3,histSize,ranges,true,false);
+    int channelst[] = {0, 1, 2};
+    cv::calcHist(&image, 1, channelst,maskx,hist,3,histSize,ranges,true,false);
     cv::normalize(hist, hist, 1, 0, NORM_L2, -1, Mat());
     hist = hist.reshape(0,1);
     vector<float> arr;
