@@ -17,6 +17,9 @@
 #include "rawsignal.h"
 #include "soundplayer.h"
 #include "filters.h"
+#include "opencv2/core.hpp"
+#include "opencv2/opencv.hpp"
+#include "opencv2/imgproc.hpp"
 
 #define NMAX 15360 // max length of single EEG line, 15360: 30 sec for 512 sampling rate
 
@@ -63,25 +66,26 @@ public:
     QPixmap* pmvr; QPainter* ptr;
     QGraphicsPixmapItem itemforfilt;
     QGraphicsScene sceneforfilt;
-    QImage resforfilt;
+    QImage resforfilt;    
 
     QPixmap pm, pmx, backimg;
     QPalette sp1, sp2;
     QImage QM, qbim1, qbim2;
     qreal volume;
     QVector<double> eegdata[20];
+    QVector<int> delta_vals, theta_vals, alpha_vals, beta_vals, gamma_vals;
 
     double** rawdata; int* indexes; int* tvals;
-    int srfr, numst, nums, imlength, stlength, drawshift, graphcount, scaletimeout, tonedelay;
-    int stepsPerPress, tonenumbers, maxtones, chorddelay, mxttimeout, curmodval;
+    int srfr, numst, imlength, stlength, drawshift, graphcount, scaletimeout, tonedelay;
+    int stepsPerPress, tonenumbers, maxtones, chorddelay, mxttimeout, curmodval, nums;
     int counter, stims, recparts, chnums, sampleblock, sourcech, picchangeborder;
     int simsrfr, maxtonerepeats, memorylength, attent, minvolumebord, meditt;
     int maxshown_eeglines, xraw, delta, theta, alpha, beta, gamma, hgamma;
     double meandelta, meantheta, meanalpha, meanbeta, meangamma, meanhgamma;
-    int sdelta, stheta, salpha, sbeta, sgamma, shgamma;
+    int sdelta, stheta, salpha, sbeta, sgamma, shgamma, points_for_mean;
     int tv1, tv2, tv3, tv4, tv5, tv6, tv7, tv8, tv9, tv10;
+    int pushshift, psleep, camera_interval;
     int lcutoff, hcutoff, butterord;
-    int pushshift, psleep;
     int nextdrawshift;
     int tonescheck;
 
@@ -91,7 +95,7 @@ public:
     bool usefiltering, musicmode_on, flowblinking, scalechange;
     bool spacemode, tank1mode, tank2mode, recordstarted, antirepeat, randmxt;       
     bool mindwstart, fftfreqs, attention_volume, keys_emulated, simeeg;
-    bool tunemode, paintfstart, rawsignalabove;
+    bool tunemode, paintfstart, rawsignalabove, camerainp;
 
     QString tank1[10] = {"b","B","g","G","d","D","E","C","f#","a"};
     QString tank2[10] = {"c#","C#","b","B","f#","F#","g#","G#","d#","D#"};
@@ -105,10 +109,11 @@ public:
     QTimer* mxttim;   
     QTimer* neuro_neMehanika_camera;
     QTimer* neuro_neMehanika_colors;    
+    QTimer* camerainput; cv::VideoCapture camera; cv::Mat trp;
     QTimer* tn1;  QTimer* tn2;  QTimer* tn3;  QTimer* tn4;  QTimer* tn5;
     QTimer* tn6;  QTimer* tn7;  QTimer* tn8;  QTimer* tn9;  QTimer* tn10;
     QThread* tr1; QTimer* tryplay;
-    coords arrc;            
+    coords arrc;
 
     explicit plotwindow(QWidget *parent = 0);    
     ~plotwindow();    
@@ -127,14 +132,18 @@ public:
     void playspace(QString tonesset);
     void randomtone();
     void letsplay();
+    QPixmap grabmindplay();
     void init_timersinthread();
 
     void setpicfolder(QString fp);
     void savescaletofile(QString fname);
     void loadscalefromfile(QString fname);
     void setrandomscale();
+    void setmusicmode(bool fl);
     void update_intervals_spinboxes();
     void print_tones(QString str);
+    void musicmode_on_off();
+    void camerainp_on_off();
     void update_brainexp_levels(int d, int md, int t, int mt, int a, int ma, int b, int mb, int g, int mg);
 
     void pushleft();
@@ -170,7 +179,7 @@ public:
 
     QImage applyEffectToImage(QImage src, QGraphicsEffect *effect, int extent);
     void applyfilteronback();
-    void setbackimage(QPixmap pm);
+    void setbackimage(QPixmap pm, bool saveback);
     void setbackimg_fromleftpanel(QString fpath);
     void updateimlength(int t);
     void playtones();
@@ -181,6 +190,8 @@ private slots:
     void scaletimerUpdate();
 
     void mxttimerUpdate();
+
+    void camerainput_Update();
 
     void neuro_neMeh_camera_update();
 

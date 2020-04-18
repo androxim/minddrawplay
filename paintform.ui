@@ -87,7 +87,7 @@
     <number>1</number>
    </property>
    <property name="maximum">
-    <number>12</number>
+    <number>40</number>
    </property>
   </widget>
   <widget class="QLabel" name="label">
@@ -830,7 +830,7 @@
     <number>99</number>
    </property>
    <property name="value">
-    <number>85</number>
+    <number>80</number>
    </property>
   </widget>
   <widget class="QSlider" name="verticalSlider_2">
@@ -1045,19 +1045,6 @@
     <string>to MindOCV</string>
    </property>
   </widget>
-  <widget class="QLabel" name="label_6">
-   <property name="geometry">
-    <rect>
-     <x>830</x>
-     <y>720</y>
-     <width>71</width>
-     <height>20</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>sound mode</string>
-   </property>
-  </widget>
   <widget class="QLabel" name="label_8">
    <property name="geometry">
     <rect>
@@ -1091,6 +1078,79 @@
    </property>
    <property name="value">
     <number>500</number>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="checkBox_22">
+   <property name="geometry">
+    <rect>
+     <x>810</x>
+     <y>720</y>
+     <width>91</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>music mode</string>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+  </widget>
+  <widget class="QProgressBar" name="progressBar">
+   <property name="geometry">
+    <rect>
+     <x>340</x>
+     <y>680</y>
+     <width>151</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>14</pointsize>
+     <weight>75</weight>
+     <bold>true</bold>
+    </font>
+   </property>
+   <property name="minimum">
+    <number>0</number>
+   </property>
+   <property name="value">
+    <number>77</number>
+   </property>
+   <property name="textVisible">
+    <bool>true</bool>
+   </property>
+   <property name="orientation">
+    <enum>Qt::Horizontal</enum>
+   </property>
+   <property name="invertedAppearance">
+    <bool>false</bool>
+   </property>
+   <property name="textDirection">
+    <enum>QProgressBar::TopToBottom</enum>
+   </property>
+  </widget>
+  <widget class="QSlider" name="horizontalSlider_2">
+   <property name="geometry">
+    <rect>
+     <x>340</x>
+     <y>730</y>
+     <width>101</width>
+     <height>19</height>
+    </rect>
+   </property>
+   <property name="minimum">
+    <number>5</number>
+   </property>
+   <property name="maximum">
+    <number>100</number>
+   </property>
+   <property name="value">
+    <number>80</number>
+   </property>
+   <property name="orientation">
+    <enum>Qt::Horizontal</enum>
    </property>
   </widget>
   <zorder>pushButton_5</zorder>
@@ -1167,9 +1227,11 @@
   <zorder>checkBox_18</zorder>
   <zorder>pushButton_11</zorder>
   <zorder>pushButton_12</zorder>
-  <zorder>label_6</zorder>
   <zorder>label_8</zorder>
   <zorder>spinBox_7</zorder>
+  <zorder>checkBox_22</zorder>
+  <zorder>progressBar</zorder>
+  <zorder>horizontalSlider_2</zorder>
  </widget>
  <customwidgets>
   <customwidget>
@@ -1180,7 +1242,24 @@
   </customwidget>
  </customwidgets>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>verticalSlider</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>progressBar</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>496</x>
+     <y>673</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>412</x>
+     <y>695</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
  <buttongroups>
   <buttongroup name="buttonGroup"/>
  </buttongroups>

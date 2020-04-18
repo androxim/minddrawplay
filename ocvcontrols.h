@@ -23,10 +23,13 @@ class ocvcontrols : public QWidget
     Q_OBJECT
 
 public:
-    bool camerainp = false; bool drawbrushcontour = true; bool formshown = true;
+    bool formshown = true;
+    bool camerainp = false;
+    bool drawbrushcontour = true;
+    bool histFeaturesReady = false;
     QPoint currmousepos;
     int picwidth = 2000, picheight = 1125;
-    int currfilterarea = 250, currfilterrate = 12, currfilttype = 5, totalfilts = 5;    
+    int currfilterarea = 250, currfilterrate = 12, currfilttype = 5, totalfilts = 5;
     int sigma_color = 25, sigma_space = 50, kernel_s = 5;                              // cartoonize params
     int wave_freqs = 42, wave_amp = 9;                                                 // waves params
     int dilation_size = 1, dilation_elem = 2;                                          // dilate params
@@ -41,20 +44,28 @@ public:
     int firstdrop_size = 30; bool plotdroprect = true; bool drops_byatt = false;       // mixer params
     bool poly_by_att = true; int pointsinpoly = 3; bool seed_frommousepos = false;     // mixer params
     bool attmodul_area = false; bool attent_modulated_dreams = false;    // attention modulated filter area and rate of dreamflow
-    bool hueonly = false; bool transp_by_att = false;                    // hue only, without overlay; transparency by attention
+    bool hueonly = false; bool transp_by_att = false;                    // hue only, without overlay; transparency by attention    
+    bool directionswitch_by_att = false;    
+    bool showlabel = false; char l_str[50];  // attention label parameters
+    int l_posx = 1500, l_posy = 80, lfont_scale = 4, lfont_size = 5, lw = 484, lh = 80;
     int flowdirection = 0; Mat randpic; int allngb = 30, ngbarea = 20; // area of neighbours for nearest / farest pic
     // 0: "random" - next pic is randomly from all, 1: "similar" - from N nearest, -1: "opposite" - from N farest
-    bool directionswitch_by_att = false;
 
     leftpanel* leftpan;
     MainWindow* mww;
     void updateformvals();
     void changerandpic();
     void setcurrdream(int t);
-    void stopdreamflow();
+    void stopdreamflow();    
     void setcameracheckbox(bool fl);
     explicit ocvcontrols(QWidget *parent = 0);
     ~ocvcontrols();
+
+signals:
+    flow_direction_available();
+
+public slots:
+    void set_flow_direction_available();
 
 private slots:
 

@@ -23,6 +23,7 @@
 #include <bits/stdc++.h>
 #include <windows.h>
 #include "QThread"
+#include <numeric>
 
 
 const complex<double> I(0.0,1.0);
@@ -37,8 +38,8 @@ plotwindow::plotwindow(QWidget *parent) :
     tank1mode = false; tank2mode = true; spacemode = false;  // different sets of sound samples
     hidebutt = false; antirepeat = true; // hiding tones buttons, flag for tones antirepeat
 
-    nums = 0; // total number of processed intervals
     numst = 8; // number of intervals in one EEG flow line
+    points_for_mean = 60; // number of intervals for estimation of mean brain waves expressions
     imlength = 256; srfr = 512; // length of single EEG interval, sampling rate
     maxtonerepeats = 0; memorylength = 2; // max number of tones repeat in last [memorylength] tones
     drawshift = -150; graphcount = 0; // shift of brain waves flow lines, number of brain waves lines
@@ -72,6 +73,7 @@ plotwindow::plotwindow(QWidget *parent) :
     adaptivenumparts = true; // attention / meditation modulated number of intervals in flow line
     filteringback = false; // filter background image
     fixback = true; // fix background image independently of attention values
+    camerainp = false; // camera input for background
 
     strLstM2 = new QStringListModel();      // list of determined tones
     strLstM2->setStringList(strLst2);
@@ -112,16 +114,21 @@ plotwindow::plotwindow(QWidget *parent) :
     mxttim->connect(mxttim, SIGNAL(timeout()), this, SLOT(mxttimerUpdate()));
     mxttim->setInterval(mxttimeout*1000);
 
+    camera_interval = 50;
+    camerainput = new QTimer(this); // timer for camera input
+    camerainput->connect(camerainput,SIGNAL(timeout()), this, SLOT(camerainput_Update()));
+    camerainput->setInterval(camera_interval);
+
     // emulation of some controls on neMehanika interactive animations: www.nemehanika.ru
     neuro_neMehanika_camera = new QTimer(this); // timer for neMehanika animation camera control
     neuro_neMehanika_camera->connect(neuro_neMehanika_camera,SIGNAL(timeout()), this, SLOT(neuro_neMeh_camera_update()));
     neuro_neMehanika_camera->setInterval(500);
-   // neuro_neMehanika_camera->start();
+    // neuro_neMehanika_camera->start();
     keys_emulated = false; // flag for keybord press emulation for neMehanika controls (KEY_Q/KEY_E)
     neuro_neMehanika_colors = new QTimer(this); // timer for neMehanika animation colors change
     neuro_neMehanika_colors->connect(neuro_neMehanika_colors,SIGNAL(timeout()), this, SLOT(neuro_neMeh_colors_update()));
     neuro_neMehanika_colors->setInterval(200);
-   // neuro_neMehanika_colors->start();
+    // neuro_neMehanika_colors->start();
 
     tonescheck = 20; // interval for determining tones from brain waves expression
     init_timersinthread(); // init timers in separate threads for tones determining    
@@ -146,7 +153,7 @@ plotwindow::plotwindow(QWidget *parent) :
     resforfilt=QImage(QSize(1500, 800), QImage::Format_ARGB32);
     ptr = new QPainter(&resforfilt);
 
-    splayer.init(); // initialization of sound player: tones and play slots in separate threads
+    splayer.init(); // initialization of sound player: tones and play slots in separate threads           
 }
 
 plotwindow::~plotwindow()
@@ -238,6 +245,9 @@ void plotwindow::doplot() // configure ui elements
     ui->label_24->setGeometry(350,20,181,26);
     ui->label_24->setVisible(false);
     ui->progressBar->setGeometry(700,26,236,20);
+    ui->horizontalSlider_2->setGeometry(700,26,160,20);
+    ui->horizontalSlider_2->setValue(picchangeborder);
+    ui->horizontalSlider_2->setVisible(false);
     ui->progressBar->setPalette(sp1);
 
     ui->checkBox->setGeometry(100,950,131,20);
@@ -702,7 +712,7 @@ bool plotwindow::eventFilter(QObject *target, QEvent *event)
         if (keyEvent->key() == Qt::Key_P)       // fix current brain waves flow plot (doesn't stop flow)
         {
             QPixmap pmx = ui->widget->grab();
-            setbackimage(pmx);
+            setbackimage(pmx,true);
         }
 
         if ((keyEvent->key() == Qt::Key_N) && (opencvstart))  // hide/show MindOCV controls form
@@ -718,6 +728,9 @@ bool plotwindow::eventFilter(QObject *target, QEvent *event)
             ui->widget->axisRect()->setRangeZoom(Qt::Horizontal);        
         if (keyEvent->key()==Qt::Key_Alt)         // switch to vertical zoom with mouse wheel
             ui->widget->axisRect()->setRangeZoom(Qt::Vertical);
+
+        if (keyEvent->key()==Qt::Key_K)     // start / stop camera input
+            camerainp_on_off();
 
         // tones play by keys
         if (keyEvent->key()==Qt::Key_B)
@@ -797,6 +810,40 @@ bool plotwindow::eventFilter(QObject *target, QEvent *event)
         pressedKeys -= ((QKeyEvent*)event)->key();
     }
     return false;
+}
+
+QImage Mat2QImagRGB(cv::Mat const& srct)
+{
+     cv::Mat temp;
+     cvtColor(srct, temp, COLOR_BGR2RGB);
+     QImage dest((const uchar *) temp.data, temp.cols, temp.rows, temp.step, QImage::Format_RGB888);
+     dest.bits(); // enforce deep copy
+     return dest;
+}
+
+void plotwindow::camerainp_on_off() // turn on-off camera input
+{
+    if (!camerainp)
+    {
+        camera.open(0);
+        camerainp = true;
+        camerainput->start();
+    }
+    else
+    {
+        camera.release();
+        camerainp = false;
+        camerainput->stop();
+    }
+}
+
+void plotwindow::camerainput_Update() // processing camera input
+{
+    camera >> trp;
+    QPixmap pm = QPixmap::fromImage(Mat2QImagRGB(trp));
+    setbackimage(pm,false);
+    if (paintfstart)
+        paintf->setbackimage(ui->widget->grab());
 }
 
 void plotwindow::print_tones(QString str)  // update list of played tones
@@ -954,11 +1001,16 @@ void plotwindow::setbackimg_fromleftpanel(QString fpath)  // set back image from
         backimageloaded=true;
 }
 
-void plotwindow::setbackimage(QPixmap pm) // set background image
+void plotwindow::setbackimage(QPixmap pm, bool saveback) // set background image
 {
-    backimageloaded=true;
-    backimg=pm;
-    ui->widget->setBackground(backimg,true,Qt::IgnoreAspectRatio);
+    if (saveback)
+    {
+        backimageloaded=true;
+        backimg=pm;
+        ui->widget->setBackground(backimg,true,Qt::IgnoreAspectRatio);
+    }
+    else
+        ui->widget->setBackground(pm,true,Qt::IgnoreAspectRatio);
     ui->widget->xAxis->grid()->setVisible(false);
     ui->widget->yAxis->grid()->setVisible(false);
     ui->widget->replot();
@@ -978,7 +1030,7 @@ void plotwindow::applyfilteronback()    // apply blurring or/and colorize effect
         colorizep = new QGraphicsColorizeEffect;
         // colorize->setColor(QColor(pw->alpha*5,256-pw->beta*5,256-pw->gamma*6,pw->meditt*2));
         colorizep->setColor(QColor(beta*4,theta*4,alpha*4,meditt*2));
-        colorizep->setStrength((double)attent/70);
+        colorizep->setStrength((double)attent/100);
     }
 
     QM = backimg.toImage();
@@ -986,7 +1038,7 @@ void plotwindow::applyfilteronback()    // apply blurring or/and colorize effect
     if (blurback)
     {
         blurp = new QGraphicsBlurEffect;
-        blurp->setBlurRadius((100-attent)/10);
+        blurp->setBlurRadius((100-attent)/8);
         qbim1 = applyEffectToImage(QM, blurp, 0);
     }
 
@@ -1522,17 +1574,37 @@ void plotwindow::analyse_interval() // main function for processing interval of 
     determine_brainwaves_expression();
 
     if ((brainflow_on) || (musicmode_on)) // update mean values of brain waves expression
-    {        
-        nums++;
-        sdelta+=delta; meandelta=(double)sdelta/nums;
-        stheta+=theta; meantheta=(double)stheta/nums;
-        salpha+=alpha; meanalpha=(double)salpha/nums;
-        sbeta+=beta; meanbeta=(double)sbeta/nums;
-        sgamma+=gamma; meangamma=(double)sgamma/nums;
-        shgamma+=hgamma; meanhgamma=(double)shgamma/nums;
+    {                
+        if (delta_vals.size() > points_for_mean-1)
+        {
+            delta_vals.pop_front();
+            theta_vals.pop_front();
+            alpha_vals.pop_front();
+            beta_vals.pop_front();
+            gamma_vals.pop_front();
+        }
+
+        delta_vals.push_back(delta);
+        theta_vals.push_back(theta);
+        alpha_vals.push_back(alpha);
+        beta_vals.push_back(beta);
+        gamma_vals.push_back(gamma);
+
+        sdelta = accumulate(delta_vals.begin(), delta_vals.end(), 0);
+        stheta = accumulate(theta_vals.begin(), theta_vals.end(), 0);
+        salpha = accumulate(alpha_vals.begin(), alpha_vals.end(), 0);
+        sbeta = accumulate(beta_vals.begin(), beta_vals.end(), 0);
+        sgamma = accumulate(gamma_vals.begin(), gamma_vals.end(), 0);
+
+        nums = delta_vals.size();
+        meandelta=(double)sdelta/nums;
+        meantheta=(double)stheta/nums;
+        meanalpha=(double)salpha/nums;
+        meanbeta=(double)sbeta/nums;
+        meangamma=(double)sgamma/nums;
     }
 
-    if ((filteringback) && (colorizeback) && (!backimg.isNull())) // filtering back image
+    if (((filteringback) || (colorizeback) || (blurback)) && (!backimg.isNull())) // filtering back image
         applyfilteronback();
 
     if (paintfstart) // update brain waves expression arrays and plot in MindDraw
@@ -1592,6 +1664,11 @@ void plotwindow::letsplay() // playing of tones
         playtank2(tones);
     else
         playspace(tones);
+}
+
+QPixmap plotwindow::grabmindplay() // grab current flow pic (invoked for camera overlay from MindOCV)
+{
+    return ui->widget->grab();
 }
 
 void plotwindow::scaletimerUpdate() // timer updating scale (deviation parameters) randomly
@@ -1968,6 +2045,52 @@ void plotwindow::playspace(QString tonesset) // playing of space drum Dmin tones
     }
 }
 
+void plotwindow::musicmode_on_off() // music mode on / off and change corresponded ui
+{
+    if (!ui->checkBox_4->isChecked())
+    {
+        musicmode_on=false;
+        ui->checkBox_5->setVisible(false);
+        ui->pushButton_7->setVisible(false);
+        ui->pushButton_8->setVisible(false);
+        ui->pushButton_9->setVisible(false);
+        ui->pushButton_10->setVisible(false);
+        ui->pushButton_11->setVisible(false);
+        ui->pushButton_12->setVisible(false);
+        ui->pushButton_13->setVisible(false);
+        ui->pushButton_14->setVisible(false);
+        ui->pushButton_15->setVisible(false);
+        ui->pushButton_16->setVisible(false);
+    } else
+    {
+        if (delta_vals.size()>0)
+            musicmode_on=true;
+        ui->checkBox_5->setVisible(true);
+        if (!ui->checkBox_5->isChecked())
+        {
+            ui->pushButton_7->setVisible(true);
+            ui->pushButton_8->setVisible(true);
+            ui->pushButton_9->setVisible(true);
+            ui->pushButton_10->setVisible(true);
+            ui->pushButton_11->setVisible(true);
+            ui->pushButton_12->setVisible(true);
+            ui->pushButton_13->setVisible(true);
+            if ((tank1mode) || (tank2mode))
+            {
+                ui->pushButton_14->setVisible(true);
+                ui->pushButton_16->setVisible(true);
+            }
+            ui->pushButton_15->setVisible(true);
+        }
+    }
+}
+
+void plotwindow::setmusicmode(bool fl) // set music mode and update corresponded checkBox (invoked from MindDraw)
+{
+    ui->checkBox_4->setChecked(fl);
+    musicmode_on_off();
+}
+
 void plotwindow::pushleft()     // emulate left_key press
 {
     INPUT ip;
@@ -2090,43 +2213,8 @@ void plotwindow::on_pushButton_4_clicked()
 
 void plotwindow::on_checkBox_4_clicked()    // music mode on / off
 {
-    if (!ui->checkBox_4->isChecked())
-    {
-        musicmode_on=false;
-        ui->checkBox_5->setVisible(false);
-        ui->pushButton_7->setVisible(false);
-        ui->pushButton_8->setVisible(false);
-        ui->pushButton_9->setVisible(false);
-        ui->pushButton_10->setVisible(false);
-        ui->pushButton_11->setVisible(false);
-        ui->pushButton_12->setVisible(false);
-        ui->pushButton_13->setVisible(false);
-        ui->pushButton_14->setVisible(false);
-        ui->pushButton_15->setVisible(false);
-        ui->pushButton_16->setVisible(false);
-    } else
-    {
-        if (nums>0)
-            musicmode_on=true;
-        ui->checkBox_5->setVisible(true);
-        if (!ui->checkBox_5->isChecked())
-        {
-            ui->pushButton_7->setVisible(true);
-            ui->pushButton_8->setVisible(true);
-            ui->pushButton_9->setVisible(true);
-            ui->pushButton_10->setVisible(true);
-            ui->pushButton_11->setVisible(true);
-            ui->pushButton_12->setVisible(true);
-            ui->pushButton_13->setVisible(true);
-            if ((tank1mode) || (tank2mode))
-            {
-                ui->pushButton_14->setVisible(true);
-                ui->pushButton_16->setVisible(true);
-            }
-            ui->pushButton_15->setVisible(true);
-        }
-    }
-
+    musicmode_on_off();
+    paintf->updatemusicmode(ui->checkBox_4->isChecked());
 }
 
 void plotwindow::on_spinBox_7_valueChanged(int arg1) // number of intervals in line
@@ -2716,6 +2804,7 @@ void plotwindow::on_spinBox_22_valueChanged(int arg1)
 void plotwindow::on_checkBox_13_clicked() // fix back image on / off (with attention > border)
 {
     fixback=!fixback;
+    ui->horizontalSlider_2->setVisible(!fixback);
 }
 
 void plotwindow::on_pushButton_25_clicked() // restore unfiltered back image

@@ -31,7 +31,11 @@ ocvcontrols::ocvcontrols(QWidget *parent) :
 
     ui->spinBox_16->setStyleSheet("QSpinBox { background-color: yellow; }");      
 
+    ui->comboBox->setEnabled(histFeaturesReady);
+    connect(this,&ocvcontrols::flow_direction_available,this,&ocvcontrols::set_flow_direction_available);
+
     updateformvals();
+
    // setAttribute(Qt::WA_TranslucentBackground,true);
    // setWindowOpacity(0.95);
    // ui->tabWidget->setAutoFillBackground(true);
@@ -301,6 +305,11 @@ void ocvcontrols::stopdreamflow()
     }
     on_checkBox_5_clicked();
     ui->checkBox_5->setChecked(false);
+}
+
+void ocvcontrols::set_flow_direction_available()
+{
+    ui->comboBox->setEnabled(histFeaturesReady);
 }
 
 void ocvcontrols::setcameracheckbox(bool fl)

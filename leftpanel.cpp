@@ -160,18 +160,16 @@ leftpanel::~leftpanel()
 
 void leftpanel::on_pushButton_2_clicked()
 {
-    if (currpos<imgnumber-6)
-    {
-        currpos++;
-        fillpics();
-    }
+    currpos=imgnumber-6;
+    fillpics();
 }
 
 void leftpanel::on_pushButton_3_clicked()
 {
-    if (currpos>0)
+   // if (currpos>0)
     {
-        currpos--;
+       // currpos--;
+        currpos = 0;
         fillpics();;
     }
 }

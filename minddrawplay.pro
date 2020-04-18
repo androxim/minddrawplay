@@ -1,6 +1,7 @@
 QT += core gui \
       widgets  \
-      multimedia
+      multimedia \
+      concurrent
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
 

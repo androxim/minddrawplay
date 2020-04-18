@@ -12,74 +12,73 @@
 // 2. drawing continuos structure with complexity dependent on attention
 
 paintScene::paintScene(QObject *parent) : QGraphicsScene(parent)
-{
-    qDeleteAll(this->items());
-    pos=0;
-    t0=0;
-    freqcolor = false;
-    randcolor = false;
-    drawbpoints = false;
-    startedline = false;
-    drawcontours = false;
-    randfixcolor = true;
-    attentt = 0;
-    fxcolor="orange";
-    linecoords = new QPointF[2000];
+{    
+    t0=0;   // normalized amplitude of raw brain signal for drawing lines with mouse move
+    freqcolor = true;           // frequency dependent color
+    randcolor = false;          // random color on each point
+    randfixcolor = false;       // random color on each new line
+    drawcontours = false;       // draw on contours
+    drawbpoints = false;        // draw by points
+    startedline = false;        // flag if current drawing line is started
+    timeoff = true;             // if timer for drawing on contours is off
+    drawflow = false;           // drawing in flow (experimental mode)
+    fxcolor = "orange";         // default fixed color
+
+    // vector for drawing by contours (firstly draw line, then it's filled with brain waves projection)
     linesarr.resize(1000);
-    linelengths = new int[1000];
-    colorize = new QGraphicsColorizeEffect;
-    blur = new QGraphicsBlurEffect;
+    linecoords = new QPointF[2000];  // array of points for each line
+    linelengths = new int[1000];     // array of number of points in each line
     for (int i=0; i<1000; i++)
     {
         linesarr[i] = new QPointF[1000];
         linelengths[i] = 0;
-    }
-    currlinenum = -1;
-    currlinedraw = 0;
-    timeoff = true;
-    angles = new int[5000];
-    pointnum = 0; currnumpoint = 0;
-    curx = 600; cury=900;
-    drawrate = 5;
-    randfixcolor = true;
-    previousPoint.setX(curx);
-    previousPoint.setY(cury-2);
+    }    
+    currlinenum = -1;           // number of current line
+    currlinedraw = 0;           // number of line which is drawing currently
+    currnumpoint = 0;           // current point number in contour filling with brain waves
+    pointnum = 0;               // current point number in contour drawing
+    drawrate = 5;               // delay for drawing in contour mode
+    tim = new QTimer(this);     // timer for drawing in contour mode
+    tim->connect(tim, SIGNAL(timeout()), this, SLOT(timerUpdate()));
+    tim->setInterval(drawrate);
+
+    // initialization of variables for image filtering
+    colorize = new QGraphicsColorizeEffect;
+    blur = new QGraphicsBlurEffect;
     sceneforfilt.addItem(&itemforfilt);
     resforfilt=QImage(QSize(1500, 800), QImage::Format_ARGB32);
     ptr = new QPainter(&resforfilt);
-    pmv = new QPixmap();
-    drawflow=false;
-    //resforfilt.load("D:/PICS/881.jpg");
-    //pm = new QPixmap(NULL);
-  //  colorize = new QGraphicsColorizeEffect;
-  //  blur = new QGraphicsBlurEffect;
-  //  qApp->installEventFilter(this);
+    pmv = new QPixmap();    
 }
 
 void paintScene::init(plotwindow* pww, MainWindow* mw)
 {
-    pw=pww;
-    mww=mw;
-    mww->paintw_started=true;  
-    startedline=false;
-    attmodul=false;
-    horizline=false; vertline=false;
-    counter=1; length=512; sumd=0; t0=0;
-    data = new int[length];
-    tim = new QTimer(this);
-    tim->connect(tim, SIGNAL(timeout()), this, SLOT(timerUpdate()));
-    rc=0; gc=0; bc=0; ac=255;
-    tx=0; ty=-1; xv=1;
-    tim->setInterval(drawrate);
-  //  tim->start();
+    pw = pww;                       // connect pointer to MindPlay window
+    mww = mw;                       // connect pointer to MainWindow
+    mww->paintw_started = true;     // update MainWindow flag
+    startedline = false;            // flag if line for drawing is started
+    attmodul = false;               // attention modulated amplitude
+    horizline = false;              // drawing along horizontal line
+    vertline = false;               // drawing along vertical line
+    counter = 1;                    // number of processed points in EEG interval
+    length = 512;                   // length of EEG interval
+    sumd = 0; t0 = 0;               // sum of EEG data, mean-normalized raw signal
+    rc=0; gc=0; bc=0; ac=255;       // color components
+    attentt = 0;                    // attention value
+    curx = 600; cury = 900;         // current X,Y coordinates
+    previousPoint.setX(curx);       // previous X
+    previousPoint.setY(cury-2);     // previous Y
+
+    // values for experimental drawing mode
+    tx = 0; ty = -1; xv = 1;
+
 }
 
 QImage paintScene::applyEffectToImage(QImage src, QGraphicsEffect *effect, int extent)
 {
-    if(src.isNull()) return QImage();   //No need to do anything else!
-    if(!effect) return src;             //No need to do anything else!    
-    if (!pmv->isNull())
-        delete pmv;    
+    if(src.isNull()) return QImage();
+    if(!effect) return src;
+    delete pmv;
     pmv = new QPixmap(QPixmap::fromImage(src));
     itemforfilt.setPixmap(*pmv);    
     itemforfilt.setGraphicsEffect(effect);
@@ -88,16 +87,13 @@ QImage paintScene::applyEffectToImage(QImage src, QGraphicsEffect *effect, int e
     return resforfilt;
 }
 
-QPixmap paintScene::filterpuzzle(QPixmap pm, int att, int rc, int gc, int bc, int ac)
+QPixmap paintScene::filterpuzzle(QPixmap pm, int att)
 {
-  //  blur = new QGraphicsBlurEffect;
-  //  blur->setBlurRadius((100-att)/8);
     colorize = new QGraphicsColorizeEffect;
     QColor qcl = QColor(randr,randg,randb);
     colorize->setColor(qcl);
     colorize->setStrength((double)(100-att)/100);
     qbim1 = applyEffectToImage(pm.toImage(), colorize, 0);
-   // qbim2 = applyEffectToImage(qbim1, blur, 0);
     return QPixmap::fromImage(qbim1);
 }
 
@@ -105,7 +101,7 @@ void paintScene::applyfilteronbackimg()
 {
     colorize = new QGraphicsColorizeEffect;
     blur = new QGraphicsBlurEffect;
-    blur->setBlurRadius((100-pw->attent)/15);
+    blur->setBlurRadius((100-pw->attent)/10);
    // colorize->setColor(QColor(pw->alpha*5,256-pw->beta*5,256-pw->gamma*6,pw->meditt*2));
     QColor qcl = QColor(pw->theta*4,pw->beta*4,pw->gamma*4,pw->alpha*6);
    // qcl.setHsv(pw->beta*7,pw->alpha*7,pw->theta*6);
@@ -130,7 +126,7 @@ void paintScene::applyfilter()
         {      
         colorize = new QGraphicsColorizeEffect;
         blur = new QGraphicsBlurEffect;
-        blur->setBlurRadius((100-paintf->estattn)/15);
+        blur->setBlurRadius((100-paintf->estattn)/12);
        // colorize->setColor(QColor(pw->alpha*5,256-pw->beta*5,256-pw->gamma*6,pw->meditt*2));
         QColor qcl = QColor(pw->theta*4,pw->beta*4,pw->gamma*4,pw->alpha*6);
        // qcl.setHsv(pw->beta*7,pw->alpha*7,pw->theta*6);
@@ -151,7 +147,7 @@ void paintScene::applyfilter()
     }
 }
 
-void paintScene::drawlinebyeeg()
+void paintScene::drawlinebyeeg()    // drawing on array of points, experimental mode
 {
     for (int i=1; i<pointnum; i++)
     {
@@ -161,46 +157,31 @@ void paintScene::drawlinebyeeg()
     }
 }
 
-void paintScene::getdata(int x)
+void paintScene::getdata(int x)     // signal acquisiton and normalization
 {
-    // two fast blinks - change of mode ?
     if (counter==length)
     {
         counter=1;
         sumd=0;
     }
     else
-    {
-       // data[counter]=x;
+    {  
         sumd+=x; meand=sumd/counter;
         counter++;
     }
-    //if (x>meand*2)
-     //   x=meand;
+   // if (x>meand*2) x = meand;
     if (attmodul)
     {
-        if (attentt<10)
-            attentt=10;
+        if (attentt<10) attentt = 10;
         t0=((x-meand)*attentt)/40;
     }
     else
         t0=(x-meand)*paintf->eegsize/2;
-    //QCursor::setPos(400,t0);
-   // qDebug()<<x<<" "<<meand;
 }
 
-void paintScene::drawBackground(QPainter *p, const QRectF &rect)
+void paintScene::fill_lines() // filling lines, experimental drawing mode
 {
-
-}
-
-void paintScene::filllines()
-{
-   int t;
-   int k;
-   int p;
-   int r;
-   int f;
+   int t, k, p, r, f;
    for (int i=0; i<400; i++)
    {
        t=qrand()%500;
@@ -223,7 +204,7 @@ void paintScene::filllines()
    timeoff=false;
 }
 
-void paintScene::timerUpdate()
+void paintScene::timerUpdate()  // timer for drawing in contours mode
 {
     setcolor();
     if (linelengths[currlinedraw]==1)
@@ -253,6 +234,7 @@ void paintScene::timerUpdate()
      //   qDebug()<<currlinenum;
     }
 
+    // experimental mode
   /*  setcolor();
 
     angle = qAtan2(cury-previousPoint.y(),curx-previousPoint.x());
@@ -279,9 +261,9 @@ void paintScene::timerUpdate()
     cury+=ty; */
 }
 
-void paintScene::setcolor()
+void paintScene::setcolor() // setting pen color
 {
-    if ((pw->start) && (!randfixcolor))
+    if (freqcolor)
     {
        /* if ((pw->attent>77) && (pw->mindwstart))
         {
@@ -292,86 +274,29 @@ void paintScene::setcolor()
             fixcolor=false;
             freqcolor=true;
         } */
-        if (paintf->getattentmode())
-        {
-            rc=pw->beta*6;
-            if (rc>255) rc=255;
-            gc=pw->alpha;//130-attentt;
-        }
-        else
-        {
-            rc=pw->beta;//255-2*pw->meditt;
-           // if (rc<0) rc=0;
-            gc=pw->alpha*6;
-        }
-      //  if (gc>255)
-      //      gc=255;
-        bc=(pw->beta+pw->alpha)*2;
-           if (bc>255) bc=255;
-        if (paintf->attent_modulaion)
-            ac=255-attentt*2;
-        else
-            ac=255-meditt*2;
-           if (ac<0) ac=0;
-     //   if (bc>255)
-      //      bc=255;
-       // rc = 50 + pw->theta*5;
-       // gc = 250 - pw->alpha*2;
-       // bc = 150 - pw->beta*2;
-      /*  if ((pw->theta > pw->alpha) && (pw->theta>pw->beta))
-        {
-            rc=0;
-            gc=0;
-            bc=255;
-        } else
-        if ((pw->alpha > pw->theta) && (pw->alpha>pw->beta))
-        {
-            rc=0;
-            gc=255;
-            bc=0;
-        } else
-        if ((pw->beta > pw->theta) && (pw->beta>pw->alpha))
-        {
-            rc=255;
-            gc=0;
-            bc=0;
-        }*/
-       // if (pw->mindwstart)
-       //     ac=pw->attent*1.5; //198-pw->delta*3;
-        // qDebug()<<rc<<" "<<gc<<" "<<bc<<" "<<ac;
+        rc = pw->beta*5;
+        gc = pw->alpha*9;
+        bc = pw->gamma*9;
     }
+    if (paintf->attent_modulaion)
+        ac=50+attentt*2;
+    else
+        ac=50+meditt*2;
+
     if (rc>255) rc=255;
-    if (gc>255) gc=255;
-    if (gc<0) gc=29;
-    if (bc>255) bc=255;
-    if (bc<0) bc=30;
-    if (ac<0) ac=25;
+    if (gc>255) gc=255;    
+    if (bc>255) bc=255;    
+
     if (freqcolor)
-        drcolor=QColor(rc,gc,bc,255-attentt);
+        drcolor=QColor(rc,gc,bc,ac);
     if (fixcolor)
-        drcolor=QColor(fxcolor.red(),fxcolor.green(),fxcolor.blue(),255-attentt);
+        drcolor=QColor(fxcolor.red(),fxcolor.green(),fxcolor.blue(),ac);
     if (randcolor)
-        drcolor=QColor(qrand()%256,qrand()%256,qrand()%256,255-attentt);
+        drcolor=QColor(qrand()%256,qrand()%256,qrand()%256,ac);
     if (randfixcolor)
-        drcolor=QColor(randfxcl.red(),randfxcl.green(),randfxcl.blue(),255-attentt);
+        drcolor=QColor(randfxcl.red(),randfxcl.green(),randfxcl.blue(),ac);
     if (paintf->erasepen)
         drcolor=QColor(255,255,255,255);
-}
-
-void paintScene::clearlast()
-{
-//    double angle;
-  //  qDebug()<<pointnum;
-    if ((pointnum>0))
-    {
-      //  angle = qAtan2(linecoords[pointnum].y()-linecoords[0].y(),linecoords[pointnum].x()-linecoords[0].x());
-        for (int i=0; i<pointnum-1; i++)
-        {
-            addLine(linecoords[i].x(), linecoords[i].y(), linecoords[i+1].x()+qSin(angles[i])*data[i], linecoords[i+1].y()+qCos(angles[i])*data[i], QPen(QColor(255,255,255,255), paintf->pensize, Qt::SolidLine, Qt::RoundCap));
-            addEllipse(linecoords[i].x(), linecoords[i].y(), paintf->pensize, paintf->pensize, QPen(Qt::NoPen), QBrush(QColor(255,255,255,255)));
-        }
-        pointnum=0;
-    }
 }
 
 void paintScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
@@ -426,7 +351,6 @@ void paintScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     if (!vertline)
         curx=event->scenePos().x();
     double angle = qAtan2(event->scenePos().y()-previousPoint.y(),event->scenePos().x()-previousPoint.x());
-   // qDebug()<<qRadiansToDegrees(angle);
     if (drawcontours)
         t0=0;
 
@@ -442,14 +366,14 @@ void paintScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
     if (startedline)
     {
-       // qDebug()<<"2";
         linesarr[currlinenum+1][pointnum].setX(curx);
         linesarr[currlinenum+1][pointnum].setY(cury);
         pointnum++;
     }
-    previousPoint = event->scenePos();
+    previousPoint = event->scenePos();           
 }
 
+// experimental drawing mode
 void paintScene::k_curve(double x, double y,double lenght, double angle, int n_order)
 {
     if (n_order>0)
@@ -470,6 +394,7 @@ void paintScene::k_curve(double x, double y,double lenght, double angle, int n_o
         line1(x,y,(int)(x+lenght*cosl(angle*(M_PI/180))+0.5),(int)(y+lenght*sinl(angle*(M_PI/180))));
 }
 
+// experimental drawing mode
 void paintScene::line1(int x_1,int y_1, int x_2,int y_2)
 {
     int x1=x_1;
@@ -528,6 +453,7 @@ void paintScene::line1(int x_1,int y_1, int x_2,int y_2)
     }
 }
 
+// experimental drawing mode
 void paintScene::drawpolygon(int p, int xc, int yc, double r, double d)
 {
     polygon.clear();
@@ -542,6 +468,7 @@ void paintScene::drawpolygon(int p, int xc, int yc, double r, double d)
     addPolygon(polygon,QPen(QColor(qrand()%256,qrand()%256,qrand()%256), 2, Qt::SolidLine, Qt::RoundCap));
 }
 
+// experimental drawing mode
 void paintScene::drawline()
 {
     int x0, x1, y0, y1;

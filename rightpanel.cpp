@@ -161,18 +161,16 @@ void rightpanel::on_pushButton_clicked()
 
 void rightpanel::on_pushButton_2_clicked()
 {
-    if (currpos<imgnumber-6)
-    {
-        currpos++;
-        fillpics();
-    }
+    currpos=imgnumber-6;
+    fillpics();
 }
 
 void rightpanel::on_pushButton_3_clicked()
 {
-    if (currpos>0)
-    {
-        currpos--;
-        fillpics();;
-    }
+    // if (currpos>0)
+     {
+        // currpos--;
+         currpos = 0;
+         fillpics();;
+     }
 }
