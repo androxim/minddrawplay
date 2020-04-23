@@ -3,13 +3,8 @@
 ![MindDrawPlay screen](mdpscreen.jpg)
 ![MindDrawPlay screen2](mdpscreen_2.jpg)
 
-The code is written in C++, Qt 5.6.0
-
-The project is specifically made for mobile EEG device MindWave NeuroSky,
-
-but also can work with other EEG devices through BCI2000 module,
-
-and can be adapted for other mobile or full EEG systems.
+Code is written in C++ / Qt, the project is specifically made for mobile EEG device MindWave NeuroSky, 
+but also can work with other EEG devices through BCI2000 module and can be adapted for other mobile or full EEG systems.
 
 ====
 
@@ -19,7 +14,7 @@ It has been grown on a base of a research work in the direction of Brain-Compute
 Combining both technology advances – such as mobile EEG devices and musical knowledge – 
 such as pentatonic scales, it allows everyone literally to see, to hear his brain activity 
 represented by set of sounds and to use brain waves as a brush for drawing, as parameters 
-for image filtering, attention modulated hue-overlay pictures flow and in a puzzle gathering 
+for image filtering, attention modulated color-overlay pictures flows, puzzle gathering 
 and identical pictures recognition games. MindDrawPlay is much more than a neurofeedback app
 with sounds and visualizations, it provides with a unique experience 
 of interactive immersion into flows of your mindspace.
