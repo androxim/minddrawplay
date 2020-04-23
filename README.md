@@ -1,7 +1,7 @@
 # minddrawplay
 
 ![MindDrawPlay screen](mdpscreen.jpg)
-![MindDrawPlay screen2](mdpscreen2.jpg)
+![MindDrawPlay screen2](mdpscreen_2.jpg)
 
 The code is written in C++, Qt 5.6.0
 
