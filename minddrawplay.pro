@@ -11,46 +11,46 @@ TEMPLATE = app
 CONFIG += c++11 \
           resources_big
 
-SOURCES += main.cpp\
-           mainwindow.cpp \
-           qcustomplot.cpp \
-           plotwindow.cpp \
-    sockstream.cpp \
-    appconnect.cpp \    
-    settings.cpp \
-    paintscene.cpp \
-    paintform.cpp \
-    rawsignal.cpp \
-    soundplayer.cpp \
-    leftpanel.cpp \
-    rightpanel.cpp \
-    ocvcontrols.cpp \
-    filters.cpp
+SOURCES += src\main.cpp\
+           src\mainwindow.cpp \
+           src\qcustomplot.cpp \
+           src\plotwindow.cpp \
+    src\sockstream.cpp \
+    src\appconnect.cpp \    
+    src\settings.cpp \
+    src\paintscene.cpp \
+    src\paintform.cpp \
+    src\rawsignal.cpp \
+    src\soundplayer.cpp \
+    src\leftpanel.cpp \
+    src\rightpanel.cpp \
+    src\ocvcontrols.cpp \
+    src\filters.cpp
 
-HEADERS  += mainwindow.h \
-            qcustomplot.h \
-            plotwindow.h \
-    sockstream.h \
-    appconnect.h \
-    settings.h \
-    paintscene.h \
-    paintform.h \
-    thinkgear.h \
-    rawsignal.h \
-    soundplayer.h \
-    leftpanel.h \
-    rightpanel.h \
-    ocvcontrols.h \
-    filters.h
+HEADERS  += include\mainwindow.h \
+            include\qcustomplot.h \
+            include\plotwindow.h \
+    include\sockstream.h \
+    include\appconnect.h \
+    include\settings.h \
+    include\paintscene.h \
+    include\paintform.h \
+    include\thinkgear.h \
+    include\rawsignal.h \
+    include\soundplayer.h \
+    include\leftpanel.h \
+    include\rightpanel.h \
+    include\ocvcontrols.h \
+    include\filters.h
 
-FORMS    += mainwindow.ui \
-            plotwindow.ui \
-    settings.ui \
-    paintform.ui \
-    rawsignal.ui \
-    leftpanel.ui \
-    rightpanel.ui \
-    ocvcontrols.ui
+FORMS    += ui\mainwindow.ui \
+            ui\plotwindow.ui \
+    ui\settings.ui \
+    ui\paintform.ui \
+    ui\rawsignal.ui \
+    ui\leftpanel.ui \
+    ui\rightpanel.ui \
+    ui\ocvcontrols.ui
 
 LIBS += -lwsock32 -lws2_32 -mthreads -L$$PWD/./ -lthinkgear
 
@@ -65,7 +65,7 @@ LIBS += C:\OpenCV\OpenCV_bin\bin\libopencv_core412.dll \
         C:\OpenCV\OpenCV_bin\bin\libopencv_videoio412.dll \
         C:\OpenCV\OpenCV_bin\bin\libopencv_features2d412.dll
 
-INCLUDEPATH += $$PWD/.
+INCLUDEPATH += $$PWD/include/.
 DEPENDPATH += $$PWD/.
 
 RESOURCES += \
