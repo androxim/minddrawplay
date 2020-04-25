@@ -2477,14 +2477,14 @@ void plotwindow::on_pushButton_17_clicked() // restore default scale (deviation 
 
 void plotwindow::on_pushButton_18_clicked() // save scale
 {
-    QString filename=QFileDialog::getSaveFileName(this,tr("Save File"),"D:/MINDWAVE//","Data file (*.dat);;All files (*.*)");
+    QString filename=QFileDialog::getSaveFileName(this,tr("Save File"),folderpath,"Data file (*.dat);;All files (*.*)");
     if (filename!="")
         savescaletofile(filename);
 }
 
 void plotwindow::on_pushButton_19_clicked() // load scale
 {
-    QString filename=QFileDialog::getOpenFileName(this,tr("Open File"),"D:/MINDWAVE/","Data file (*.dat);;All files (*.*)");
+    QString filename=QFileDialog::getOpenFileName(this,tr("Open File"),folderpath,"Data file (*.dat);;All files (*.*)");
     if (filename!="")
         loadscalefromfile(filename);
 }
@@ -2725,7 +2725,7 @@ void plotwindow::on_radioButton_3_clicked() // spacedrum Dmin mode
 
 void plotwindow::on_pushButton_23_clicked()  // load backgroumd image from file
 {
-    QString filename=QFileDialog::getOpenFileName(this,tr("Open File"),"D://","Images (*.png *.bmp *.jpg)");
+    QString filename=QFileDialog::getOpenFileName(this,tr("Open File"),folderpath,"Images (*.png *.bmp *.jpg)");
     if (filename!="")
     {
         backimg.load(filename);        

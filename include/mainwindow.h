@@ -83,6 +83,7 @@ public:
     void setoverlay(int i);
     void setborder(int i);
     void checkoverlay();
+    void swap_main_overlay();
     void makeHistFeatures();
     void makeIconsAndHists();
     void shuffleiconss(bool left);    
@@ -103,7 +104,9 @@ public:
     void setdream0();
     void setprevdfrect(int x, int y, int w, int h);
     QImage grabopcvpic();
+    QString getfolderpath();
     QString getimagepath(int t);
+    int getimagenum(QString st);
     void gethistfeatures();
     float chi2_distance(vector<float> f1, vector<float> f2);
     void getchi2dists(int t);

@@ -34,6 +34,9 @@
 #include "algorithm"
 #include <QtConcurrent>
 
+// TO DO:
+// ...
+
 using namespace cv;
 using namespace cv::dnn;
 typedef std::pair<int,float> pairt;
@@ -921,6 +924,24 @@ void MainWindow::fillmaininpuzzle(int t)    // fill main pic in puzzle
 int MainWindow::getchi2distsize()       // get size of vector with chi2dist
 {                                       // need to check if switch between flow direction invoked before any distances computed
     return chi2distances.size();
+}
+
+// get number of image in image list / folder (for "choose" option on panels // open file dialog)
+int MainWindow::getimagenum(QString st)
+{
+    int nt = -1;
+    for (int i=0; i<imglist.length(); i++)
+        if (folderpath+"/"+imglist.at(i)==st)
+        {
+            nt = i;
+            break;
+        }
+    return nt;
+}
+
+QString MainWindow::getfolderpath()     // return pics folder
+{
+    return folderpath;
 }
 
 QString MainWindow::getimagepath(int t) // return image path for ocvcontrol form in update random image
@@ -1821,12 +1842,28 @@ void MainWindow::mindwtUpdate() // processing data from MindWave device
     }
 }
 
+void MainWindow::swap_main_overlay()
+{
+    prevoverpic = curroverpic;
+    prevmainpic = currmainpic;
+    currmainpic = curroverpic;
+    curroverpic = prevmainpic;
+
+    leftpw->fillpics();
+    rightpw->fillpics();
+
+    dstt = src.clone();
+    src = srccopy.clone();
+    srccopy = dstt.clone();
+}
+
 void MainWindow::keys_processing()      // processing keys pressing
 {
     char key = cv::waitKey(5) % 256;
     if (key == 't') // test stuff button    
     {
       //  neurostyle();
+        swap_main_overlay();
     }
     else if (key == 'a') // save and add current overlay to pictures
     {

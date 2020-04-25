@@ -2750,14 +2750,12 @@ void paintform::setbackimageocv(QString filename) // set back image from left pa
     pmain.load(filename);
     qim.load(filename);
     currimglist[14]=filename;        
-    for (int i=0; i<imglist.length(); i++)
-    {
+    for (int i=0; i<imglist.length(); i++) 
         if (folderpath+"/"+imglist.at(i)==filename)
         {
             currentindexes[14]=i;
             break;
         }
-    }
     backloaded = true;
     if (scene->drawflow)
     {
@@ -2871,7 +2869,7 @@ void paintform::on_pushButton_clicked() // load clean main pic (not filtered and
 
 void paintform::on_pushButton_2_clicked() // load main image from file
 {
-    QString filename=QFileDialog::getOpenFileName(this,tr("Open File"),"D://","Images (*.png *.bmp *.jpg)");
+    QString filename=QFileDialog::getOpenFileName(this,tr("Open File"),folderpath,"Images (*.png *.bmp *.jpg)");
     if (filename!="")
     {
         mainpic.load(filename);
@@ -2921,7 +2919,7 @@ void paintform::getimg2()
 
 void paintform::on_pushButton_4_clicked() // save image to file
 {
-    QString fileName=QFileDialog::getSaveFileName(this, "Save image", QCoreApplication::applicationDirPath(), "BMP Files (*.bmp);;JPEG (*.JPEG);;PNG (*.png)" );
+    QString fileName=QFileDialog::getSaveFileName(this, "Save image", folderpath, "BMP Files (*.bmp);;JPEG (*.JPEG);;PNG (*.png)" );
     if (!fileName.isNull())
     {
         QPixmap pixMap = this->ui->graphicsView->grab();
@@ -3353,7 +3351,7 @@ void paintform::on_checkBox_17_clicked()
 
 void paintform::on_pushButton_10_clicked() // set new pictures folder
 {
-    QString filePath=QFileDialog::getExistingDirectory(this, "Get Any Folder", "D://");    
+    QString filePath=QFileDialog::getExistingDirectory(this, "Get Any Folder", folderpath);
     if (filePath!="")
     {
         fd.setPath(filePath);

@@ -87,8 +87,10 @@ rightpanel::rightpanel(QWidget *parent) :
     ui->graphicsView_6->installEventFilter(this);
     ui->graphicsView_7->installEventFilter(this);
 
-    ui->pushButton_3->setGeometry(4,1,68,23);
-    ui->pushButton_2->setGeometry(75,1,68,23);
+    ui->pushButton_3->setGeometry(4,1,44,23);
+    ui->pushButton_2->setGeometry(51,1,44,23);
+    ui->pushButton_4->setGeometry(97,1,48,23);
+
     ui->pushButton->setGeometry(5,1005,138,23);
 }
 
@@ -173,4 +175,27 @@ void rightpanel::on_pushButton_3_clicked()
          currpos = 0;
          fillpics();;
      }
+}
+
+void rightpanel::on_pushButton_4_clicked()
+{
+    QString filename=QFileDialog::getOpenFileName(this,tr("Open File"),mww->getfolderpath(),"Images (*.png *.bmp *.jpg)");
+    if (filename!="")
+    {
+        int tp = mww->getimagenum(filename);
+        if ((tp == mww->getmainpic()) || (tp == mww->getoverpic()))
+        {
+            QMessageBox msgBox;
+            msgBox.setText("Please, choose image different from current main and overlay!");
+            msgBox.exec();
+        } else
+        if (tp == -1)
+        {
+            QMessageBox msgBox;
+            msgBox.setText("Please, choose image from current image folder!");
+            msgBox.exec();
+        } else
+        if (tp > -1)
+            mww->updateoverpic(tp);
+    }
 }
