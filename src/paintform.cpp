@@ -1779,6 +1779,13 @@ bool paintform::eventFilter(QObject *target, QEvent *event)  // processing key /
             ocvfm->formshown = !ocvfm->formshown;
         }
 
+        if (keyEvent->key()==Qt::Key_B)     // hide / show progress bar
+        {
+            ui->progressBar->setVisible(!ui->progressBar->isVisible());
+            if (!fixedmain)
+                ui->horizontalSlider_2->setVisible(ui->progressBar->isVisible());
+        }
+
         if (keyEvent->key()==Qt::Key_K)     // start / stop camera input
             pw->camerainp_on_off();
 

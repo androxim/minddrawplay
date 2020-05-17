@@ -73,6 +73,7 @@ public:
     void printdata(QString str);
     void mindwaveconnect();        
     void startopencv();
+    void init_img_set();
     void getrawdata(float ft);
     void getfreqval(float dw, float tw, float aw, float bw, float gw);
     void setsourceimg(QString fpath);
@@ -94,8 +95,8 @@ public:
     void updatemainpic(int num);
     void updateoverpic(int num);
     void setfolderpath(QString fp);   
-    void cancellast();
-    void cancelall();
+    void cancellast();    
+    void cancelall();    
     void keys_processing();
     void setdstfromplay(QImage qm);
     void save_and_add_overlaypic();

@@ -36,6 +36,8 @@ ocvcontrols::ocvcontrols(QWidget *parent) :
 
     updateformvals();
 
+    gen.seed(chrono::system_clock::now().time_since_epoch().count());
+
    // setAttribute(Qt::WA_TranslucentBackground,true);
    // setWindowOpacity(0.95);
    // ui->tabWidget->setAutoFillBackground(true);
@@ -59,18 +61,24 @@ void ocvcontrols::updateformvals()
     ui->spinBox_13->setValue(dreamflowrate);
     ui->spinBox_15->setValue(drops_interval);
     ui->spinBox_16->setValue(pointsinpoly);
+    ui->spinBox_17->setValue(multi_set_size);
     ui->checkBox_14->setChecked(plotdroprect);
     ui->checkBox_15->setChecked(drops_from_mousepos);
     ui->checkBox_16->setChecked(drawbrushcontour);
     ui->checkBox_17->setChecked(camerainp);
     ui->checkBox_9->setChecked(changepic_bytime);
     ui->checkBox_10->setChecked(dropsmode);
+    if (circle_brush)
+        ui->radioButton_7->setChecked(true);
+    else
+        ui->radioButton_8->setChecked(true);
     if (flowdirection==1)
         ui->comboBox->setCurrentIndex(1);
     else if (flowdirection==-1)
         ui->comboBox->setCurrentIndex(2);
     else
         ui->comboBox->setCurrentIndex(0);
+    ui->comboBox->setEnabled(histFeaturesReady);
 }
 
 ocvcontrols::~ocvcontrols()
@@ -263,8 +271,8 @@ void ocvcontrols::on_radioButton_5_clicked()
 void ocvcontrols::randmixer_mode_on()
 {
     mixtype = 3;
-    if (!drops_by_click_mode)
-        changerandpic();
+    //if (!drops_by_click_mode)
+    //    changerandpic();
     ui->checkBox_2->setEnabled(true);
     ui->checkBox_4->setEnabled(true);
     ui->checkBox_5->setEnabled(true);
@@ -279,8 +287,9 @@ void ocvcontrols::on_radioButton_6_clicked()
 
 void ocvcontrols::changerandpic()
 {    
+    dist = std::uniform_int_distribution<int>(0, leftpan->imgnumber-1);
     if (flowdirection==0)
-        randpicn = mww->geticonnum(qrand() % (leftpan->imgnumber),true);
+        randpicn = mww->geticonnum(dist(gen),true);
     else
     {
         if (flowdirection==1)
@@ -373,6 +382,7 @@ void ocvcontrols::on_checkBox_5_clicked()
         ui->checkBox_8->setEnabled(true);
         ui->checkBox_10->setEnabled(true);
         ui->checkBox_12->setEnabled(true);
+        ui->checkBox_18->setEnabled(true);
     }
     else
     {
@@ -387,6 +397,7 @@ void ocvcontrols::on_checkBox_5_clicked()
             ui->checkBox_12->setEnabled(false);
             ui->checkBox_14->setEnabled(false);
             ui->checkBox_15->setEnabled(false);
+            ui->checkBox_18->setEnabled(false);
         }
     }       
 }
@@ -528,4 +539,39 @@ void ocvcontrols::on_checkBox_17_clicked()
         mww->usingcam(true);
     else
         mww->usingcam(false);
+}
+
+void ocvcontrols::on_radioButton_7_clicked()
+{
+    circle_brush = true;
+}
+
+void ocvcontrols::on_radioButton_8_clicked()
+{
+    circle_brush = false;
+}
+
+void ocvcontrols::on_checkBox_18_clicked()
+{
+    multi_img_dflow = !multi_img_dflow;
+    ui->checkBox_19->setEnabled(multi_img_dflow);
+}
+
+void ocvcontrols::on_checkBox_19_clicked()
+{
+    multi_img_by_att = !multi_img_by_att;
+    if (multi_img_by_att)
+        ui->spinBox_17->setStyleSheet("QSpinBox { background-color: yellow; }");
+    else
+        ui->spinBox_17->setStyleSheet("QSpinBox { background-color: white; }");
+}
+
+void ocvcontrols::on_spinBox_17_valueChanged(int arg1)
+{
+    multi_set_size=arg1;
+}
+
+void ocvcontrols::on_pushButton_5_clicked()
+{
+    mww->init_img_set();
 }

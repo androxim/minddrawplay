@@ -77,6 +77,7 @@ Mat edges, mask, trp, randpic, stinp, blob, stpic;
 Mat tempimg, dstemp, dst0, dst1, srg, srct, srwt, dstt, svd_img, gray_element;
 Mat element, dream0, imghist, pichist, elfont;
 vector<Mat> channels;
+vector<Mat> curr_img_set; std::set<int> img_num_set;
 int currmainpic, curroverpic, prevmainpic = -1, prevoverpic = -1;
 Rect df_srcDstRect;
 
@@ -129,7 +130,7 @@ QStringList imglist;    // list of pictures paths
 QStringList strList1;
 QStringListModel *strListM1;
 
-std::thread thr; // separate thread for making image icons for panels
+std::thread thr; // separate thread for making color histogram for images
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -154,6 +155,7 @@ MainWindow::MainWindow(QWidget *parent) :
     rs = new rawsignal();           // raw signal form
     rs->setGeometry(0,0,1600,80);
     rs->move(158,0);
+    // rs->starting();
     plotw->rws=rs;
 
     leftpw = new leftpanel();
@@ -216,8 +218,8 @@ MainWindow::MainWindow(QWidget *parent) :
     // ==== set of variables for simulated EEG data mode (in development) ====
     srfr = 500; // sampling rate
     deltaphs = 4; thetaphs = 8; alphaphs = 0; betaphs = 7; gammaphs = 8;
-    deltafr = 2; thetafr = 5; alphafr = 9; betafr = 21; gammafr=33; hgammafr=64;
-    zdeltaamp = 7; zthetaamp = 7; zalphaamp = 7; zbetaamp = 7; zgammaamp = 5; zhgammaamp = 3;
+    deltafr = 3; thetafr = 5; alphafr = 9; betafr = 21; gammafr=33; hgammafr=44;
+    zdeltaamp = 5; zthetaamp = 12; zalphaamp = 16; zbetaamp = 30; zgammaamp = 17; zhgammaamp = 12;
     currentel = 0; currentsimdata = 0;
     simulateEEG = new QTimer(this);
     simulateEEG->connect(simulateEEG,SIGNAL(timeout()), this, SLOT(simulateEEGUpdate()));
@@ -515,7 +517,10 @@ void onMouse( int event, int x, int y, int flags, void* )   // Mouse clicks and 
         {
             dst0.release();
             dst0 = dst.clone();
-            circle(dst0, Point(x, y), ocvform->currfilterarea/2, CV_RGB(255, 255, 255),0,LINE_AA);
+            if (ocvform->circle_brush)
+                circle(dst0, Point(x, y), ocvform->currfilterarea/2, CV_RGB(255, 255, 255),0,LINE_AA);
+            else
+                rectangle(dst0, Rect(x-ocvform->currfilterarea/2, y-ocvform->currfilterarea/2, ocvform->currfilterarea, ocvform->currfilterarea), CV_RGB(255, 255, 255),0,LINE_AA);
             imshow("image", dst0);
         }
     }
@@ -532,15 +537,20 @@ void onMouse( int event, int x, int y, int flags, void* )   // Mouse clicks and 
             Rect srcDstRect(x-ocvform->currfilterarea/2, y-ocvform->currfilterarea/2, ocvform->currfilterarea, ocvform->currfilterarea);
             dstt = dst(srcDstRect); // dst - full resulting overlay pic of main (src) and overlay (srccopy)
 
-            applyfilt(ocvform->currfilttype,srcDstRect);
-
-            Mat mask_image(dstt.size(), CV_8U, Scalar(0)); // mask to have only circle of region
-            circle(mask_image, Point(mask_image.rows / 2, mask_image.cols / 2), ocvform->currfilterarea/2, CV_RGB(255, 255, 255),-1,LINE_AA);
+            applyfilt(ocvform->currfilttype,srcDstRect);           
 
             if (ocvform->currfilttype==5)
                 addWeighted(dst(srcDstRect), (double)ocvform->transp / 100, dstt, 1 - (double)ocvform->transp / 100, 0, dstt);
 
-            dstt.copyTo(dst(srcDstRect),mask_image);
+            if (ocvform->circle_brush)
+            {
+                Mat mask_image(dstt.size(), CV_8U, Scalar(0)); // mask to have only circle of region
+                circle(mask_image, Point(mask_image.rows / 2, mask_image.cols / 2), ocvform->currfilterarea/2, CV_RGB(255, 255, 255),-1,LINE_AA);
+                dstt.copyTo(dst(srcDstRect),mask_image);
+            }
+            else
+                dstt.copyTo(dst(srcDstRect));
+
             imshow("image", dst);
 
             curr_iter=0;
@@ -556,15 +566,20 @@ void onMouse( int event, int x, int y, int flags, void* )   // Mouse clicks and 
 
         applyfilt(ocvform->currfilttype,srcDstRect);
 
-        Mat mask_image( dstt.size(), CV_8U, Scalar(0));
-        circle(mask_image, Point(mask_image.rows / 2, mask_image.cols / 2), ocvform->currfilterarea/2, CV_RGB(255, 255, 255),-1,LINE_AA);
-
         prev_dst = dst.clone(); // for keeping state before last action (using in "cancel last")
 
         if (ocvform->currfilttype==5)
             addWeighted(dst(srcDstRect), (double)ocvform->transp / 100, dstt, 1 - (double)ocvform->transp / 100, 0, dstt);
 
-        dstt.copyTo(dst(srcDstRect),mask_image);
+        if (ocvform->circle_brush)
+        {
+            Mat mask_image(dstt.size(), CV_8U, Scalar(0)); // mask to have only circle of region
+            circle(mask_image, Point(mask_image.rows / 2, mask_image.cols / 2), ocvform->currfilterarea/2, CV_RGB(255, 255, 255),-1,LINE_AA);
+            dstt.copyTo(dst(srcDstRect),mask_image);
+        }
+        else
+            dstt.copyTo(dst(srcDstRect));
+
         imshow("image", dst);
     }
     // starting dreamflow drops by middle mouse down
@@ -1033,19 +1048,31 @@ void MainWindow::dreamflow_Update() // timer for dreamflow mode, when new pic ap
         y = ocvform->y_top + area/2 + qrand() % (ocvform->y_bottom - ocvform->y_top - area);
         srcDstRect = Rect(x-area/2, y-area/2, area, area);
     }
+    if (ocvform->multi_img_dflow)
+    {
+        int t = qrand()%ocvform->multi_set_size;
+        ocvform->randpic = curr_img_set[t];       
+    }
     dstt = mixfilt(srcDstRect);
     Mat mask_image(dstt.size(), CV_8U, Scalar(0));
     if (!ocvform->polygonmask)
     {
-        if (!ocvform->dropsmode)
-            circle(mask_image, Point(mask_image.rows / 2, mask_image.cols / 2), ocvform->currfilterarea/2, CV_RGB(255, 255, 255),-1,LINE_AA);
-        else
-            circle(mask_image, Point(mask_image.rows / 2, mask_image.cols / 2), area/2, CV_RGB(255, 255, 255),-1,LINE_AA);
+        if (ocvform->circle_brush)
+        {
+            if (!ocvform->dropsmode)
+                circle(mask_image, Point(mask_image.rows / 2, mask_image.cols / 2), ocvform->currfilterarea/2, CV_RGB(255, 255, 255),-1,LINE_AA);
+            else
+                circle(mask_image, Point(mask_image.rows / 2, mask_image.cols / 2), area/2, CV_RGB(255, 255, 255),-1,LINE_AA);
+        }
     }
     else
         fillpolygon(mask_image);
     addWeighted(dst(srcDstRect), (double)ocvform->transp / 100, dstt, 1 - (double)ocvform->transp / 100, 0, dstt);
-    dstt.copyTo(dst(srcDstRect),mask_image);
+
+    if ((ocvform->polygonmask) || (ocvform->circle_brush))
+        dstt.copyTo(dst(srcDstRect),mask_image);
+    else
+        dstt.copyTo(dst(srcDstRect));
 
     if (ocvform->showlabel)
     {
@@ -1132,7 +1159,7 @@ int MainWindow::getoverpic() // return index of overlay pic in icons arr
 void MainWindow::just_update_mainpic(int num)
 {
     prevmainpic = currmainpic;
-    currmainpic = num;
+    currmainpic = num;    
     lchanged=true;
     rchanged=false;
     defineiconsarr();
@@ -1142,6 +1169,7 @@ void MainWindow::just_update_mainpic(int num)
     QString ocvpic=folderpath+"/"+imglist.at(currmainpic);
     src = imread(ocvpic.toStdString());
     cv::resize(src, src, cv::Size(ocvform->picwidth,ocvform->picheight), 0, 0, cv::INTER_LINEAR);
+    curr_img_set[0]=src.clone();
 }
 
 void MainWindow::updatemainpic(int num)
@@ -1190,6 +1218,7 @@ void MainWindow::updateoverpic(int num)
     QString ocvpic=folderpath+"/"+imglist.at(curroverpic);
     srccopy = imread(ocvpic.toStdString());
     cv::resize(srccopy, srccopy, cv::Size(ocvform->picwidth,ocvform->picheight), 0, 0, cv::INTER_LINEAR);
+    curr_img_set[1] = srccopy.clone();
     if ((activeflow) && (!ocvform->hueonly))
     {
         addWeighted(src, alphaval, srccopy, 1 - alphaval, 0, dst);
@@ -1335,28 +1364,27 @@ void MainWindow::setattent(int i)
         if (ocvform->attent_modulated_dreams)
         {
             ocvform->dreamflowrate=105-elem4;
-            dreamflow_timer->setInterval(ocvform->dreamflowrate);
-            ocvform->updateformvals();
+            dreamflow_timer->setInterval(ocvform->dreamflowrate);            
         }
         if (ocvform->drops_by_att)
         {
             ocvform->drops_interval=120-elem4; // 30+elem4/2;
-            ocvform->dropsT->setInterval(ocvform->drops_interval);
-            ocvform->updateformvals();
+            ocvform->dropsT->setInterval(ocvform->drops_interval);            
         }
-        if (ocvform->poly_by_att)
-        {
-            ocvform->pointsinpoly = elem4 / 10 + 3;
-            ocvform->updateformvals();
-        }
+        if (ocvform->poly_by_att)        
+            ocvform->pointsinpoly = elem4 / 10 + 3;                    
+
         if (ocvform->directionswitch_by_att)
         {
             if (elem4>elem6)
                 ocvform->flowdirection=1;
             else
-                ocvform->flowdirection=-1;
-            ocvform->updateformvals();
+                ocvform->flowdirection=-1;            
         }
+        if (ocvform->multi_img_by_att)
+            ocvform->multi_set_size = (100-elem4)/10 + 1;
+
+        ocvform->updateformvals();
     }
     if ((!activeflow) && (ocvform->currfilttype==5) && (ocvform->transp_by_att))
     {
@@ -1464,6 +1492,8 @@ void MainWindow::startopencv() // MindOCV initialization function
        // imshow("image", src);
         ProcessingMix();
 
+        init_img_set();
+
         opencvstart=true;
         plotw->opencvstart=true;
         if (plotw->start)
@@ -1474,38 +1504,31 @@ void MainWindow::startopencv() // MindOCV initialization function
         imshow("image", src);    
 }
 
-void MainWindow::simulateEEGUpdate() // simulated EEG data (in development)
+void MainWindow::init_img_set()  // init set of images for dreamflow in multi-image mode
 {
-  //  const double mean = 0.0;
-  //  const double stddev = 0.5;
-   // std::default_random_engine generator;
-   // std::normal_distribution<double> dist(mean, stddev);
-  //  double nois = 5*dist(generator);
-    int nois = -25 + rand() % 50;
-    deltaamp = zdeltaamp - 10 + rand() % 20;
-    thetaamp = zthetaamp - 12 + rand() % 25;
-    alphaamp = zalphaamp - 5 + rand() % 10;
-    betaamp = zbetaamp - 7 + rand() % 15;
-    gammaamp = zgammaamp - 3 + rand() % 6;
-    hgammaamp = zhgammaamp - 2 + rand() % 4;
-    if (currentel>50)
+    curr_img_set.clear();
+    curr_img_set.push_back(src.clone());
+    curr_img_set.push_back(srccopy.clone());
+    img_num_set.clear();
+    img_num_set.insert(currmainpic);
+    img_num_set.insert(curroverpic);
+
+    for (size_t i=0; i<20; i++)
     {
-        deltaphs = rand() % 20;
-        thetaphs = rand() % 20;
-        alphaphs = rand() % 20;
-        betaphs = rand() % 20;
-        gammaphs = rand() % 20;
+        int tp = qrand() % imglist.length();
+        img_num_set.insert(tp);
     }
-    currentel++;
-    if (currentel>100)
-        currentel=0;
-    currentsimdata = deltaamp*sin(deltafr*2*M_PI/srfr*(currentel+deltaphs)) + thetaamp*sin(thetafr*2*M_PI/srfr*(currentel+thetaphs)) + alphaamp*sin(alphafr*2*M_PI/srfr*(currentel+alphaphs)) + betaamp*sin(betafr*2*M_PI/srfr*(currentel+betaphs)) + gammaamp*sin(gammafr*2*M_PI/srfr*(currentel+gammaphs)) + hgammaamp*sin(hgammafr*2*M_PI/srfr*(currentel+gammaphs)) + nois;
-    currentsimdata *= 3;
-    if (plotw->start)
-        plotw->getandprocess_eeg_data(currentsimdata);
-    if (paintw_started)
-        paintw->scene->getdata(currentsimdata/4);
-    //  qDebug()<<currentsimdata;       
+    img_num_set.erase(currmainpic);
+    img_num_set.erase(curroverpic);
+
+    set<int>::iterator iter = img_num_set.begin();
+    for (size_t i=0; i<11; i++)
+    {
+        int tp = *iter;
+        Mat mt = imread((folderpath+"/"+imglist.at(tp)).toStdString());
+        curr_img_set.push_back(mt.clone());
+        iter++;
+    }
 }
 
 void MainWindow::checkoverlay()
@@ -1542,10 +1565,12 @@ void MainWindow::checkoverlay()
             define_riconsarr();
             leftpw->fillpics();
             rightpw->fillpics();            
-            QString ocvpic=folderpath+"/"+imglist.at(curroverpic);
-            src=srccopy.clone();
-            srccopy = imread(ocvpic.toStdString());            
+            QString ocvpic = folderpath+"/"+imglist.at(curroverpic);
+            src = srccopy.clone();
+            curr_img_set[0] = src.clone();
+            srccopy = imread(ocvpic.toStdString());                        
             cv::resize(srccopy, srccopy, cv::Size(ocvform->picwidth,ocvform->picheight), 0, 0, cv::INTER_LINEAR);
+            curr_img_set[1] = srccopy.clone();
             if (!ocvform->hueonly)
             {
                 if (ocvform->camerainp)  // grab input from camera as overlay (strcopy) pic
@@ -1571,6 +1596,7 @@ void MainWindow::checkoverlay()
             QString ocvpic=folderpath+"/"+imglist.at(curroverpic);
             srccopy = imread(ocvpic.toStdString());
             cv::resize(srccopy, srccopy, cv::Size(ocvform->picwidth,ocvform->picheight), 0, 0, cv::INTER_LINEAR);
+            curr_img_set[1] = srccopy.clone();
             addWeighted(src, alphaval, srccopy, 1 - alphaval, 0, dst);
           //  imshow("image", dst);
         }
@@ -1842,6 +1868,39 @@ void MainWindow::mindwtUpdate() // processing data from MindWave device
     }
 }
 
+void MainWindow::simulateEEGUpdate() // simulated EEG data (in development)
+{
+    const double mean = 0.0;
+    const double stddev = 0.5;
+    static std::mt19937 gen(chrono::system_clock::now().time_since_epoch().count());
+    std::normal_distribution<double> dist(mean, stddev);
+    double noise = 20*dist(gen);
+    deltaamp = zdeltaamp + dist(gen)*5;
+    thetaamp = zthetaamp + dist(gen)*12;
+    alphaamp = zalphaamp + dist(gen)*13;
+    betaamp = zbetaamp + dist(gen)*12;
+    gammaamp = zgammaamp + dist(gen)*10;
+    hgammaamp = zhgammaamp + dist(gen)*3;
+    if (currentel>100)
+    {
+        deltaphs = qrand() % 20;
+        thetaphs = qrand() % 20;
+        alphaphs = qrand() % 20;
+        betaphs = qrand() % 20;
+        gammaphs = qrand() % 20;
+        currentel = 0;
+    }
+    currentel++;
+    currentsimdata = deltaamp*sin(deltafr*2*M_PI/srfr*(currentel+deltaphs)) + thetaamp*sin(thetafr*2*M_PI/srfr*(currentel+thetaphs)) + alphaamp*sin(alphafr*2*M_PI/srfr*(currentel+alphaphs)) + betaamp*sin(betafr*2*M_PI/srfr*(currentel+betaphs)) + gammaamp*sin(gammafr*2*M_PI/srfr*(currentel+gammaphs)) + hgammaamp*sin(hgammafr*2*M_PI/srfr*(currentel+gammaphs)) + noise;
+    //currentsimdata *= 2;
+    rs->show();
+    rs->updatesignal(currentsimdata);
+    if (plotw->start)
+        plotw->getandprocess_eeg_data(currentsimdata);
+    if (paintw_started)
+        paintw->scene->getdata(currentsimdata/4);
+}
+
 void MainWindow::swap_main_overlay()
 {
     prevoverpic = curroverpic;
@@ -1855,6 +1914,9 @@ void MainWindow::swap_main_overlay()
     dstt = src.clone();
     src = srccopy.clone();
     srccopy = dstt.clone();
+
+    curr_img_set[0] = src.clone();
+    curr_img_set[1] = srccopy.clone();
 }
 
 void MainWindow::keys_processing()      // processing keys pressing
@@ -1862,9 +1924,10 @@ void MainWindow::keys_processing()      // processing keys pressing
     char key = cv::waitKey(5) % 256;
     if (key == 't') // test stuff button    
     {
-      //  neurostyle();
-        swap_main_overlay();
+      //  neurostyle();        
     }
+    if (key == 'w')      // swap main and overlay pics
+        swap_main_overlay();
     else if (key == 'a') // save and add current overlay to pictures
     {
         save_and_add_overlaypic();
@@ -2021,8 +2084,11 @@ void MainWindow::keys_processing()      // processing keys pressing
         ocvform->transp++;
         ocvform->updateformvals();
     }
-    else if ((key == 'm') && (!activeflow)) // change picture for mixer random pic mode
-        ocvform->changerandpic();
+    else if ((key == 'm') && (!activeflow)) // change brush type: circle / box
+    {
+        ocvform->circle_brush = !ocvform->circle_brush;
+        ocvform->updateformvals();
+    }
     else if (key == 'u')
     {
         ocvform->hueonly=!ocvform->hueonly;
@@ -2040,7 +2106,7 @@ void MainWindow::keys_processing()      // processing keys pressing
     else if (key == 'g')                   // switch flow direction by attention > border
         ocvform->directionswitch_by_att=!ocvform->directionswitch_by_att;
     else if (key == 'h')                    // story mode: main pic is fixed, overlay pic change by attention > border
-        storymode=!storymode;
+        storymode=!storymode;                  
 }
 
 void MainWindow::picfiltUpdate() // function for MindOCV hue-overlay flow updates
@@ -2165,7 +2231,7 @@ void dosvdtransform() // compute SVD vectors for each color channel of image
 
 vector<float> gethistogram(Mat image, Mat maskx)
 {
-    int hb = 16, sb = 16, vb = 8;
+    int hb = 8, sb = 16, vb = 16;
     int histSize[] = {hb, sb, vb};
     float hranges[] = {0, 180};
     float sranges[] = {0, 256};
@@ -2239,10 +2305,10 @@ void MainWindow::getchi2dists(int t)
             return l.first < r.first;
     });
 
-    int tl = chi2distances.size();    
+    int tl = chi2distances.size();
     for (int i=0; i<ocvform->allngb; i++)
     {
         nearest_pics[i]=chi2distances.at(i).first;
-        farest_pics[i]=chi2distances.at(tl-ocvform->allngb+i).first;
+        farest_pics[i]=chi2distances.at(tl-i-1).first;
     }
 }

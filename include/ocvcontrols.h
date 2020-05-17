@@ -24,32 +24,32 @@ class ocvcontrols : public QWidget
 
 public:
     QPoint currmousepos;
-    bool formshown = true;
-    bool camerainp = false;
-    bool drawbrushcontour = true;
-    bool drops_by_click_mode = false;
-    bool histFeaturesReady = false;    
+    std::mt19937 gen; std::uniform_int_distribution<int> dist;
+    bool formshown = true; bool camerainp = false;
+    bool drawbrushcontour = true; bool drops_by_click_mode = false;
+    bool circle_brush = true; bool histFeaturesReady = false;
+    bool multi_img_dflow = false; bool multi_img_by_att = false;
     int picwidth = 2000, picheight = 1125;
     int currfilterarea = 250, currfilterrate = 12, currfilttype = 5, totalfilts = 5;
     int sigma_color = 25, sigma_space = 50, kernel_s = 5;                              // cartoonize params
     int wave_freqs = 42, wave_amp = 9;                                                 // waves params
     int dilation_size = 1, dilation_elem = 2;                                          // dilate params
     int nfeatures = 100, nlevels = 6, edgetreshold = 20; float scalef = 1.1;           // ORB params
-    QColor fcolor = QColor(255,255,255); bool randfcolor=false;                        // ORB params
+    QColor fcolor = QColor(255,255,255); bool randfcolor = false;                      // ORB params
 
-    int mixtype = 1, transp = 80, randpicn;                                            // mixer params
+    int mixtype = 1, transp = 80, multi_set_size = 2, randpicn;                        // mixer params
     bool changerandpic_byclick = false; bool changebyattention = false;                // mixer params
-    bool dreamflow = false; int dreamflowrate = 77; bool polygonmask = true;           // mixer params
+    bool dreamflow = false; int dreamflowrate = 77; bool polygonmask = false;          // mixer params
     bool changepic_bytime = false; int changepic_interval = 3; QTimer* pichngT;        // mixer params
     QPoint seed; int x_left, x_right, y_top, y_bottom, drops_interval = 50;            // mixer params
     bool dropsmode = false; QTimer* dropsT; int dropsgrow_step = 24; Scalar wcolor;    // mixer params
     int firstdrop_size = 30; bool plotdroprect = true; bool drops_by_att = false;      // mixer params
-    bool poly_by_att = true; int pointsinpoly = 3; bool drops_from_mousepos = false;    // mixer params
+    bool poly_by_att = true; int pointsinpoly = 3; bool drops_from_mousepos = false;   // mixer params
 
     bool attmodul_area = false; bool attent_modulated_dreams = false;    // attention modulated filter area and rate of dreamflow
     bool hueonly = false; bool transp_by_att = false;                    // hue only, without overlay; transparency by attention    
     bool directionswitch_by_att = false;    
-    bool showlabel = false; char l_str[50];  // attention label parameters
+    bool showlabel = true; char l_str[50];  // attention label parameters
     int l_posx = 1500, l_posy = 80, lfont_scale = 4, lfont_size = 5, lw = 484, lh = 80;
     int flowdirection = 0; Mat randpic; int allngb = 30, ngbarea = 20; // area of neighbours for nearest / farest pic
     // 0: "random" - next pic is randomly from all, 1: "similar" - from N nearest, -1: "opposite" - from N farest
@@ -169,6 +169,18 @@ private slots:
     void on_comboBox_currentIndexChanged(int index);
 
     void on_checkBox_17_clicked();
+
+    void on_radioButton_7_clicked();
+
+    void on_radioButton_8_clicked();
+
+    void on_checkBox_18_clicked();
+
+    void on_checkBox_19_clicked();
+
+    void on_spinBox_17_valueChanged(int arg1);
+
+    void on_pushButton_5_clicked();
 
 private:
     Ui::ocvcontrols *ui;

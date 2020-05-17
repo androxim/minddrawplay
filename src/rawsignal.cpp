@@ -54,8 +54,6 @@ rawsignal::rawsignal(QWidget *parent) :
     curpos->end->setCoords(0,256);
 }
 
-
-
 rawsignal::~rawsignal()
 {
     delete ui;
