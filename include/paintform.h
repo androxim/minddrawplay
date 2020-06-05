@@ -9,6 +9,7 @@
 #include <paintscene.h>
 #include "plotwindow.h"
 #include "QInputEvent"
+#include "myitem.h"
 #include "set"
 
 #define TPMAX 7300 // max points before replot for attention/meditation
@@ -18,6 +19,7 @@ class paintScene;
 class plotwindow;
 class MainWindow;
 class ocvcontrols;
+class MyItem;
 
 namespace Ui {
 class paintform;
@@ -33,26 +35,28 @@ public:
     // description of most variables in paintform.cpp //
 
     explicit paintform(QWidget *parent = 0);
-    MainWindow* mww;        // pointer on MainWindow class
-    plotwindow* pw;         // pointer on MindPlay window class
-    ocvcontrols* ocvfm;     // pointer on MindOCV controls class
-    paintScene *scene;      // pointer on paintScene class (drawing functions)
+    MainWindow* mww;        // pointer on MainWindow object
+    plotwindow* pw;         // pointer on MindPlay window object
+    ocvcontrols* ocvfm;     // pointer on MindOCV controls object
+    paintScene *scene;      // pointer on paintScene object (drawing functions)
+    MyItem* movingItem;     // pointer on MyItem object (moving item in game)
 
     QGraphicsScene* scene2; QGraphicsScene* scene3; QGraphicsScene* scene4; QGraphicsScene* scene5;
     QGraphicsScene* scene6; QGraphicsScene* scene7; QGraphicsScene* scene8; QGraphicsScene* scene9;
     QGraphicsScene* scene10; QGraphicsScene* scene11; QGraphicsScene* scene12;
     QGraphicsScene* scene13; QGraphicsScene* scene14;  QGraphicsScene* scene15;
+    QGraphicsScene* scenegame;
 
     int puzzlew, puzzleh, soundborderlevel, borderpicchange, setsize, picsrestored;
     int numsamples, numfrsamples, lenofinterval, laststop, pointsfor_estattention;
-    int eegsize, pensize, temppensize, prevpict, prevpuzzle;
-    int timepics, picsforchange, mainindex, polycount;
+    int eegsize, pensize, temppensize, prevpict, prevpuzzle, moveItemInterval;
+    int timepics, picsforchange, mainindex, polycount, gamethroughborder, y0border;
     double thet, bet, avgv, estattn;
 
     bool music_adaptive_bord, firstpuzzle, spacedflow, collectiveflow, grabmindplayflow;
     bool gamemode, flowmode, puzzlegrabed, canpuzzlechange, backloaded, showestatt;
     bool erasepen, bfiltmode, puzzlemode, fixedmain, changingpics, iconsready;
-    bool attent_modulaion, limitpicschange, setloaded, musicactiv;
+    bool attent_modulaion, limitpicschange, setloaded, musicactiv, gamethrough;
 
     QVector<double> attent_arr, medit_arr, border_arr, xc, fxc, estatt_arr;
     QVector<double> delta_arr, theta_arr, alpha_arr, beta_arr, gamma_arr, hgamma_arr;
@@ -60,7 +64,9 @@ public:
     QPixmap pm, pmg, pmain, prevpic, curpic, pmtemp, mainpic, pixMap; QImage qim;
     QFutureWatcher<QImage> *imageScaling;
     QVector<QPixmap> pmarray;
-    QVector<QPixmap> onepicarr;    
+    QVector<QPixmap> onepicarr;
+    QVector<QPoint> itemborders;
+    QVector<QGraphicsLineItem*> borderlines, borderlinesnew;
     int* currentindexes;
 
     QPolygonF plane; int poltypearr[108]; int centercoord[108][2];  // polygons variables (experimental mode, not finished)
@@ -73,6 +79,7 @@ public:
 
     QPen mypen;
     QTimer* tpicschange;
+    QTimer* moveItemTimer;
     Qt::AspectRatioMode rationmode;
 
     bool eventFilter(QObject *target, QEvent *event);
@@ -106,7 +113,11 @@ public:
     void updateset_fillcorrectpuzzles();
     void updateset_fillcorrectpuzzles_single();
 
+    void playsometone();
+    void initborderlines();
+    void updateborderlines(double scale);
     void startround();
+    void newroundmovegame();
     void setactiveflowtime(int t);
     void setbackimage(QPixmap pm);
     void puzzle_onepic_switch();
@@ -233,6 +244,8 @@ private slots:
     void on_spinBox_7_valueChanged(int arg1);
 
     void on_checkBox_22_clicked();
+
+    void on_checkBox_23_clicked();
 
 private:
     Ui::paintform *ui;

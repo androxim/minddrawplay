@@ -26,7 +26,8 @@ SOURCES += src\main.cpp\
     src\leftpanel.cpp \
     src\rightpanel.cpp \
     src\ocvcontrols.cpp \
-    src\filters.cpp
+    src\filters.cpp \
+    src\myitem.cpp
 
 HEADERS  += include\mainwindow.h \
             include\qcustomplot.h \
@@ -42,7 +43,8 @@ HEADERS  += include\mainwindow.h \
     include\leftpanel.h \
     include\rightpanel.h \
     include\ocvcontrols.h \
-    include\filters.h
+    include\filters.h \
+    include\myitem.h
 
 FORMS    += ui\mainwindow.ui \
             ui\plotwindow.ui \

@@ -47,16 +47,16 @@ class plotwindow : public QWidget
 public:      
     // description of most variables in plotwindow.cpp //
 
-    MainWindow* mw;         // pointer on MainWindow class
-    Settings* sw;           // pointer on settings class window
-    paintScene* pss;        // pointer on paintScene class
+    MainWindow* mw;         // pointer on MainWindow object
+    Settings* sw;           // pointer on settings object window
+    paintScene* pss;        // pointer on paintScene object
     rawsignal* rws;         // pointer on raw signal plot window
-    paintform* paintf;      // pointer on MindDraw window class
-    ocvcontrols* ocvf;      // pointer on MindOCV window class
-    appconnect* appcn;      // pointer on AppConnect class (BCI2000)
-    filters* filtercl;      // pointer on class with standard signal filters
+    paintform* paintf;      // pointer on MindDraw window object
+    ocvcontrols* ocvf;      // pointer on MindOCV window object
+    appconnect* appcn;      // pointer on AppConnect object (BCI2000)
+    filters* filtercl;      // pointer on object with standard signal filters
 
-    soundplayer splayer;    // sound player class with sound samples and timers associated with own thread
+    soundplayer splayer;    // sound player object with sound samples and timers associated with own thread
     QStringList strLst2; QStringListModel *strLstM2;  // list of playing tones
     QString tones, lasttones;
 

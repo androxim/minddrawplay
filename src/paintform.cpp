@@ -11,6 +11,7 @@
 #include <QLabel>
 #include "random"
 #include <QtConcurrent>
+#include <myitem.h>
 
 // TO DO:
 // adaptive border for puzzle change
@@ -43,9 +44,7 @@ paintform::paintform(QWidget *parent) :
     attent_modulaion = true;// attention / meditation modulation
     music_adaptive_bord = false;  // adaptive border for music activation mode
     backloaded = false;     // flag if background image is loaded
-
-    rationmode = Qt::IgnoreAspectRatio; // ration mode for filling images in main pic and puzzles
-    graphicsviews_init(); // initialize puzzles graphicsview geometry and properties
+    gamethrough = false;    // game through mode (moving item by attention / meditation)
 
     prevpuzzle = -1;             // previous puzzle number with puzzle clicks
     prevpict = -1;               // previous pictures index with puzzle clicks
@@ -60,6 +59,11 @@ paintform::paintform(QWidget *parent) :
     laststop = 0;                // last point for adaptive border estimation for sound activation mode
     lenofinterval = 3;           // number of points for adaptive border estimation for sound activation mode
     pointsfor_estattention = 5;  // number of points for attention estimation
+    gamethroughborder = 42;      // border for game through (when item moves)
+    y0border = 600;              // y0 for all borders
+
+    rationmode = Qt::IgnoreAspectRatio; // ration mode for filling images in main pic and puzzles
+    graphicsviews_init(); // initialize puzzles graphicsview geometry and properties
 
     currimglist = QVector<QString>(15); // list of image paths for current puzzle representation
     currentindexes = new int[14];   // initialize indexes for current pics in puzzle
@@ -70,7 +74,7 @@ paintform::paintform(QWidget *parent) :
     init_brainwaves_arrays();
 
     QTime time = QTime::currentTime();
-    qsrand((uint)time.msec()); // random generator seed
+    qsrand((uint)time.msec()); // random generator seed    
 
     // initialize set for puzzle gathering mode
     for (int i=0; i<15; i++)
@@ -95,7 +99,7 @@ paintform::paintform(QWidget *parent) :
         centercoord[i][0]=qrand()%1500;
         centercoord[i][1]=qrand()%800;
         poltypearr[i]=3+qrand()%6;
-    }   
+    }       
 
     configure_ui(); // configure ui elements
 
@@ -216,7 +220,8 @@ void paintform::configure_ui() // configure ui elements
     ui->verticalSlider_2->setGeometry(533,855,20,70);
     ui->spinBox_5->setEnabled(true);
     ui->verticalSlider_2->setEnabled(true);
-    ui->checkBox_13->setGeometry(400,930,120,20);
+    ui->checkBox_13->setGeometry(400,930,140,20);
+    ui->checkBox_23->setGeometry(400,950,140,20);
     ui->checkBox_14->setGeometry(260,930,120,20);
     ui->checkBox_5->setGeometry(400,905,120,20);
     ui->checkBox_5->setVisible(false);
@@ -269,26 +274,36 @@ void paintform::configure_ui() // configure ui elements
     ui->widget->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignLeft|Qt::AlignTop);
     ui->widget->legend->setBrush(QBrush(QColor(255,255,255,190)));
 
-    ui->widget->addGraph();
-    ui->widget->graph(0)->setPen(QPen(Qt::darkRed));
+    ui->widget->addGraph();        
+    QPen qpt_att(Qt::darkRed);
+    qpt_att.setWidth(3);
+    ui->widget->graph(0)->setPen(qpt_att);
     ui->widget->graph(0)->setName("Attention");
     ui->widget->graph(0)->setData(xc, attent_arr);
-    ui->widget->graph(0)->selectionDecorator()->setPen(QPen(Qt::red));
+    QPen qpts_att = ui->widget->graph(0)->pen();
+    qpts_att.setColor(Qt::red);
+    ui->widget->graph(0)->selectionDecorator()->setPen(qpts_att);
 
     ui->widget->addGraph();
     ui->widget->setInteraction(QCP::iSelectPlottables, true);
-    ui->widget->graph(1)->setPen(QPen(Qt::darkGreen));
+    QPen qpt_medit(Qt::darkGreen);
+    qpt_medit.setWidth(3);
+    ui->widget->graph(1)->setPen(qpt_medit);
     ui->widget->graph(1)->setName("Meditation");
-    ui->widget->graph(1)->setData(xc, medit_arr);
-    ui->widget->graph(1)->selectionDecorator()->setPen(QPen(Qt::green));
+    ui->widget->graph(1)->setData(xc, medit_arr);    
+    QPen qpts_medit =  ui->widget->graph(1)->pen();
+    qpts_medit.setColor(Qt::green);
+    ui->widget->graph(1)->selectionDecorator()->setPen(qpts_medit);
     ui->widget->replot();
     ui->widget->setAutoFillBackground(false);
 
-    ui->widget->addGraph();
-    mypen.setColor("orange");
-    ui->widget->graph(2)->setPen(QPen("orange"));
+    ui->widget->addGraph();    
+    QPen qpt_bord("orange");
+    qpt_bord.setWidth(3);
+    ui->widget->graph(2)->setPen(qpt_bord);
     ui->widget->graph(2)->setName("Border");
-    ui->widget->graph(2)->setData(xc, border_arr);
+    ui->widget->graph(2)->setData(xc, border_arr);                
+    ui->widget->graph(2)->selectionDecorator()->setPen(qpt_bord);
 
     ui->widget_2->xAxis->setRange(0,32);
     ui->widget_2->legend->setVisible(true);
@@ -360,7 +375,7 @@ void paintform::graphicsviews_init() // initialize puzzles graphicsview geometry
     ui->graphicsView->setGeometry(50,50,1500,800);
     ui->graphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->graphicsView->setAlignment(Qt::AlignCenter);
-    ui->graphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    ui->graphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);    
     ui->graphicsView_2->setAlignment(Qt::AlignCenter);
     ui->graphicsView_2->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->graphicsView_2->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -403,9 +418,15 @@ void paintform::graphicsviews_init() // initialize puzzles graphicsview geometry
     ui->graphicsView_15->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->graphicsView_15->setAlignment(Qt::AlignCenter);
     ui->graphicsView_15->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    ui->graphicsView_16->setGeometry(50,50,1500,800);
+    ui->graphicsView_16->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    ui->graphicsView_16->setAlignment(Qt::AlignCenter);
+    ui->graphicsView_16->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     ui->graphicsView->setFrameStyle(0);
     ui->graphicsView->setStyleSheet("background: transparent");
+    ui->graphicsView_16->setFrameStyle(0);
+    ui->graphicsView_16->setStyleSheet("background: transparent");
     ui->graphicsView_2->setFrameStyle(0);
     ui->graphicsView_3->setFrameStyle(0);
     ui->graphicsView_4->setFrameStyle(0);
@@ -440,6 +461,7 @@ void paintform::graphicsviews_init() // initialize puzzles graphicsview geometry
 
     scene->setSceneRect(ui->graphicsView->rect());
     ui->graphicsView->setScene(scene);
+    ui->graphicsView->setRenderHint(QPainter::Antialiasing);
     scene2 = new QGraphicsScene();
     scene2->setSceneRect(ui->graphicsView_2->rect());
     ui->graphicsView_2->setScene(scene2);
@@ -481,7 +503,23 @@ void paintform::graphicsviews_init() // initialize puzzles graphicsview geometry
     ui->graphicsView_14->setScene(scene14);
     scene15 = new QGraphicsScene();
     scene15->setSceneRect(ui->graphicsView_15->rect());
-    ui->graphicsView_15->setScene(scene15);
+    ui->graphicsView_15->setScene(scene15);   
+
+    scenegame = new QGraphicsScene();
+    scenegame->setSceneRect(ui->graphicsView_16->rect());
+    ui->graphicsView_16->setRenderHint(QPainter::Antialiasing);
+    ui->graphicsView_16->setScene(scenegame);
+
+    // object for game for moving item by attention / meditation
+    movingItem = new MyItem();
+    movingItem->pfw = this;
+    scenegame->addItem(movingItem);
+    moveItemInterval = 100;
+    moveItemTimer = new QTimer(this);
+    moveItemTimer->connect(moveItemTimer, SIGNAL(timeout()),scenegame,SLOT(advance()));
+    moveItemTimer->setInterval(moveItemInterval);
+    ui->graphicsView_16->setVisible(false);    
+    initborderlines();
 
     ui->graphicsView_2->setVisible(false);
     ui->graphicsView_3->setVisible(false);
@@ -512,7 +550,63 @@ void paintform::graphicsviews_init() // initialize puzzles graphicsview geometry
     ui->graphicsView_12->installEventFilter(this);
     ui->graphicsView_13->installEventFilter(this);
     ui->graphicsView_14->installEventFilter(this);
-    ui->graphicsView_15->installEventFilter(this);
+    ui->graphicsView_15->installEventFilter(this);  
+    ui->graphicsView_16->installEventFilter(this);
+}
+
+void paintform::initborderlines()
+{
+    QPen mpen;
+    mpen.setWidth(8);
+    qsrand(QDateTime::currentMSecsSinceEpoch()%UINT_MAX);
+    for (size_t t = 0; t<8; t++)
+    {
+        QPoint pt;
+        pt.setX(50+180*t+qrand()%80);
+        pt.setY(500-qrand()%200);
+        itemborders.push_back(pt);
+        mpen.setColor(QColor(qrand()%256,qrand()%256,qrand()%256));
+        borderlines.push_back(scenegame->addLine(pt.x(),y0border,pt.x(),pt.y(),mpen));
+    }
+}
+
+void paintform::updateborderlines(double scale)
+{
+    QPen mpen;
+    mpen.setWidth(8);
+    for (size_t t = 0; t<8; t++)
+    {
+        scenegame->removeItem(borderlines[t]);
+        QPoint pt;
+        pt.setX(itemborders[t].x());
+        pt.setY(y0border-(y0border-itemborders[t].y())*scale);
+        mpen.setColor(QColor(qrand()%256,qrand()%256,qrand()%256));
+        borderlinesnew.push_back(scenegame->addLine(pt.x(),y0border,pt.x(),pt.y(),mpen));
+    }
+    borderlines.clear();
+    for (size_t t = 0; t<8; t++)
+        borderlines.push_back(borderlinesnew[t]);
+    borderlinesnew.clear();
+}
+
+void paintform::playsometone() // play random tone from MindPlay
+{
+    pw->tonenumbers=0;
+    pw->tones=" ";
+    pw->randomtone();
+    pw->letsplay();
+}
+
+void paintform::newroundmovegame() // new round for moving item game
+{
+    if ((!grabmindplayflow) && (!pw->camerainp))
+        on_pushButton_6_clicked();
+    itemborders.clear();
+    scenegame->removeItem(movingItem);
+    scenegame->clear();
+    scenegame->addItem(movingItem);
+    borderlines.clear();
+    initborderlines();
 }
 
 void paintform::setpicfolder(QString fpath) // set folder for pictures
@@ -700,6 +794,12 @@ void paintform::updatefreqarrs(double deltat, double thetat, double alphat, doub
         ui->label_23->setText("ATTENTION: "+QString::number((int)estattn)+"%");
     }
 
+  //  if (gamethrough)
+  //  {
+  //      moveItemInterval=100-estattn;
+  //      moveItemTimer->setInterval(moveItemInterval);
+  //  }
+
   /*  if ((bfiltmode) || (!canpuzzlechange)) // if estimated attention is used for flow parameters
     {
         setdflowtime(estattn);
@@ -855,6 +955,28 @@ void paintform::updateattention(int t) // update attention dependent variables
             ui->label_23->setText("ATTENTION: "+QString::number(t)+"%");
         }
 
+        if (gamethrough)
+        {
+            if (t<gamethroughborder)
+            {
+                if (!movingItem->hitborder)
+                {
+                    movingItem->cantgo=true;
+                    movingItem->update();
+                }
+                else
+                    movingItem->godown=true;
+            }
+            else
+            {
+                movingItem->cantgo=false;
+                movingItem->godown=false;
+            }
+            moveItemInterval=110-t;
+            moveItemTimer->setInterval(moveItemInterval);
+            updateborderlines((double)(130-t)/100);
+        }
+
         // change of back image randomly by attention > border
         if ((!fixedmain) && (!flowmode) && (!gamemode) && (t>borderpicchange) && (bfiltmode))
             on_pushButton_6_clicked();
@@ -913,7 +1035,29 @@ void paintform::updatemeditation(int t) // update meditation array, plot and dep
                pw->brainflow_on=false;
                pw->musicmode_on=false;
            }
-       } else
+       }
+
+       if (gamethrough)
+       {
+           if (t<gamethroughborder)
+           {
+               if (!movingItem->hitborder)
+               {
+                   movingItem->cantgo=true;
+                   movingItem->update();
+               }
+               else
+                   movingItem->godown=true;
+           }
+           else
+           {
+               movingItem->cantgo=false;
+               movingItem->godown=false;
+           }
+           moveItemInterval=110-t;
+           moveItemTimer->setInterval(moveItemInterval);
+           updateborderlines((double)(130-t)/100);
+       }
 
        ui->label_24->setStyleSheet("QLabel { color : darkGreen; }");
        ui->radioButton_5->setStyleSheet("QRadioButton { color : darkGreen; }");
@@ -1729,7 +1873,17 @@ bool paintform::eventFilter(QObject *target, QEvent *event)  // processing key /
 {
     QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
 
-    if ((target == ui->graphicsView) && (event->type() == QEvent::KeyPress))
+    if (event->type() == QEvent::KeyPress)      // switch to MindPlay window
+    {
+        if (keyEvent->key() == Qt::Key_Tab)
+        {
+            this->hide();
+            pw->show();
+            pw->setFocus();
+        }
+    }
+
+    if (((target == ui->graphicsView) || (target == ui->graphicsView_16)) && (event->type() == QEvent::KeyPress))
     {
         if (keyEvent->key() == Qt::Key_Z)
         {
@@ -1797,13 +1951,6 @@ bool paintform::eventFilter(QObject *target, QEvent *event)  // processing key /
             ui->checkBox_12->setChecked(!ui->checkBox_12->isChecked());
             ui->widget_2->setVisible(ui->checkBox_12->isChecked());
             ui->widget->setVisible(ui->checkBox_12->isChecked());
-        }
-
-        if (keyEvent->key() == Qt::Key_Tab)  // switch to MindPlay
-        {
-            this->hide();
-            pw->show();
-            pw->setFocus();            
         }      
 
         pressedKeys += ((QKeyEvent*)event)->key();
@@ -2733,12 +2880,16 @@ void paintform::setbackimage(QPixmap pm) // set back image from Pixmap (MindPlay
     {        
         scene->clear();
         scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
+        QBrush qbr(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
+        ui->graphicsView_16->setBackgroundBrush(qbr);
     }
     else
     {
         scene->bkgndimg=pm;
         qpr.setBrush(QPalette::Background, scene->bkgndimg.scaled(this->size(),rationmode,Qt::SmoothTransformation));
         this->setPalette(qpr);
+        QBrush qbr(Qt::NoBrush);
+        ui->graphicsView_16->setBackgroundBrush(qbr);
     }
 }
 
@@ -2771,8 +2922,14 @@ void paintform::setbackimageocv(QString filename) // set back image from left pa
         this->setPalette(qpr);
         scene->clear();
         this->repaint();
+        QBrush qbr(Qt::NoBrush);
+        ui->graphicsView_16->setBackgroundBrush(qbr);
     } else
+    {
         scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
+        QBrush qbr(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
+        ui->graphicsView_16->setBackgroundBrush(qbr);
+    }
 
 }
 
@@ -2847,7 +3004,7 @@ void paintform::delay(int temp)
 // processing ui
 
 void paintform::on_pushButton_clicked() // load clean main pic (not filtered and without drawing)
-{
+{    
     if (!pmain.isNull())
     {     
         if (!scene->drawflow)
@@ -2858,7 +3015,7 @@ void paintform::on_pushButton_clicked() // load clean main pic (not filtered and
         }
         else
         {
-            scene->clear();
+            scene->clear();         
             this->setPalette(qpr);
             this->repaint();
         }
@@ -2871,7 +3028,7 @@ void paintform::on_pushButton_clicked() // load clean main pic (not filtered and
   //      centercoord[i][0]=qrand()%1500;
   //      centercoord[i][1]=qrand()%800;
   //      poltypearr[i]=3+qrand()%6;
-  //  }
+  //  }    
 }
 
 void paintform::on_pushButton_2_clicked() // load main image from file
@@ -2891,8 +3048,14 @@ void paintform::on_pushButton_2_clicked() // load main image from file
             this->setPalette(qpr);
             scene->clear();
             this->repaint();
+            QBrush qbr(Qt::NoBrush);
+            ui->graphicsView_16->setBackgroundBrush(qbr);
         } else
-            scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
+        {
+            scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));            
+            QBrush qbr(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
+            ui->graphicsView_16->setBackgroundBrush(qbr);
+        }
     }
 }
 
@@ -3050,11 +3213,15 @@ void paintform::on_pushButton_6_clicked() // set main pic as random from folder
     {
         qpr.setBrush(QPalette::Background, scene->bkgndimg.scaled(this->size(),rationmode,Qt::SmoothTransformation));
         this->setPalette(qpr);
+        QBrush qbr(Qt::NoBrush);
+        ui->graphicsView_16->setBackgroundBrush(qbr);
     } else
     {
         qim=qim.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation);
         scene->clear();
         scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
+        QBrush qbr(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
+        ui->graphicsView_16->setBackgroundBrush(qbr);
     }     
 }
 
@@ -3241,6 +3408,8 @@ void paintform::on_spinBox_5_valueChanged(int arg1)
 {
     soundborderlevel=arg1;
     ui->verticalSlider_2->setValue(arg1);
+    if (gamethrough)
+        gamethroughborder=arg1;
 }
 
 void paintform::on_verticalSlider_2_sliderMoved(int position)
@@ -3386,18 +3555,18 @@ void paintform::on_checkBox_20_clicked()
         ui->checkBox_17->setEnabled(!scene->drawflow);
     }
     ui->pushButton_5->setEnabled(!scene->drawflow);
-    if ((scene->drawflow) && (!pmain.isNull()))
+    if (scene->drawflow)
     {
        // scene->tim->start();
         scene->bkgndimg=pmain;
         qpr.setBrush(QPalette::Background, scene->bkgndimg.scaled(this->size(),rationmode,Qt::SmoothTransformation));
         this->setPalette(qpr);
         scene->clear();
-        this->repaint();
+        this->repaint();                      
     }
     else
     {
-        // scene->tim->stop();
+        // scene->tim->stop();    
         pmain=scene->bkgndimg;
         scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
     }
@@ -3461,4 +3630,31 @@ void paintform::on_spinBox_7_valueChanged(int arg1) // change length of interval
 void paintform::on_checkBox_22_clicked()
 {
     pw->setmusicmode(ui->checkBox_22->isChecked());
+}
+
+void paintform::on_checkBox_23_clicked()
+{
+    gamethrough = !gamethrough;
+    if (gamethrough)
+    {
+        movingItem->setX(movingItem->startX);
+        movingItem->setY(movingItem->startY);
+        itemborders.clear();
+        scenegame->removeItem(movingItem);
+        scenegame->clear();
+        scenegame->addItem(movingItem);
+        borderlines.clear();
+        initborderlines();
+        soundborderlevel = gamethroughborder;
+        ui->spinBox_5->setValue(soundborderlevel);
+        ui->graphicsView->setVisible(false);
+        ui->graphicsView_16->setVisible(true);
+        moveItemTimer->start();
+    }
+    else
+    {
+        ui->graphicsView->setVisible(true);
+        ui->graphicsView_16->setVisible(false);
+        moveItemTimer->stop();
+    }
 }

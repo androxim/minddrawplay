@@ -6,6 +6,7 @@
 #include "QtAlgorithms"
 #include <QSound>
 #include "qmath.h"
+#include "myitem.h"
 
 // TO DO:
 // 1. attention game with overcoming set of lines
@@ -22,7 +23,8 @@ paintScene::paintScene(QObject *parent) : QGraphicsScene(parent)
     startedline = false;        // flag if current drawing line is started
     timeoff = true;             // if timer for drawing on contours is off
     drawflow = false;           // drawing in flow (experimental mode)
-    fxcolor = "orange";         // default fixed color
+    fxcolor = "orange";         // default fixed color    
+    ac = 255;                   // transparency for pen color
 
     // vector for drawing by contours (firstly draw line, then it's filled with brain waves projection)
     linesarr.resize(1000);
@@ -48,7 +50,7 @@ paintScene::paintScene(QObject *parent) : QGraphicsScene(parent)
     sceneforfilt.addItem(&itemforfilt);
     resforfilt=QImage(QSize(1500, 800), QImage::Format_ARGB32);
     ptr = new QPainter(&resforfilt);
-    pmv = new QPixmap();    
+    pmv = new QPixmap();
 }
 
 void paintScene::init(plotwindow* pww, MainWindow* mw)
@@ -71,7 +73,6 @@ void paintScene::init(plotwindow* pww, MainWindow* mw)
 
     // values for experimental drawing mode
     tx = 0; ty = -1; xv = 1;
-
 }
 
 QImage paintScene::applyEffectToImage(QImage src, QGraphicsEffect *effect, int extent)
@@ -101,12 +102,12 @@ void paintScene::applyfilteronbackimg()
 {
     colorize = new QGraphicsColorizeEffect;
     blur = new QGraphicsBlurEffect;
-    blur->setBlurRadius((100-pw->attent)/10);
+    blur->setBlurRadius((100-pw->attent)/15);
    // colorize->setColor(QColor(pw->alpha*5,256-pw->beta*5,256-pw->gamma*6,pw->meditt*2));
     QColor qcl = QColor(pw->theta*4,pw->beta*4,pw->gamma*4,pw->alpha*6);
    // qcl.setHsv(pw->beta*7,pw->alpha*7,pw->theta*6);
     colorize->setColor(qcl);//QColor(pw->theta*4,pw->beta*4,pw->gamma*4,pw->alpha*4));
-    colorize->setStrength((double)pw->attent/50);
+    colorize->setStrength((double)(100-pw->attent)/100);
 
     //qbim1 = applyEffectToImage(paintf->qim, blur, 0);
     qbim1 = applyEffectToImage(bkgndimg.toImage(), blur, 0);
@@ -115,7 +116,6 @@ void paintScene::applyfilteronbackimg()
     qptr.setBrush(QPalette::Background, QPixmap::fromImage(qbim2).scaled(paintf->size(), Qt::IgnoreAspectRatio));
     paintf->setPalette(qptr);
     paintf->repaint();
-
 }
 
 void paintScene::applyfilter()
@@ -148,7 +148,7 @@ void paintScene::applyfilter()
 }
 
 void paintScene::drawlinebyeeg()    // drawing on array of points, experimental mode
-{
+{    
     for (int i=1; i<pointnum; i++)
     {
         setcolor();
@@ -278,10 +278,10 @@ void paintScene::setcolor() // setting pen color
         gc = pw->alpha*9;
         bc = pw->gamma*9;
     }
-    if (paintf->attent_modulaion)
+   /* if (paintf->attent_modulaion)
         ac=50+attentt*2;
     else
-        ac=50+meditt*2;
+        ac=50+meditt*2; */
 
     if (rc>255) rc=255;
     if (gc>255) gc=255;    

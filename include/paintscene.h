@@ -13,6 +13,7 @@
 #include <valarray>
 #include "paintform.h"
 #include <complex>
+#include "myitem.h"
 
 const int TMAX=1024;
 
@@ -33,9 +34,9 @@ class paintScene : public QGraphicsScene
 public:
     // description of most variables in paintscene.h //
 
-    paintform* paintf;      // pointer on MindDraw window class
-    plotwindow* pw;         // pointer on MindPlay window class
-    MainWindow* mww;        // pointer on MainWindow class
+    paintform* paintf;      // pointer on MindDraw window object
+    plotwindow* pw;         // pointer on MindPlay window object
+    MainWindow* mww;        // pointer on MainWindow object
 
     int rc, gc, bc, ac, tx, ty, xv, randr, randg, randb;
     int t0, t1, counter, length, pointnum, currnumpoint;
@@ -93,7 +94,7 @@ private:
     void mouseScrEvent(QGraphicsSceneMouseEvent *event);
 
 private slots:
-    void timerUpdate();
+    void timerUpdate();  
 
 };
 

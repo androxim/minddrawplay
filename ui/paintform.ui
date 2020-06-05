@@ -744,13 +744,13 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>680</y>
-     <width>101</width>
+     <y>670</y>
+     <width>131</width>
      <height>20</height>
     </rect>
    </property>
    <property name="text">
-    <string>game mode</string>
+    <string>&quot;find same&quot; game</string>
    </property>
   </widget>
   <widget class="QCheckBox" name="checkBox_14">
@@ -983,7 +983,7 @@
   <widget class="QCheckBox" name="checkBox_20">
    <property name="geometry">
     <rect>
-     <x>130</x>
+     <x>150</x>
      <y>710</y>
      <width>71</width>
      <height>20</height>
@@ -996,7 +996,7 @@
   <widget class="QCheckBox" name="checkBox_21">
    <property name="geometry">
     <rect>
-     <x>130</x>
+     <x>150</x>
      <y>690</y>
      <width>51</width>
      <height>20</height>
@@ -1153,6 +1153,29 @@
     <enum>Qt::Horizontal</enum>
    </property>
   </widget>
+  <widget class="QGraphicsView" name="graphicsView_16">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>510</y>
+     <width>31</width>
+     <height>41</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="checkBox_23">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>690</y>
+     <width>131</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>&quot;go through&quot; game</string>
+   </property>
+  </widget>
   <zorder>pushButton_5</zorder>
   <zorder>pushButton_8</zorder>
   <zorder>graphicsView</zorder>
@@ -1204,8 +1227,6 @@
   <zorder>checkBox_11</zorder>
   <zorder>spinBox_4</zorder>
   <zorder>comboBox</zorder>
-  <zorder>widget</zorder>
-  <zorder>widget_2</zorder>
   <zorder>checkBox_12</zorder>
   <zorder>checkBox_13</zorder>
   <zorder>checkBox_14</zorder>
@@ -1232,6 +1253,10 @@
   <zorder>checkBox_22</zorder>
   <zorder>progressBar</zorder>
   <zorder>horizontalSlider_2</zorder>
+  <zorder>graphicsView_16</zorder>
+  <zorder>checkBox_23</zorder>
+  <zorder>widget</zorder>
+  <zorder>widget_2</zorder>
  </widget>
  <customwidgets>
   <customwidget>
