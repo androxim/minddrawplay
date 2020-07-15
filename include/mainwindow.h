@@ -52,13 +52,14 @@ public:
     double allpower, p_delta, p_theta, p_alpha, p_beta, p_gamma1, p_gamma2;
 
     bool paintw_started, pwstart, simeeg, bciconnect, opencvstart, ocvcontrshow, storymode;
-    bool canchangehue, canchangeoverlay, histfinished;
+    bool canchangehue, canchangeoverlay, histfinished, canchangepuzzle;
 
     QTimer* mindwt;
     QTimer* picfilt; 
     QTimer* simulateEEG;
     QTimer* dreamflow_timer;
     QTimer* streamflows;
+    QTimer* puzzleflow;
     QTime time_take;
 
     QPixmap bkgnd, transferpm;
@@ -116,6 +117,11 @@ public:
     void fillmaininpuzzle(int t);
     int getchi2distsize();
 
+    QPoint getcellposition(int t, int cols);
+    void fillcell(int t, int cols);
+    void fillcells();
+    void swapcells(int t1, int t2, int cols);
+
     ~MainWindow();
 
 signals:
@@ -133,6 +139,7 @@ private slots:
     void simulateEEGUpdate();
     void dreamflow_Update();
     void streamflows_Update();
+    void puzzleflow_Update();
 
     void on_pushButton_clicked();
 

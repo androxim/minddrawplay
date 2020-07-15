@@ -91,7 +91,7 @@ public:
 
     bool adaptivenumparts, backimageloaded, canbackchange, opencvstart;
     bool filteringback, blurback, hidebutt, attention_interval, fixback, colorizeback;
-    bool attention_modulation, start, brainflow_on, estimation;
+    bool attention_modulation, start, brainflow_on, estimation, updatewavesplot;
     bool usefiltering, musicmode_on, flowblinking, scalechange;
     bool spacemode, tank1mode, tank2mode, recordstarted, antirepeat, randmxt;       
     bool mindwstart, fftfreqs, attention_volume, keys_emulated, simeeg;

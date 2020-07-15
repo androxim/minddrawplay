@@ -25,7 +25,7 @@ class ocvcontrols : public QWidget
 public:
     QPoint currmousepos;
     std::mt19937 gen; std::uniform_int_distribution<int> dist;
-    bool formshown = true; bool camerainp = false;
+    bool formshown = true, camerainp = false, attent_modul = true;
     bool drawbrushcontour = true; bool drops_by_click_mode = false;
     bool circle_brush = true; bool histFeaturesReady = false;
     bool multi_img_dflow = false; bool multi_img_by_att = false;
@@ -37,7 +37,13 @@ public:
     int nfeatures = 100, nlevels = 6, edgetreshold = 20; float scalef = 1.1;           // ORB params
     QColor fcolor = QColor(255,255,255); bool randfcolor = false;                      // ORB params
 
-    int mixtype = 1, transp = 80, multi_set_size = 2, randpicn;                        // mixer params
+    std::vector<int> cells_indexes, free_cells;                                        // puzzle params
+    bool puzzleflow_on = false, puzzle_edges = true, white_edges = true;               // puzzle params
+    double corr_cell_part = 0.8; int puzzleflowrate = 100, changepuzzleborder = 90;    // puzzle params
+    int cell_size = 200; int cols = 10; int rows = 5; int cellnums = 50;               // puzzle params
+    bool corrcells_by_att = true, puzzlerate_by_att = false, cellsize_by_att = false;  // puzzle params
+
+    int mixtype = 3, transp = 80, multi_set_size = 2, randpicn;                        // mixer params
     bool changerandpic_byclick = false; bool changebyattention = false;                // mixer params
     bool dreamflow = false; int dreamflowrate = 77; bool polygonmask = false;          // mixer params
     bool changepic_bytime = false; int changepic_interval = 3; QTimer* pichngT;        // mixer params
@@ -181,6 +187,28 @@ private slots:
     void on_spinBox_17_valueChanged(int arg1);
 
     void on_pushButton_5_clicked();
+
+    void on_spinBox_20_valueChanged(int arg1);
+
+    void on_spinBox_19_valueChanged(int arg1);
+
+    void on_spinBox_18_valueChanged(int arg1);
+
+    void on_checkBox_22_clicked();
+
+    void on_checkBox_21_clicked();
+
+    void on_checkBox_20_clicked();
+
+    void on_spinBox_21_valueChanged(int arg1);
+
+    void on_pushButton_6_clicked();
+
+    void on_checkBox_23_clicked();
+
+    void on_comboBox_2_currentIndexChanged(int index);
+
+    void on_comboBox_3_currentIndexChanged(int index);
 
 private:
     Ui::ocvcontrols *ui;

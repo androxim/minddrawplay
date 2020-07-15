@@ -74,6 +74,7 @@ plotwindow::plotwindow(QWidget *parent) :
     filteringback = false; // filter background image
     fixback = true; // fix background image independently of attention values
     camerainp = false; // camera input for background
+    updatewavesplot = true; // plotting new EEG intervals
 
     strLstM2 = new QStringListModel();      // list of determined tones
     strLstM2->setStringList(strLst2);
@@ -122,13 +123,13 @@ plotwindow::plotwindow(QWidget *parent) :
     // emulation of some controls on neMehanika interactive animations: www.nemehanika.ru
     neuro_neMehanika_camera = new QTimer(this); // timer for neMehanika animation camera control
     neuro_neMehanika_camera->connect(neuro_neMehanika_camera,SIGNAL(timeout()), this, SLOT(neuro_neMeh_camera_update()));
-    neuro_neMehanika_camera->setInterval(500);
-    // neuro_neMehanika_camera->start();
+    neuro_neMehanika_camera->setInterval(1000);
+   // neuro_neMehanika_camera->start();
     keys_emulated = false; // flag for keybord press emulation for neMehanika controls (KEY_Q/KEY_E)
     neuro_neMehanika_colors = new QTimer(this); // timer for neMehanika animation colors change
     neuro_neMehanika_colors->connect(neuro_neMehanika_colors,SIGNAL(timeout()), this, SLOT(neuro_neMeh_colors_update()));
     neuro_neMehanika_colors->setInterval(200);
-    // neuro_neMehanika_colors->start();
+   // neuro_neMehanika_colors->start();
 
     tonescheck = 20; // interval for determining tones from brain waves expression
     init_timersinthread(); // init timers in separate threads for tones determining    
@@ -714,6 +715,9 @@ bool plotwindow::eventFilter(QObject *target, QEvent *event)
             QPixmap pmx = ui->widget->grab();
             setbackimage(pmx,true);
         }
+
+        if (keyEvent->key() == Qt::Key_O)       // stop / start plotting new EEG intervals
+            updatewavesplot = !updatewavesplot;
 
         if ((keyEvent->key() == Qt::Key_N) && (opencvstart))  // hide/show MindOCV controls form
         {
@@ -1653,7 +1657,9 @@ void plotwindow::analyse_interval() // main function for processing interval of 
         else
         for (int i=graphcount-8; i<graphcount+1; i++)
             ui->widget->graph(i)->setPen(QColor(qrand() % 256, qrand() % 256, qrand() % 256));
-    }
+        if (!updatewavesplot)
+            ui->widget->replot();
+    }    
 }
 
 void plotwindow::letsplay() // playing of tones
@@ -1750,7 +1756,8 @@ void plotwindow::process_eeg_data() // processing EEG data
      {        
          if (usefiltering)
              filtercl->zerophasefilt(0,imlength,arrc.amp0);
-         plot_interval();
+         if (updatewavesplot)
+             plot_interval();
          analyse_interval();
          if (attention_interval) // attention modulated length of interval
          {

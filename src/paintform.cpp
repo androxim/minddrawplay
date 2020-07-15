@@ -14,7 +14,6 @@
 #include <myitem.h>
 
 // TO DO:
-// adaptive border for puzzle change
 // saving history of waves
 
 paintform::paintform(QWidget *parent) :
@@ -2971,7 +2970,11 @@ void paintform::puzzle_onepic_switch()
         ui->graphicsView->setGeometry(50,50,1500,800);
 
     if (!flowmode)
+    {
         scene->addPixmap(mainpic.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
+        QBrush qbr(mainpic.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
+        ui->graphicsView_16->setBackgroundBrush(qbr);
+    }
 
     ui->graphicsView_2->setVisible(puzzlemode);
     ui->graphicsView_3->setVisible(puzzlemode);
@@ -3242,6 +3245,7 @@ void paintform::on_checkBox_8_clicked()  // puzzle mode on / off
     ui->checkBox_16->setEnabled(!puzzlemode);
     ui->checkBox_17->setEnabled(!puzzlemode);
     ui->checkBox_20->setEnabled(!puzzlemode);
+    ui->checkBox_23->setEnabled(!puzzlemode);
     ui->pushButton_7->setEnabled(puzzlemode);
 
     puzzle_onepic_switch();
@@ -3635,6 +3639,7 @@ void paintform::on_checkBox_22_clicked()
 void paintform::on_checkBox_23_clicked()
 {
     gamethrough = !gamethrough;
+    ui->checkBox_8->setEnabled(!gamethrough);
     if (gamethrough)
     {
         movingItem->setX(movingItem->startX);

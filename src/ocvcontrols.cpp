@@ -30,6 +30,7 @@ ocvcontrols::ocvcontrols(QWidget *parent) :
     wcolor = Scalar(255,255,255);
 
     ui->spinBox_16->setStyleSheet("QSpinBox { background-color: yellow; }");      
+    ui->spinBox_20->setStyleSheet("QSpinBox { background-color: yellow; }");
 
     ui->comboBox->setEnabled(histFeaturesReady);
     connect(this,&ocvcontrols::flow_direction_available,this,&ocvcontrols::set_flow_direction_available);
@@ -55,17 +56,26 @@ void ocvcontrols::updateformvals()
     else if (mixtype==2)
         ui->radioButton_5->setChecked(true);
     else
-        ui->radioButton_6->setChecked(true);    
+        ui->radioButton_6->setChecked(true);
+    if (mixtype==3)
+        randmixer_mode_on();
     ui->checkBox_7->setChecked(hueonly);
     ui->checkBox_8->setChecked(polygonmask);
     ui->spinBox_13->setValue(dreamflowrate);
     ui->spinBox_15->setValue(drops_interval);
     ui->spinBox_16->setValue(pointsinpoly);
     ui->spinBox_17->setValue(multi_set_size);
+    ui->spinBox_18->setValue(cell_size);
+    ui->spinBox_19->setValue(puzzleflowrate);
+    ui->spinBox_20->setValue(corr_cell_part*100);
+    ui->spinBox_21->setValue(changepuzzleborder);
+    ui->lineEdit->setText(QString::number(cols));
+    ui->lineEdit_2->setText(QString::number(rows));
     ui->checkBox_14->setChecked(plotdroprect);
     ui->checkBox_15->setChecked(drops_from_mousepos);
     ui->checkBox_16->setChecked(drawbrushcontour);
     ui->checkBox_17->setChecked(camerainp);
+    ui->checkBox_23->setChecked(puzzle_edges);
     ui->checkBox_9->setChecked(changepic_bytime);
     ui->checkBox_10->setChecked(dropsmode);
     if (circle_brush)
@@ -79,6 +89,10 @@ void ocvcontrols::updateformvals()
     else
         ui->comboBox->setCurrentIndex(0);
     ui->comboBox->setEnabled(histFeaturesReady);
+    if (puzzleflow_on)
+        ui->pushButton_6->setText("Stop");
+    else
+        ui->pushButton_6->setText("Start");
 }
 
 ocvcontrols::~ocvcontrols()
@@ -574,4 +588,106 @@ void ocvcontrols::on_spinBox_17_valueChanged(int arg1)
 void ocvcontrols::on_pushButton_5_clicked()
 {
     mww->init_img_set();
+}
+
+void ocvcontrols::on_spinBox_20_valueChanged(int arg1)
+{
+    corr_cell_part = (double)arg1/100;
+    int m = (int)cellnums*corr_cell_part;
+    for (size_t t = 0; t < m; t++)
+        mww->fillcell(cells_indexes[t],cols);
+}
+
+void ocvcontrols::on_spinBox_19_valueChanged(int arg1)
+{
+    puzzleflowrate = arg1;
+    mww->puzzleflow->setInterval(puzzleflowrate);
+}
+
+void ocvcontrols::on_spinBox_18_valueChanged(int arg1)
+{
+    bool paused = false;
+    if (mww->puzzleflow->isActive())
+    {
+        mww->puzzleflow->stop();
+        paused = true;
+    }
+    cell_size = arg1;
+    cols = picwidth / cell_size;
+    rows = picheight / cell_size;
+    ui->lineEdit->setText(QString::number(cols));
+    ui->lineEdit_2->setText(QString::number(rows));
+    cellnums = cols * rows;
+    mww->fillcells();
+    if ((!mww->puzzleflow->isActive()) && (paused))
+        mww->puzzleflow->start();
+}
+
+void ocvcontrols::on_checkBox_22_clicked()
+{
+    corrcells_by_att = !corrcells_by_att;
+    if (corrcells_by_att)
+        ui->spinBox_20->setStyleSheet("QSpinBox { background-color: yellow; }");
+    else
+        ui->spinBox_20->setStyleSheet("QSpinBox { background-color: white; }");
+}
+
+void ocvcontrols::on_checkBox_21_clicked()
+{
+    puzzlerate_by_att = !puzzlerate_by_att;
+    if (puzzlerate_by_att)
+        ui->spinBox_19->setStyleSheet("QSpinBox { background-color: yellow; }");
+    else
+        ui->spinBox_19->setStyleSheet("QSpinBox { background-color: white; }");
+}
+
+void ocvcontrols::on_checkBox_20_clicked()
+{
+    cellsize_by_att = !cellsize_by_att;
+    if (cellsize_by_att)
+        ui->spinBox_18->setStyleSheet("QSpinBox { background-color: yellow; }");
+    else
+        ui->spinBox_18->setStyleSheet("QSpinBox { background-color: white; }");
+}
+
+void ocvcontrols::on_spinBox_21_valueChanged(int arg1)
+{
+    changepuzzleborder = arg1;
+}
+
+void ocvcontrols::on_pushButton_6_clicked()
+{
+    puzzleflow_on = !puzzleflow_on;
+    if (puzzleflow_on)
+    {
+        ui->pushButton_6->setText("Stop");
+        mww->fillcells();
+        mww->puzzleflow->start();
+    }
+    else
+    {
+        ui->pushButton_6->setText("Start");
+        mww->puzzleflow->stop();
+    }
+}
+
+void ocvcontrols::on_checkBox_23_clicked()
+{
+    puzzle_edges = !puzzle_edges;
+}
+
+void ocvcontrols::on_comboBox_2_currentIndexChanged(int index)
+{
+    if (index==0)
+        attent_modul = true;
+    else if (index==1)
+        attent_modul = false;
+}
+
+void ocvcontrols::on_comboBox_3_currentIndexChanged(int index)
+{
+    if (index==0)
+        white_edges = true;
+    else if (index==1)
+        white_edges = false;
 }
