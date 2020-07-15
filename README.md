@@ -9,15 +9,16 @@ but also can work with other EEG devices through BCI2000 module and can be adapt
 ====
 
 MindDrawPlay – is a project of experimental interactive audio-visual art, 
-representing translation of brain waves to drawing, graphical and musical space controls. 
-It has been grown on a base of a research work in the direction of Brain-Computer Interfaces. 
-Combining both technology advances – such as mobile EEG devices and musical knowledge – 
-such as pentatonic scales, it allows everyone literally to see, to hear his brain activity 
-represented by set of sounds and to use brain waves as a brush for drawing, as parameters 
-for image filtering, attention modulated color-overlay pictures flows, puzzle gathering 
-and identical pictures recognition games. MindDrawPlay is much more than a neurofeedback app
-with sounds and visualizations, it provides with a unique experience 
-of interactive immersion into flows of your mindspace.
+representing translation of brain waves to drawing, visual and musical spaces, flows and controls. 
+It has been grown on abase of research work in the direction of Brain-Computer Interfaces. 
+Combining technology advances – such as mobile EEG devices (in particular, MindWave Neurosky) 
+and musical knowledge – such as pentatonic scales (hang and tank drums tones), 
+it allows everyone to see, to hear his brain activity represented by set of sounds 
+and to use brain waves as a brush for drawing, as parameters for image filtering, 
+attention modulated color-overlay pictures flows, in “puzzle gathering”, “find the same” 
+and “go through” games. MindDrawPlay is much more than a neurofeedback app with sounds 
+and visualizations, it provides with a unique experience of 
+interactive immersion into flows of your mindspace.
 
 broader overview in "about.pdf" 
 
