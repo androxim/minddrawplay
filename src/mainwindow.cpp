@@ -75,7 +75,7 @@ Mat ripples(Rect srcRect);             // ripples effect filter
 Mat src, srccopy, dst, dstcopy, prev_dst, clear_dst, img, image, dstg;
 Mat edges, mask, trp, randpic, stinp, blob, stpic;
 Mat tempimg, dstemp, dst0, dst1, srg, srct, srwt, dstt, svd_img, gray_element;
-Mat element, dream0, imghist, pichist, elfont;
+Mat element, dream0, imghist, pichist, label_area, menu_area;
 vector<Mat> channels;
 vector<Mat> curr_img_set; std::set<int> img_num_set;
 int currmainpic, curroverpic, prevmainpic = -1, prevoverpic = -1;
@@ -98,8 +98,7 @@ int const max_elem2 = 100;
 VideoCapture cam;
 vector<vector<float>> hist_features; // vector of histogramm features for all pics
 vector<pairt> chi2distances;         // dict of chi2 distances between selected and other pics
-bool canchangepic = true;            // to prevent constant change of pics when attention > border => can change pics only when new attention became lower than border
-bool color_overlay_flow = false;     // if false - mode when hue/overlay flow is not started / paused and region filtering is available
+bool canchangepic = true;            // to prevent constant change of pics when attention > border => can change pics only when new attention became lower than border    
 bool keepfiltering = false;          // additional mode to "!activeflow" with continous filtering with mouse move, activated by "space" press
 
 double alphaval = 0.5; // transparency variable for overlay
@@ -119,10 +118,11 @@ rightpanel *rightpw;        // right panel form for pictures choice
 rawsignal *rs;              // raw signal form
 ocvcontrols *ocvform;       // openCV filters control form
 
-vector <int> iconsarr, riconsarr;   // vectors of right and left panels pictures
-void defineiconsarr();              // function for updationg vector of left panel pictures
-void define_riconsarr();            // function for updationg vector of right panel pictures
-void shuffleicons(bool left);       // function for random shuffling of panels pictures
+vector <int> iconsarr, riconsarr;       // vectors of right and left panels pictures
+void defineiconsarr();                  // updationg vector of left panel pictures
+void define_riconsarr();                // updationg vector of right panel pictures
+void shuffleicons(bool left);           // random shuffling of panels pictures
+void drawcontrolmenu(Mat imgt, int active_item);  // drawing menu item labels for switching modes
 bool rchanged, lchanged;
 
 QString folderpath;     // path to pictures folder
@@ -234,23 +234,23 @@ MainWindow::MainWindow(QWidget *parent) :
     curhue = prevhue = 255;
     curoverl = prevoverl = 50;   
 
-    opencvinterval = 40;      // timer for key process and color-overlay flow
+    opencvinterval = 20;      // timer for key processing and color-overlay flow
     picfilt = new QTimer(this);
     picfilt->connect(picfilt, SIGNAL(timeout()), this, SLOT(picfiltUpdate()));
     picfilt->setInterval(opencvinterval);    
 
-    dreamflow_timer = new QTimer(this);     // timer for auto dreamflow mode, when new picture appears by fragments
+    dreamflow_timer = new QTimer(this);     // timer for dreamflow mode, when new picture appears by fragments
     dreamflow_timer->connect(dreamflow_timer, SIGNAL(timeout()), this, SLOT(dreamflow_Update()));
     dreamflow_timer->setInterval(ocvform->dreamflowrate);
+
+    puzzleflow = new QTimer(this); // timer for puzzle gathering flow
+    puzzleflow->connect(puzzleflow, SIGNAL(timeout()), this, SLOT(puzzleflow_Update()));
+    puzzleflow->setInterval(ocvform->puzzleflowrate);
 
     int streamflowrate = 100;
     streamflows = new QTimer(this); // timer for streaming flows to MindPlay
     streamflows->connect(streamflows, SIGNAL(timeout()), this, SLOT(streamflows_Update()));
     streamflows->setInterval(streamflowrate);
-
-    puzzleflow = new QTimer(this); // timer for puzzle gathering flow
-    puzzleflow->connect(puzzleflow, SIGNAL(timeout()), this, SLOT(puzzleflow_Update()));
-    puzzleflow->setInterval(ocvform->puzzleflowrate);
 
     QTime time = QTime::currentTime();
     qsrand((uint)time.msec());      
@@ -390,6 +390,29 @@ QImage Mat2QImageRGB(cv::Mat const& srct)
      return dest;
 }
 
+void drawcontrolmenu(Mat imgt, int active_item) // drawing menu item labels for switching modes
+{
+    if (active_item == 0)
+        putText(imgt, ocvform->l_menu_item1, Point2f(ocvform->l_menu_posx,ocvform->l_menu_posy), FONT_HERSHEY_PLAIN, ocvform->l_menu_fontscale, Scalar(0,255,0,255), ocvform->l_menu_fontsize);
+    else
+        putText(imgt, ocvform->l_menu_item1, Point2f(ocvform->l_menu_posx,ocvform->l_menu_posy), FONT_HERSHEY_PLAIN, ocvform->l_menu_fontscale, Scalar(255,255,255,255), ocvform->l_menu_fontsize);
+
+    if (active_item == 1)
+        putText(imgt, ocvform->l_menu_item2, Point2f(ocvform->l_menu_posx,ocvform->l_menu_posy+40), FONT_HERSHEY_PLAIN, ocvform->l_menu_fontscale, Scalar(0,255,0,255), ocvform->l_menu_fontsize);
+    else
+        putText(imgt, ocvform->l_menu_item2, Point2f(ocvform->l_menu_posx,ocvform->l_menu_posy+40), FONT_HERSHEY_PLAIN, ocvform->l_menu_fontscale, Scalar(255,255,255,255), ocvform->l_menu_fontsize);
+
+    if (active_item == 2)
+        putText(imgt, ocvform->l_menu_item3, Point2f(ocvform->l_menu_posx,ocvform->l_menu_posy+80), FONT_HERSHEY_PLAIN, ocvform->l_menu_fontscale, Scalar(0,255,0,255), ocvform->l_menu_fontsize);
+    else
+        putText(imgt, ocvform->l_menu_item3, Point2f(ocvform->l_menu_posx,ocvform->l_menu_posy+80), FONT_HERSHEY_PLAIN, ocvform->l_menu_fontscale, Scalar(255,255,255,255), ocvform->l_menu_fontsize);
+
+    if (active_item == 3)
+        putText(imgt, ocvform->l_menu_item4, Point2f(ocvform->l_menu_posx,ocvform->l_menu_posy+120), FONT_HERSHEY_PLAIN, ocvform->l_menu_fontscale, Scalar(0,255,0,255), ocvform->l_menu_fontsize);
+    else
+        putText(imgt, ocvform->l_menu_item4, Point2f(ocvform->l_menu_posx,ocvform->l_menu_posy+120), FONT_HERSHEY_PLAIN, ocvform->l_menu_fontscale, Scalar(255,255,255,255), ocvform->l_menu_fontsize);
+}
+
 void Processing() // processing of HUE, Saturation, Value changes
 {
     cvtColor(src,img,COLOR_RGB2HSV);
@@ -421,7 +444,7 @@ void Processing() // processing of HUE, Saturation, Value changes
 
     cvtColor(img,image,COLOR_HSV2RGB);
 
-    if ((!ocvform->dreamflow) && (ocvform->showlabel))
+    if (ocvform->showlabel)
         sprintf(ocvform->l_str,"Attention: %d",elem4);
 
     if (!ocvform->hueonly)
@@ -429,6 +452,7 @@ void Processing() // processing of HUE, Saturation, Value changes
         if (ocvform->camerainp)  // grab input from camera as overlay (strcopy) pic
         {
             cam>>trp;
+            flip(trp,trp,1);
             cv::resize(trp, trp, cv::Size(ocvform->picwidth,ocvform->picheight), 0, 0, cv::INTER_NEAREST);
             addWeighted(image, alphaval, trp, 1 - alphaval, 0, dst);
         }
@@ -437,22 +461,37 @@ void Processing() // processing of HUE, Saturation, Value changes
 
         if (ocvform->showlabel)
         {
-            elfont = dst(Rect(ocvform->l_posx-5,ocvform->l_posy-60,ocvform->lw,ocvform->lh)).clone();
-            if (!ocvform->dreamflow)
-                putText(dst, ocvform->l_str, Point2f(ocvform->l_posx,ocvform->l_posy), FONT_HERSHEY_PLAIN, ocvform->lfont_scale, Scalar(0,0,255,255), ocvform->lfont_size);
+            label_area = dst(Rect(ocvform->l_posx-5,ocvform->l_posy-60,ocvform->lw,ocvform->lh)).clone();
+            menu_area = dst(Rect(ocvform->l_menu_posx-5,ocvform->l_menu_posy-30,ocvform->lmenuw,ocvform->lmenuh)).clone();
+            putText(dst, ocvform->l_str, Point2f(ocvform->l_posx,ocvform->l_posy), FONT_HERSHEY_PLAIN, ocvform->lfont_scale, Scalar(0,0,255,255), ocvform->lfont_size);
+            if (ocvform->color_overlay_flow)
+                drawcontrolmenu(dst,1);
+            else if (ocvform->dreamflow)
+                drawcontrolmenu(dst,2);
+            else if (ocvform->puzzleflow_on)
+                drawcontrolmenu(dst,3);
+            else
+                drawcontrolmenu(dst,0);
         }
-
         imshow("image", dst);
     }
     else
     {
         if (ocvform->showlabel)
         {
-            elfont = image(Rect(ocvform->l_posx-5,ocvform->l_posy-60,ocvform->lw,ocvform->lh)).clone();
-            if (!ocvform->dreamflow)
-                putText(image, ocvform->l_str, Point2f(ocvform->l_posx,ocvform->l_posy), FONT_HERSHEY_PLAIN, ocvform->lfont_scale, Scalar(0,0,255,255), ocvform->lfont_size);
+            label_area = image(Rect(ocvform->l_posx-5,ocvform->l_posy-60,ocvform->lw,ocvform->lh)).clone();
+            menu_area = image(Rect(ocvform->l_menu_posx-5,ocvform->l_menu_posy-30,ocvform->lmenuw,ocvform->lmenuh)).clone();
+            putText(image, ocvform->l_str, Point2f(ocvform->l_posx,ocvform->l_posy), FONT_HERSHEY_PLAIN, ocvform->lfont_scale, Scalar(0,0,255,255), ocvform->lfont_size);
+            if (ocvform->color_overlay_flow)
+                drawcontrolmenu(image,1);
+            else if (ocvform->dreamflow)
+                drawcontrolmenu(image,2);
+            else if (ocvform->puzzleflow_on)
+                drawcontrolmenu(image,3);
+            else
+                drawcontrolmenu(image,0);
         }
-        imshow( "image", image );
+        imshow("image", image);
     }
 }
 
@@ -461,11 +500,12 @@ void ProcessingMix() // processing of overlay changes, alphaval - transparency
     alphaval = (double) elem5 / 100;    
     if (estattention)   // if MindWave connected and attention values are streaming
     {               
-        if (color_overlay_flow)
+        if (ocvform->color_overlay_flow)
         {
             if (ocvform->camerainp)  // grab input from camera as overlay (strcopy) pic
             {
                 cam>>trp;
+                flip(trp,trp,1);
                 //pyrUp(trp, trp, Size(image.cols, image.rows));
                 cv::resize(trp, trp, cv::Size(ocvform->picwidth,ocvform->picheight), 0, 0, cv::INTER_NEAREST);
                 addWeighted(image, alphaval, trp, 1 - alphaval, 0, dst);
@@ -482,12 +522,18 @@ void ProcessingMix() // processing of overlay changes, alphaval - transparency
 
     if (ocvform->showlabel)
     {
-        elfont = dst(Rect(ocvform->l_posx-5,ocvform->l_posy-60,ocvform->lw,ocvform->lh)).clone();
-        if (!ocvform->dreamflow)
-        {
-            sprintf(ocvform->l_str,"Attention: %d",elem4);
-            putText(dst, ocvform->l_str, Point2f(ocvform->l_posx,ocvform->l_posy), FONT_HERSHEY_PLAIN, ocvform->lfont_scale, Scalar(0,0,255,255), ocvform->lfont_size);
-        }
+        label_area = dst(Rect(ocvform->l_posx-5,ocvform->l_posy-60,ocvform->lw,ocvform->lh)).clone();
+        menu_area = dst(Rect(ocvform->l_menu_posx-5,ocvform->l_menu_posy-30,ocvform->lmenuw,ocvform->lmenuh)).clone();
+        sprintf(ocvform->l_str,"Attention: %d",elem4);
+        putText(dst, ocvform->l_str, Point2f(ocvform->l_posx,ocvform->l_posy), FONT_HERSHEY_PLAIN, ocvform->lfont_scale, Scalar(0,0,255,255), ocvform->lfont_size);
+        if (ocvform->color_overlay_flow)
+            drawcontrolmenu(dst,1);
+        else if (ocvform->dreamflow)
+            drawcontrolmenu(dst,2);
+        else if (ocvform->puzzleflow_on)
+            drawcontrolmenu(dst,3);
+        else
+            drawcontrolmenu(dst,0);
     }
     imshow("image", dst);    
 }
@@ -516,7 +562,7 @@ Mat adaptivemask(Rect rt)
 void onMouse( int event, int x, int y, int flags, void* )   // Mouse clicks and moves processing
 {
     // !dofiltering - mode when flow is not started / paused and region filtering is available
-    if ((!color_overlay_flow) && (event == EVENT_MOUSEMOVE) && (y<dst.rows-ocvform->currfilterarea/2) && (x<dst.cols-ocvform->currfilterarea/2) && (y>ocvform->currfilterarea/2) && (x>ocvform->currfilterarea/2))
+    if ((!ocvform->color_overlay_flow) && (event == EVENT_MOUSEMOVE) && (y<dst.rows-ocvform->currfilterarea/2) && (x<dst.cols-ocvform->currfilterarea/2) && (y>ocvform->currfilterarea/2) && (x>ocvform->currfilterarea/2))
     {
         // draw brush contour
         if (ocvform->drawbrushcontour)
@@ -530,12 +576,12 @@ void onMouse( int event, int x, int y, int flags, void* )   // Mouse clicks and 
             imshow("image", dst0);
         }
     }
-    if ((!color_overlay_flow) && (event == EVENT_MOUSEMOVE) && (y<dst.rows-ocvform->currfilterarea/2) && (x<dst.cols-ocvform->currfilterarea/2) && (y>ocvform->currfilterarea/2) && (x>ocvform->currfilterarea/2))
+    if ((!ocvform->color_overlay_flow) && (event == EVENT_MOUSEMOVE) && (y<dst.rows-ocvform->currfilterarea/2) && (x<dst.cols-ocvform->currfilterarea/2) && (y>ocvform->currfilterarea/2) && (x>ocvform->currfilterarea/2))
     {
         ocvform->currmousepos.setX(x);
         ocvform->currmousepos.setY(y);        
     }
-    if ((!color_overlay_flow) && (event == EVENT_MOUSEMOVE) && ((flags ==  EVENT_FLAG_LBUTTON) || (keepfiltering)) && (y<dst.rows-ocvform->currfilterarea/2) && (x<dst.cols-ocvform->currfilterarea/2) && (y>ocvform->currfilterarea/2) && (x>ocvform->currfilterarea/2))
+    if ((!ocvform->color_overlay_flow) && (event == EVENT_MOUSEMOVE) && ((flags ==  EVENT_FLAG_LBUTTON) || (keepfiltering)) && (y<dst.rows-ocvform->currfilterarea/2) && (x<dst.cols-ocvform->currfilterarea/2) && (y>ocvform->currfilterarea/2) && (x>ocvform->currfilterarea/2))
     {      
         curr_iter++; // determines how often with mouse moves will be doing filtering
         if (curr_iter >= ocvform->currfilterrate)
@@ -557,12 +603,14 @@ void onMouse( int event, int x, int y, int flags, void* )   // Mouse clicks and 
             else
                 dstt.copyTo(dst(srcDstRect));
 
+            menu_area = dst(Rect(ocvform->l_menu_posx-5,ocvform->l_menu_posy-30,ocvform->lmenuw,ocvform->lmenuh)).clone();
+
             imshow("image", dst);
 
             curr_iter=0;
         }
     }
-    if ((!color_overlay_flow) && (event == EVENT_LBUTTONDOWN)  && (y<dst.rows-ocvform->currfilterarea/2) && (x<dst.cols-ocvform->currfilterarea/2) && (y>ocvform->currfilterarea/2) && (x>ocvform->currfilterarea/2))
+    if ((!ocvform->color_overlay_flow) && (event == EVENT_LBUTTONDOWN)  && (y<dst.rows-ocvform->currfilterarea/2) && (x<dst.cols-ocvform->currfilterarea/2) && (y>ocvform->currfilterarea/2) && (x>ocvform->currfilterarea/2))
     {
         Rect srcDstRect(x-ocvform->currfilterarea/2, y-ocvform->currfilterarea/2, ocvform->currfilterarea, ocvform->currfilterarea);
         dstt = dst(srcDstRect); // dst - full resulting overlay pic of main (src) and overlay (srccopy)
@@ -586,10 +634,12 @@ void onMouse( int event, int x, int y, int flags, void* )   // Mouse clicks and 
         else
             dstt.copyTo(dst(srcDstRect));
 
+        menu_area = dst(Rect(ocvform->l_menu_posx-5,ocvform->l_menu_posy-30,ocvform->lmenuw,ocvform->lmenuh)).clone();
+
         imshow("image", dst);
     }
     // starting dreamflow drops by middle mouse down
-    if ((!color_overlay_flow) && (event == EVENT_MBUTTONDOWN) && (!ocvform->dreamflow) && (!ocvform->drops_by_click_mode)
+    if ((!ocvform->color_overlay_flow) && (event == EVENT_MBUTTONDOWN) && (!ocvform->dreamflow) && (!ocvform->drops_by_click_mode)
         && (y<dst.rows-ocvform->currfilterarea/2) && (x<dst.cols-ocvform->currfilterarea/2) && (y>ocvform->currfilterarea/2) && (x>ocvform->currfilterarea/2))
     {
         ocvform->drops_by_click_mode = true;
@@ -604,13 +654,13 @@ void onMouse( int event, int x, int y, int flags, void* )   // Mouse clicks and 
         ocvform->start_stop_dreamflow(true);
     } else
     // stop dreamflow drops by middle mouse down
-    if ((!color_overlay_flow) && (event == EVENT_MBUTTONUP) && (ocvform->drops_by_click_mode))
+    if ((!ocvform->color_overlay_flow) && (event == EVENT_MBUTTONUP) && (ocvform->drops_by_click_mode))
     {
        ocvform->start_stop_dreamflow(false);
        ocvform->drops_by_click_mode = false;
     }
     else
-    if ((event == EVENT_MBUTTONDOWN) && (color_overlay_flow))
+    if ((event == EVENT_MBUTTONDOWN) && (ocvform->color_overlay_flow))
     {
         // random choice of main pic and updates of corresponded vectors for left and right pictures
         prevmainpic = currmainpic;        
@@ -624,13 +674,13 @@ void onMouse( int event, int x, int y, int flags, void* )   // Mouse clicks and 
         QString ocvpic=folderpath+"/"+imglist.at(currmainpic);
         src = imread(ocvpic.toStdString());        
         cv::resize(src, src, cv::Size(ocvform->picwidth,ocvform->picheight), 0, 0, cv::INTER_NEAREST);
-        if ((color_overlay_flow) && (!ocvform->hueonly))
+        if ((ocvform->color_overlay_flow) && (!ocvform->hueonly))
         {
             addWeighted(src, alphaval, srccopy, 1 - alphaval, 0, dst);
             imshow("image", dst);
         }
     } else
-    if ((event == EVENT_RBUTTONDOWN) && (color_overlay_flow))
+    if ((event == EVENT_RBUTTONDOWN) && (ocvform->color_overlay_flow))
     {
         // random choice of overlay pic and updates of corresponded vectors for left and right pictures
         prevoverpic = curroverpic;
@@ -973,7 +1023,10 @@ QString MainWindow::getimagepath(int t) // return image path for ocvcontrol form
 void MainWindow::setdream0() // grab initial image before starting expanding mode in dreamflow
 {   
     if (ocvform->showlabel)
-        elfont.copyTo(dst(Rect(ocvform->l_posx-5,ocvform->l_posy-60,ocvform->lw,ocvform->lh)));
+    {
+        label_area.copyTo(dst(Rect(ocvform->l_posx-5,ocvform->l_posy-60,ocvform->lw,ocvform->lh)));
+        menu_area.copyTo(dst(Rect(ocvform->l_menu_posx-5,ocvform->l_menu_posy-30,ocvform->lmenuw,ocvform->lmenuh)));
+    }
     dream0 = dst.clone();
 }
 
@@ -1030,12 +1083,14 @@ void MainWindow::cancelall()    // cancel all filtering actions
 
 void MainWindow::dreamflow_Update() // timer for dreamflow mode, when new pic appears by random fragment over old
 {
-    int x,y,area;
+    int x, y, area = 50;
     Rect srcDstRect; 
     if (ocvform->showlabel)
     {
-        elfont.copyTo(dst(Rect(ocvform->l_posx-5,ocvform->l_posy-60,ocvform->lw,ocvform->lh)));
-        elfont.copyTo(dream0(Rect(ocvform->l_posx-5,ocvform->l_posy-60,ocvform->lw,ocvform->lh)));
+        label_area.copyTo(dst(Rect(ocvform->l_posx-5,ocvform->l_posy-60,ocvform->lw,ocvform->lh)));
+        label_area.copyTo(dream0(Rect(ocvform->l_posx-5,ocvform->l_posy-60,ocvform->lw,ocvform->lh)));
+        menu_area.copyTo(dst(Rect(ocvform->l_menu_posx-5,ocvform->l_menu_posy-30,ocvform->lmenuw,ocvform->lmenuh)));
+        menu_area.copyTo(dream0(Rect(ocvform->l_menu_posx-5,ocvform->l_menu_posy-30,ocvform->lmenuw,ocvform->lmenuh)));
     }
 
     if (!ocvform->dropsmode)
@@ -1084,10 +1139,13 @@ void MainWindow::dreamflow_Update() // timer for dreamflow mode, when new pic ap
 
     if (ocvform->showlabel)
     {
-        elfont = dst(Rect(ocvform->l_posx-5,ocvform->l_posy-60,ocvform->lw,ocvform->lh)).clone();
+        label_area = dst(Rect(ocvform->l_posx-5,ocvform->l_posy-60,ocvform->lw,ocvform->lh)).clone();
+        menu_area = dst(Rect(ocvform->l_menu_posx-5,ocvform->l_menu_posy-30,ocvform->lmenuw,ocvform->lmenuh)).clone();
         sprintf(ocvform->l_str,"Attention: %d",elem4);
         putText(dst, ocvform->l_str, Point2f(ocvform->l_posx,ocvform->l_posy), FONT_HERSHEY_PLAIN, ocvform->lfont_scale, Scalar(0,0,255,255), ocvform->lfont_size);
         putText(dream0, ocvform->l_str, Point2f(ocvform->l_posx,ocvform->l_posy), FONT_HERSHEY_PLAIN, ocvform->lfont_scale, Scalar(0,0,255,255), ocvform->lfont_size);
+        drawcontrolmenu(dst,2);
+        drawcontrolmenu(dream0,2);
     }
 
     imshow("image", dst);
@@ -1186,11 +1244,12 @@ void MainWindow::updatemainpic(int num)
     // also MindPlay and MindDraw pictures, if corresponded windows opened
     just_update_mainpic(num);
     QString ocvpic=folderpath+"/"+imglist.at(currmainpic);
-    if ((color_overlay_flow) && (!ocvform->hueonly))
+    if ((ocvform->color_overlay_flow) && (!ocvform->hueonly))
     {
         if (ocvform->camerainp)  // grab input from camera as overlay (strcopy) pic
         {
             cam>>trp;
+            flip(trp,trp,1);
             cv::resize(trp, trp, cv::Size(ocvform->picwidth,ocvform->picheight), 0, 0, cv::INTER_LINEAR);
             addWeighted(src, alphaval, trp, 1 - alphaval, 0, dst);
         }
@@ -1198,7 +1257,7 @@ void MainWindow::updatemainpic(int num)
             addWeighted(src, alphaval, srccopy, 1 - alphaval, 0, dst);
         imshow("image", dst);
     }
-    if ((!color_overlay_flow) && (ocvform->currfilttype==5) && (ocvform->mixtype==3))
+    if (!ocvform->color_overlay_flow)
         ocvform->setcurrdream(currmainpic);
     if (plotw->start)
         plotw->setbackimg_fromleftpanel(ocvpic);
@@ -1227,7 +1286,7 @@ void MainWindow::updateoverpic(int num)
     srccopy = imread(ocvpic.toStdString());
     cv::resize(srccopy, srccopy, cv::Size(ocvform->picwidth,ocvform->picheight), 0, 0, cv::INTER_LINEAR);
     curr_img_set[1] = srccopy.clone();
-    if ((color_overlay_flow) && (!ocvform->hueonly))
+    if ((ocvform->color_overlay_flow) && (!ocvform->hueonly))
     {
         addWeighted(src, alphaval, srccopy, 1 - alphaval, 0, dst);
         imshow("image", dst);
@@ -1242,7 +1301,7 @@ void MainWindow::printdata(QString str) // updating execution log
 
 void MainWindow::on_pushButton_clicked() // close the App
 {
-    color_overlay_flow = false;
+    ocvform->color_overlay_flow = false;
     if (mwconnected)
         TG_FreeConnection(connectionId);
     if (plotw->start)
@@ -1363,7 +1422,7 @@ void MainWindow::setattent(int i)
                 ocvform->corr_cell_part = 0.1;
             if (elem4>ocvform->changepuzzleborder)
                 ocvform->corr_cell_part = 1;
-            int m = (int)ocvform->cellnums*ocvform->corr_cell_part;
+            unsigned int m = (int)ocvform->cellnums*ocvform->corr_cell_part;
             for (size_t t = 0; t < m; t++)
                 fillcell(ocvform->cells_indexes[t],ocvform->cols);
             ocvform->updateformvals();
@@ -1409,7 +1468,7 @@ void MainWindow::setattent(int i)
         }
     }
 
-    if ((ocvform->attmodul_area) && (!color_overlay_flow))
+    if ((ocvform->attmodul_area) && (!ocvform->color_overlay_flow))
     {
         // attention modulated filter area with minimum area value, only not activeflow mode
         if (elem4<20)
@@ -1417,7 +1476,7 @@ void MainWindow::setattent(int i)
         ocvform->currfilterarea=elem4*5;
         ocvform->updateformvals(); // updating values on openCV filter control form
     }
-    if ((!color_overlay_flow) && (ocvform->currfilttype==5) && (ocvform->mixtype==3) && (ocvform->changebyattention))
+    if ((!ocvform->color_overlay_flow) && (ocvform->currfilttype==5) && (ocvform->mixtype==3) && (ocvform->changebyattention))
     {
         if ((canchangepic) && (elem4>elem6))
         {
@@ -1427,7 +1486,7 @@ void MainWindow::setattent(int i)
         if ((!canchangepic) && (elem4<elem6))
             canchangepic = true;
     }
-    if ((!color_overlay_flow) && (ocvform->currfilttype==5) && (ocvform->mixtype==3) && (ocvform->dreamflow))
+    if ((!ocvform->color_overlay_flow) && (ocvform->currfilttype==5) && (ocvform->mixtype==3) && (ocvform->dreamflow))
     {
         if (ocvform->attent_modulated_dreams)
         {
@@ -1454,7 +1513,7 @@ void MainWindow::setattent(int i)
 
         ocvform->updateformvals();
     }
-    if ((!color_overlay_flow) && (ocvform->currfilttype==5) && (ocvform->transp_by_att))
+    if ((!ocvform->color_overlay_flow) && (ocvform->currfilttype==5) && (ocvform->transp_by_att))
     {
         ocvform->transp = 100 - elem4/2;
         ocvform->updateformvals();
@@ -1645,6 +1704,7 @@ void MainWindow::checkoverlay()
                 if (ocvform->camerainp)  // grab input from camera as overlay (strcopy) pic
                 {
                     cam>>trp;
+                    flip(trp,trp,1);
                     cv::resize(trp, trp, cv::Size(ocvform->picwidth,ocvform->picheight), 0, 0, cv::INTER_NEAREST);
                     addWeighted(src, alphaval, trp, 1 - alphaval, 0, dst);
                 }
@@ -2014,19 +2074,23 @@ void MainWindow::swapcells(int t1, int t2, int cols)  // swap cells by indexes
     dstt = src(cellRect1).clone();    
  //   addWeighted(dst(cellRect2), (double)ocvform->transp / 100, dstt, 1 - (double)ocvform->transp / 100, 0, dstt);
     if (ocvform->puzzle_edges)
+    {
         if (ocvform->white_edges)
             rectangle(dstt, Point(0,0), Point(dstt.rows-2,dstt.rows-2),Scalar(255,255,255),2);
         else
             rectangle(dstt, Point(0,0), Point(dstt.rows-2,dstt.rows-2),Scalar(qrand()%256,qrand()%256,qrand()%256),2);
+    }
     dstt.copyTo(dst(cellRect2));
         // dstt = curr_img_set[pic2n](cellRect2).clone(); // multi-pics puzzling
     dstt = src(cellRect2).clone();    
    // addWeighted(dst(cellRect1), (double)ocvform->transp / 100, dstt, 1 - (double)ocvform->transp / 100, 0, dstt);
     if (ocvform->puzzle_edges)
+    {
         if (ocvform->white_edges)
             rectangle(dstt, Point(0,0), Point(dstt.rows-2,dstt.rows-2),Scalar(255,255,255),2);
         else
             rectangle(dstt, Point(0,0), Point(dstt.rows-2,dstt.rows-2),Scalar(qrand()%256,qrand()%256,qrand()%256),2);
+    }
     dstt.copyTo(dst(cellRect1));
 }
 
@@ -2045,7 +2109,7 @@ void MainWindow::fillcells()    // filling vector of indexes and correct cells
     for (size_t t = 1; t <= ocvform->cellnums; t++)
         ocvform->cells_indexes.push_back(t);
     random_shuffle(ocvform->cells_indexes.begin(), ocvform->cells_indexes.end());
-    for (size_t t = 0; t < (int)(ocvform->cellnums*ocvform->corr_cell_part); t++)
+    for (size_t t = 0; t < (unsigned int)(ocvform->cellnums*ocvform->corr_cell_part); t++)
         fillcell(ocvform->cells_indexes[t],ocvform->cols);
 }
 
@@ -2068,7 +2132,8 @@ void::MainWindow::puzzleflow_Update() // timer for puzzle flow gathering
 
     if (ocvform->showlabel)
     {
-        elfont = dst(Rect(ocvform->l_posx-5,ocvform->l_posy-60,ocvform->lw,ocvform->lh)).clone();
+        label_area = dst(Rect(ocvform->l_posx-5,ocvform->l_posy-60,ocvform->lw,ocvform->lh)).clone();
+        menu_area = dst(Rect(ocvform->l_menu_posx-5,ocvform->l_menu_posy-30,ocvform->lmenuw,ocvform->lmenuh)).clone();
         if (ocvform->attent_modul)
         {
             sprintf(ocvform->l_str,"Attention: %d",elem4);
@@ -2081,9 +2146,41 @@ void::MainWindow::puzzleflow_Update() // timer for puzzle flow gathering
             putText(dst, ocvform->l_str, Point2f(ocvform->l_posx,ocvform->l_posy), FONT_HERSHEY_PLAIN, ocvform->lfont_scale, Scalar(0,255,0,255), ocvform->lfont_size);
             putText(dream0, ocvform->l_str, Point2f(ocvform->l_posx,ocvform->l_posy), FONT_HERSHEY_PLAIN, ocvform->lfont_scale, Scalar(0,255,0,255), ocvform->lfont_size);
         }
+        drawcontrolmenu(dst,3);
     }
 
     imshow("image", dst);
+}
+
+void MainWindow::grab_labels_areas() // grab area under menu and attention labels (for correct overlay in dreamflow)
+{
+  //  label_area = dst(Rect(ocvform->l_posx-5,ocvform->l_posy-60,ocvform->lw,ocvform->lh)).clone();
+    menu_area = dst(Rect(ocvform->l_menu_posx-5,ocvform->l_menu_posy-30,ocvform->lmenuw,ocvform->lmenuh)).clone();
+}
+
+void MainWindow::stop_all_flows()  // stop all flows
+{
+    if (ocvform->color_overlay_flow)
+    {
+        clear_dst = dst.clone();
+        ocvform->setcameracheckbox(false);
+        if (ocvform->camerainp)
+        {
+            cam.release();
+            ocvform->camerainp = false;
+            ocvform->updateformvals();
+        }
+        ocvform->color_overlay_flow = false;
+    }
+    if (ocvform->dreamflow)
+        ocvform->start_stop_dreamflow(false);
+    if (ocvform->puzzleflow_on)
+        ocvform->start_stop_puzzleflow(false);
+    drawcontrolmenu(dst,0);
+    ocvform->drawbrushcontour = true;
+    ocvform->currfilttype = ocvform->totalfilts-1;
+    ocvform->updateformvals();
+    ocvform->blocktabs(0);
 }
 
 void MainWindow::keys_processing()      // processing keys pressing
@@ -2093,24 +2190,10 @@ void MainWindow::keys_processing()      // processing keys pressing
     {                
       //  neurostyle();        
     }
-    if (key == 'p') // puzzle gathering mode
-    {
-        ocvform->puzzleflow_on = !ocvform->puzzleflow_on;
-        ocvform->updateformvals();
-        if (ocvform->puzzleflow_on)
-        {
-            fillcells();
-            puzzleflow->start();
-        }
-        else
-            puzzleflow->stop();
-    }
     else if (key == 'w')      // swap main and overlay pics
         swap_main_overlay();
     else if (key == 'a') // save and add current overlay to pictures
-    {
         save_and_add_overlaypic();
-    }
     else if (key == 'q') // save and add current overlay to pictures, set main pic to current overlay
     {
         save_and_add_overlaypic();
@@ -2127,7 +2210,7 @@ void MainWindow::keys_processing()      // processing keys pressing
         addWeighted(src, alphaval, src, 1 - alphaval, 0, dst);
         imshow("image", dst);
     }
-    else if ((key == ' ') && (!color_overlay_flow)) // turn on continuous filtering with mouse move mode
+    else if ((key == ' ') && (!ocvform->color_overlay_flow)) // turn on continuous filtering with mouse move mode
         keepfiltering = !keepfiltering;
     else if (key == 'c') // transfer current overlat picture to MindPlay and MindDraw windows
     {
@@ -2151,31 +2234,7 @@ void MainWindow::keys_processing()      // processing keys pressing
         ocvform->formshown = !ocvform->formshown;
     }
     else if (key == 27)  // 'ESC' press start/stop overlay-hue flow / dreamflow
-    {
-        color_overlay_flow=!color_overlay_flow;
-        if (color_overlay_flow)
-        {
-            ocvform->hide();
-            ocvform->formshown=false;
-            keepfiltering=false;
-            if (ocvform->dreamflow)
-                ocvform->start_stop_dreamflow(false);
-            ocvform->setcameracheckbox(true);
-        }
-        else
-        {
-            clear_dst = dst.clone();
-            ocvform->setcameracheckbox(false);
-            ocvform->show();
-            ocvform->formshown=true;
-            if (ocvform->camerainp)
-            {
-                cam.release();
-                ocvform->camerainp = false;
-                ocvform->updateformvals();
-            }            
-        }
-    }
+        stop_all_flows();
     else
     if (key == '0')         // shortcuts for setting Border values
         setborder(100);
@@ -2185,26 +2244,32 @@ void MainWindow::keys_processing()      // processing keys pressing
         setborder(80);
     else if (key == '7')
         setborder(70);
-    else if ((key == '1') && (ocvform->currfilterarea>50))  // decrease filter area
+    else if ((key == '1') && (!ocvform->color_overlay_flow)) // start color-overlay flow
     {
-        ocvform->currfilterarea-=10;
-        ocvform->updateformvals();
+        stop_all_flows();
+        ocvform->color_overlay_flow = true;
+        keepfiltering = false;
+        ocvform->setcameracheckbox(true);
+        drawcontrolmenu(dst,1);
+        imshow("image", dst);
+        ocvform->blocktabs(1);
     }
-    else if ((key == '2') && (ocvform->currfilterarea<800)) // increase filter area
+    else if ((key == '2') && (!ocvform->dreamflow)) // start dreamflow
     {
-        ocvform->currfilterarea+=10;
+        stop_all_flows();
+        drawcontrolmenu(dst,2);
+        ocvform->drawbrushcontour = false;
         ocvform->updateformvals();
+        ocvform->start_stop_dreamflow(true);
+        ocvform->blocktabs(2);
     }
-    else if ((key == '3') && (ocvform->currfilterrate>2))
+    else if ((key == '3') && (!ocvform->puzzleflow_on)) // start puzzle gathering flow
     {
-        // increase filter rate (smaller value - more often filter applied with mouse move)
-        ocvform->currfilterrate--;
+        stop_all_flows();
+        ocvform->drawbrushcontour = false;
         ocvform->updateformvals();
-    }
-    else if ((key == '4')  && (ocvform->currfilterrate<20))  // decrease filter rate
-    {
-        ocvform->currfilterrate++;
-        ocvform->updateformvals();
+        ocvform->start_stop_puzzleflow(true);
+        ocvform->blocktabs(3);
     }
     else if (key == '5')
     {
@@ -2219,10 +2284,10 @@ void MainWindow::keys_processing()      // processing keys pressing
     }
     else if (key == '-')                        // hide / show label of attention
     {
-        elfont = dst(Rect(ocvform->l_posx-5,ocvform->l_posy-60,ocvform->lw,ocvform->lh)).clone();
+        label_area = dst(Rect(ocvform->l_posx-5,ocvform->l_posy-60,ocvform->lw,ocvform->lh)).clone();
         ocvform->showlabel = !ocvform->showlabel;
     }
-    else if ((key == 'z') && (!color_overlay_flow))     // change filter on the left one
+    else if ((key == 'z') && (!ocvform->color_overlay_flow))     // change filter on the left one
     {
         if (ocvform->currfilttype==1)
             ocvform->currfilttype=ocvform->totalfilts;
@@ -2230,7 +2295,7 @@ void MainWindow::keys_processing()      // processing keys pressing
             ocvform->currfilttype--;
         ocvform->updateformvals();
     }
-    else if ((key == 'x') && (!color_overlay_flow))     // change filter on the right one
+    else if ((key == 'x') && (!ocvform->color_overlay_flow))     // change filter on the right one
     {
         if (ocvform->currfilttype==ocvform->totalfilts)
             ocvform->currfilttype=1;
@@ -2238,7 +2303,7 @@ void MainWindow::keys_processing()      // processing keys pressing
             ocvform->currfilttype++;
         ocvform->updateformvals();
     }
-    else if ((key == 'r') && (color_overlay_flow))      // start receiving camera input for overlay flow
+    else if ((key == 'r') && (ocvform->color_overlay_flow))      // start receiving camera input for overlay flow
     {
         if (!ocvform->camerainp)
         {
@@ -2247,7 +2312,7 @@ void MainWindow::keys_processing()      // processing keys pressing
             ocvform->updateformvals();
         }
     }
-    else if ((key == 's') && (color_overlay_flow))        // stop receiving camera input for overlay flow
+    else if ((key == 's') && (ocvform->color_overlay_flow))        // stop receiving camera input for overlay flow
     {
         cam.release();
         ocvform->camerainp = false;
@@ -2263,7 +2328,7 @@ void MainWindow::keys_processing()      // processing keys pressing
         ocvform->transp++;
         ocvform->updateformvals();
     }
-    else if ((key == 'm') && (!color_overlay_flow)) // change brush type: circle / box
+    else if ((key == 'm') && (!ocvform->color_overlay_flow)) // change brush type: circle / box
     {
         ocvform->circle_brush = !ocvform->circle_brush;
         ocvform->updateformvals();
@@ -2273,7 +2338,7 @@ void MainWindow::keys_processing()      // processing keys pressing
         ocvform->hueonly=!ocvform->hueonly;
         ocvform->updateformvals();
     }
-    else if ((key == 'f') && (!color_overlay_flow)) // start / stop timer for pics change
+    else if ((key == 'f') && (!ocvform->color_overlay_flow)) // start / stop timer for pics change
     {
         ocvform->changepic_bytime=!ocvform->changepic_bytime;
         if (ocvform->changepic_bytime)
@@ -2299,7 +2364,7 @@ void MainWindow::picfiltUpdate() // function for MindOCV hue-overlay flow update
         qDebug()<<"key process error";
     }
 
-    if (color_overlay_flow)
+    if (ocvform->color_overlay_flow)
     {
 
         // change of HUE values untill previous ~ new one, then can change previous HUE

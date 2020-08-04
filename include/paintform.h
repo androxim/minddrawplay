@@ -54,9 +54,9 @@ public:
     double thet, bet, avgv, estattn;
 
     bool music_adaptive_bord, firstpuzzle, spacedflow, collectiveflow, grabmindplayflow;
-    bool gamemode, flowmode, puzzlegrabed, canpuzzlechange, backloaded, showestatt;
+    bool game_findsame, flowmode, puzzlegrabed, canpuzzlechange, backloaded, showestatt;
     bool erasepen, bfiltmode, puzzlemode, fixedmain, changingpics, iconsready;
-    bool attent_modulaion, limitpicschange, setloaded, musicactiv, gamethrough;
+    bool attent_modulaion, limitpicschange, setloaded, musicactiv, game_gothrough;
 
     QVector<double> attent_arr, medit_arr, border_arr, xc, fxc, estatt_arr;
     QVector<double> delta_arr, theta_arr, alpha_arr, beta_arr, gamma_arr, hgamma_arr;
@@ -134,6 +134,8 @@ public:
     void swappuzzles(int t1, int t2);
     void mainpuzzle_update(int t);
     void updatepuzzles();
+    void update_penamp(int p);
+    void turn_music_checkbox(bool fl);
 
     ~paintform();
 
@@ -191,8 +193,6 @@ private slots:
 
     void on_checkBox_10_clicked();
 
-    void on_pushButton_8_clicked();
-
     void on_radioButton_4_clicked();
 
     void on_radioButton_5_clicked();
@@ -246,6 +246,8 @@ private slots:
     void on_checkBox_22_clicked();
 
     void on_checkBox_23_clicked();
+
+    void on_comboBox_3_currentIndexChanged(int index);
 
 private:
     Ui::paintform *ui;

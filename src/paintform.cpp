@@ -34,7 +34,7 @@ paintform::paintform(QWidget *parent) :
     bfiltmode = false;      // if main pic / puzzles in game mode are changing colors / blurring by attention
     erasepen = false;       // if pen is in erase mode
     setloaded = false;      // if puzzle set is loaded
-    gamemode = false;       // flag for game mode (finding 2 same pics among 15)
+    game_findsame = false;       // flag for game mode (finding 2 same pics among 15)
     musicactiv = false;     // flag for music playing from MindPlay by attention / meditation > border
     puzzlegrabed = false;   // create and save puzzles from single pic
     flowmode = false;       // flowmode - gathering puzzle, collectiveflow - behind overlays of different pics
@@ -43,7 +43,7 @@ paintform::paintform(QWidget *parent) :
     attent_modulaion = true;// attention / meditation modulation
     music_adaptive_bord = false;  // adaptive border for music activation mode
     backloaded = false;     // flag if background image is loaded
-    gamethrough = false;    // game through mode (moving item by attention / meditation)
+    game_gothrough = false;    // game through mode (moving item by attention / meditation)
 
     prevpuzzle = -1;             // previous puzzle number with puzzle clicks
     prevpict = -1;               // previous pictures index with puzzle clicks
@@ -166,37 +166,37 @@ void paintform::configure_ui() // configure ui elements
     ui->radioButton_5->setGeometry(740,930,150,20);
     ui->pushButton->setGeometry(780,865,70,20);
     ui->pushButton_11->setGeometry(780,885,70,20);
-    ui->label_4->setGeometry(850,920,120,20);
+    ui->label_4->setGeometry(855,920,120,20);
     ui->label_5->setGeometry(950,910,70,50);
     ui->pushButton_4->setGeometry(860,865,50,24);
     ui->label_8->setGeometry(920,865,50,20);
     ui->spinBox_7->setGeometry(970,865,50,20);
     ui->pushButton_12->setGeometry(940,891,80,24);
     ui->pushButton_9->setGeometry(860,891,80,24);
-    ui->checkBox_8->setGeometry(1070,905,100,20);
     ui->checkBox_8->setEnabled(false);
-    ui->verticalSlider->setGeometry(1038,820,20,150);
-    ui->checkBox_10->setGeometry(1070,930,160,20);
-    ui->checkBox_18->setGeometry(1070,950,160,20);
-    ui->checkBox_10->setEnabled(false);
-    ui->spinBox_3->setGeometry(1225,929,50,20);
-    ui->label_3->setGeometry(1280,929,30,20);
-    ui->checkBox_9->setGeometry(1200,905,100,20);
+    ui->verticalSlider->setGeometry(1038,820,20,150);        
+    ui->verticalSlider->setVisible(false);
+
+    ui->checkBox_10->setGeometry(1070,900,130,20);
+    ui->checkBox_6->setGeometry(1070,920,221,20);
+    ui->checkBox_10->setEnabled(false);        
+    ui->spinBox_3->setGeometry(1200,900,50,20);
+    ui->label_3->setGeometry(1255,900,30,20);
+    ui->checkBox_11->setGeometry(1290,900,120,20);
+    ui->spinBox_4->setGeometry(1385,900,35,20);
+
     ui->pushButton_5->setGeometry(1070,865,80,30);
     ui->pushButton_2->setGeometry(1160,865,100,30);
     ui->pushButton_6->setGeometry(1270,865,100,30);
     ui->pushButton_7->setGeometry(1380,865,100,30);
     ui->checkBox_16->setGeometry(1490,855,85,30);
-    ui->checkBox_17->setGeometry(1490,873,55,30);
-    ui->pushButton_8->setGeometry(1310,900,100,20);
-    ui->pushButton_10->setGeometry(1410,900,100,20);
-    ui->checkBox_11->setGeometry(1310,929,120,20);
-    ui->spinBox_4->setGeometry(1410,929,35,20);
-    ui->pushButton_7->setEnabled(false);    
-    ui->checkBox_22->setGeometry(1452,920,95,20);
-    ui->comboBox->setGeometry(1420,900,130,25);
+    ui->checkBox_16->setVisible(false);
+    ui->pushButton_10->setGeometry(1430,900,116,22);    
+    ui->comboBox_2->setGeometry(1430,924,100,20);
+    ui->checkBox_22->setGeometry(1325,924,95,20);
+    ui->pushButton_7->setEnabled(false);
     ui->comboBox->setVisible(false);
-    ui->comboBox_2->setGeometry(1450,940,100,20);
+    ui->comboBox->setGeometry(1420,900,130,25);    
     ui->checkBox->setGeometry(550,860,110,20);
     ui->checkBox_2->setGeometry(550,880,110,20);
     ui->radioButton->setGeometry(554,860,120,20);
@@ -206,9 +206,12 @@ void paintform::configure_ui() // configure ui elements
     ui->label->setGeometry(380,853,100,20);
     ui->spinBox->setGeometry(475,853,40,20);
     ui->label_2->setGeometry(260,853,60,20);
-    ui->label_7->setGeometry(260,878,120,20);
-    ui->spinBox_6->setGeometry(370,878,40,20);
-    ui->checkBox_20->setGeometry(420,878,100,20);
+    ui->checkBox_14->setGeometry(260,878,120,20);
+    ui->checkBox_3->setGeometry(390,878,120,20);
+    ui->label_7->setGeometry(260,878,120,20);    
+    ui->label_7->setVisible(false);
+    ui->spinBox_6->setGeometry(370,878,40,20);    
+    ui->spinBox_6->setVisible(false);
     ui->checkBox_21->setGeometry(486,878,60,20);
     ui->checkBox_21->setVisible(false);
     ui->checkBox_4->setGeometry(260,905,120,20);
@@ -218,13 +221,10 @@ void paintform::configure_ui() // configure ui elements
     ui->checkBox_19->setGeometry(461,904,71,20);
     ui->verticalSlider_2->setGeometry(533,855,20,70);
     ui->spinBox_5->setEnabled(true);
-    ui->verticalSlider_2->setEnabled(true);
-    ui->checkBox_13->setGeometry(400,930,140,20);
-    ui->checkBox_23->setGeometry(400,950,140,20);
-    ui->checkBox_14->setGeometry(260,930,120,20);
+    ui->verticalSlider_2->setEnabled(true);    
+    ui->verticalSlider_2->setVisible(false);
     ui->checkBox_5->setGeometry(400,905,120,20);
-    ui->checkBox_5->setVisible(false);
-    ui->checkBox_3->setGeometry(80,858,120,20);
+    ui->checkBox_5->setVisible(false);    
     ui->spinBox_5->setValue(soundborderlevel);
 
     ui->widget->setGeometry(50,656,740,195);
@@ -241,12 +241,22 @@ void paintform::configure_ui() // configure ui elements
     sp2.setColor(QPalette::Window, Qt::white);
     sp2.setColor(QPalette::WindowText, Qt::darkGreen);
 
+    ui->comboBox_3->setGeometry(585,26,105,22);
     ui->progressBar->setGeometry(700,26,236,20);
     ui->progressBar->setPalette(sp1);
+    ui->checkBox_8->setGeometry(60,26,120,21);
+    ui->label_6->setGeometry(1080,25,61,21);
+    ui->label_6->setVisible(false);
+    ui->checkBox_13->setGeometry(197,27,111,20);
+    ui->checkBox_23->setGeometry(312,27,111,20);
+    ui->checkBox_17->setGeometry(433,27,141,20);
 
-    ui->checkBox_6->setGeometry(80,883,140,20);
-    ui->checkBox_7->setGeometry(80,908,140,20);
-    ui->checkBox_12->setGeometry(80,933,99,20);
+    ui->checkBox_9->setGeometry(950,26,81,20);
+    ui->checkBox_20->setGeometry(1046,26,81,20);
+    ui->checkBox_18->setGeometry(1142,26,171,20);
+
+    ui->checkBox_7->setGeometry(80,858,151,20);
+    ui->checkBox_12->setGeometry(80,878,99,20);
     ui->checkBox_12->setChecked(true);
     ui->spinBox_2->setGeometry(320,853,40,20);
     ui->checkBox->setChecked(scene->randcolor);
@@ -286,7 +296,7 @@ void paintform::configure_ui() // configure ui elements
     ui->widget->addGraph();
     ui->widget->setInteraction(QCP::iSelectPlottables, true);
     QPen qpt_medit(Qt::darkGreen);
-    qpt_medit.setWidth(3);
+    qpt_medit.setWidth(1);
     ui->widget->graph(1)->setPen(qpt_medit);
     ui->widget->graph(1)->setName("Meditation");
     ui->widget->graph(1)->setData(xc, medit_arr);    
@@ -298,11 +308,12 @@ void paintform::configure_ui() // configure ui elements
 
     ui->widget->addGraph();    
     QPen qpt_bord("orange");
-    qpt_bord.setWidth(3);
-    ui->widget->graph(2)->setPen(qpt_bord);
+    mypen = qpt_bord;
+    mypen.setWidth(1);
+    ui->widget->graph(2)->setPen(mypen);
     ui->widget->graph(2)->setName("Border");
-    ui->widget->graph(2)->setData(xc, border_arr);                
-    ui->widget->graph(2)->selectionDecorator()->setPen(qpt_bord);
+    ui->widget->graph(2)->setData(xc, border_arr);
+    ui->widget->graph(2)->selectionDecorator()->setPen(mypen);
 
     ui->widget_2->xAxis->setRange(0,32);
     ui->widget_2->legend->setVisible(true);
@@ -346,7 +357,9 @@ void paintform::configure_ui() // configure ui elements
     ui->widget_2->graph(5)->setData(fxc, hgamma_arr);
 
     ui->widget_2->addGraph();
-    ui->widget_2->graph(6)->setPen(QPen(Qt::darkRed));
+    QPen qpt_estatt(Qt::red);
+    qpt_estatt.setWidth(2);
+    ui->widget_2->graph(6)->setPen(qpt_estatt);
     ui->widget_2->graph(6)->setName("Est-Attention");
     ui->widget_2->graph(6)->setData(fxc, estatt_arr);
 
@@ -361,7 +374,7 @@ void paintform::configure_ui() // configure ui elements
     ui->label_23->setPalette(sp1);
     ui->label_24->setGeometry(250,25,181,26);
     ui->label_24->setPalette(sp2);
-    ui->label_23->setVisible(true);
+    ui->label_23->setVisible(false);
     ui->label_24->setVisible(false);
 
     ui->spinBox_3->setValue(timepics);
@@ -598,7 +611,7 @@ void paintform::playsometone() // play random tone from MindPlay
 
 void paintform::newroundmovegame() // new round for moving item game
 {
-    if ((!grabmindplayflow) && (!pw->camerainp))
+    if (!grabmindplayflow)
         on_pushButton_6_clicked();
     itemborders.clear();
     scenegame->removeItem(movingItem);
@@ -619,6 +632,7 @@ void paintform::setpicfolder(QString fpath) // set folder for pictures
     random_shuffle(randnumb.begin(), randnumb.end());
     iconsready=false;
     pmarray.resize(imglist.length());
+    initpics();
 }
 
 void paintform::setdflowtime(int t) // set flow time - delay for chaning puzzles
@@ -786,7 +800,7 @@ void paintform::updatefreqarrs(double deltat, double thetat, double alphat, doub
     estatt_arr[numfrsamples]=estattn;    
     fxc[numfrsamples]=numfrsamples;
 
-    if (gamemode)
+    if (game_findsame)
     {
         ui->verticalSlider->setValue((int)estattn);
         ui->label_5->setText(QString::number((int)estattn)+"%");
@@ -947,14 +961,14 @@ void paintform::updateattention(int t) // update attention dependent variables
         ui->label_23->setStyleSheet("QLabel { color : red; }");
         ui->radioButton_4->setStyleSheet("QRadioButton { color : red; }");
 
-        if (!gamemode)
+        if (!game_findsame)
         {
             ui->verticalSlider->setValue(t);
             ui->label_5->setText(QString::number(t)+"%");
             ui->label_23->setText("ATTENTION: "+QString::number(t)+"%");
         }
 
-        if (gamethrough)
+        if (game_gothrough)
         {
             if (t<gamethroughborder)
             {
@@ -977,7 +991,7 @@ void paintform::updateattention(int t) // update attention dependent variables
         }
 
         // change of back image randomly by attention > border
-        if ((!fixedmain) && (!flowmode) && (!gamemode) && (t>borderpicchange) && (bfiltmode))
+        if ((!fixedmain) && (!flowmode) && (!game_findsame) && (t>borderpicchange) && (bfiltmode))
             on_pushButton_6_clicked();
      }
 
@@ -1036,7 +1050,7 @@ void paintform::updatemeditation(int t) // update meditation array, plot and dep
            }
        }
 
-       if (gamethrough)
+       if (game_gothrough)
        {
            if (t<gamethroughborder)
            {
@@ -1064,7 +1078,7 @@ void paintform::updatemeditation(int t) // update meditation array, plot and dep
        ui->label_5->setText(QString::number(t)+"%");
        ui->label_24->setText("MEDITATION: "+QString::number(t)+"%");
 
-       if ((!fixedmain) && (!flowmode) && (!gamemode) && (t>borderpicchange) && (bfiltmode))
+       if ((!fixedmain) && (!flowmode) && (!game_findsame) && (t>borderpicchange) && (bfiltmode))
            on_pushButton_6_clicked();
     }
 }
@@ -1939,8 +1953,16 @@ bool paintform::eventFilter(QObject *target, QEvent *event)  // processing key /
                 ui->horizontalSlider_2->setVisible(ui->progressBar->isVisible());
         }
 
-        if (keyEvent->key()==Qt::Key_K)     // start / stop camera input
+        if ((keyEvent->key()==Qt::Key_K) && (!game_findsame) && (!flowmode) && (!pw->filteringback))    // start / stop camera input
+        {
             pw->camerainp_on_off();
+            if (!grabmindplayflow)
+                on_checkBox_18_clicked();
+            if (grabmindplayflow)
+                ui->checkBox_18->setChecked(true);
+            else
+                ui->checkBox_18->setChecked(false);
+        }
 
         if (keyEvent->key() == Qt::Key_O)  // clear all drawings
             on_pushButton_clicked();
@@ -1983,7 +2005,7 @@ bool paintform::eventFilter(QObject *target, QEvent *event)  // processing key /
     // switch to puzzle mode and back to one pic
     if ((target == ui->graphicsView) && (event->type() == QEvent::MouseButtonDblClick))
     {
-       if ((!gamemode) && (!flowmode) && (!scene->drawflow) && (iconsready))
+       if ((!game_findsame) && (!flowmode) && (!scene->spacedview) && (iconsready))
        {
             pmg = mainpic;
             on_checkBox_8_clicked();
@@ -2018,7 +2040,7 @@ bool paintform::eventFilter(QObject *target, QEvent *event)  // processing key /
         }
         if (mouseEvent->button() == Qt::LeftButton)
         {
-            if (gamemode)           // processing of click in game mode
+            if (game_findsame)           // processing of click in game mode
             {
                 if ((currentindexes[14]==prevpict) && (prevpuzzle!=1))
                     startround();
@@ -2044,10 +2066,10 @@ bool paintform::eventFilter(QObject *target, QEvent *event)  // processing key /
     {
         QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
 
-        if ((mouseEvent->button() == Qt::MiddleButton) && (!gamemode) && (!flowmode))        
+        if ((mouseEvent->button() == Qt::MiddleButton) && (!game_findsame) && (!flowmode))
         // middle click - make current puzzle pic as main pic / central puzzle, update current puzzle with random pic
             mainpuzzle_update(0);
-        if ((mouseEvent->button() == Qt::RightButton) && (!gamemode) && (!flowmode))
+        if ((mouseEvent->button() == Qt::RightButton) && (!game_findsame) && (!flowmode))
         // right click - change pic of current puzzle on random pic
         {
             int t = qrand() % imglist.length();
@@ -2059,7 +2081,7 @@ bool paintform::eventFilter(QObject *target, QEvent *event)  // processing key /
         // left click - game mode (check for identity of pic with previously clicked puzzle)
         // not game mode: swapping of puzzle pics
         {
-            if (gamemode)
+            if (game_findsame)
             {
                 if ((currentindexes[0]==prevpict) && (prevpuzzle!=2))
                     startround();
@@ -2084,9 +2106,9 @@ bool paintform::eventFilter(QObject *target, QEvent *event)  // processing key /
     if ((setloaded) && (target == ui->graphicsView_3) && (event->type() == QEvent::MouseButtonPress) && (!flowmode))
     {
         QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
-        if ((mouseEvent->button() == Qt::MiddleButton) && (!gamemode))        
+        if ((mouseEvent->button() == Qt::MiddleButton) && (!game_findsame))
             mainpuzzle_update(1);
-        if ((mouseEvent->button() == Qt::RightButton) && (!gamemode))
+        if ((mouseEvent->button() == Qt::RightButton) && (!game_findsame))
         {
             int t = qrand() % imglist.length();
             currentindexes[1]=t;
@@ -2095,7 +2117,7 @@ bool paintform::eventFilter(QObject *target, QEvent *event)  // processing key /
         }
         if (mouseEvent->button() == Qt::LeftButton)
         {
-            if (gamemode)
+            if (game_findsame)
             {
                 if ((currentindexes[1]==prevpict) && (prevpuzzle!=3))
                     startround();
@@ -2120,9 +2142,9 @@ bool paintform::eventFilter(QObject *target, QEvent *event)  // processing key /
     if ((setloaded) && (target == ui->graphicsView_4) && (event->type() == QEvent::MouseButtonPress) && (!flowmode))
     {
         QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
-        if ((mouseEvent->button() == Qt::MiddleButton) && (!gamemode))        
+        if ((mouseEvent->button() == Qt::MiddleButton) && (!game_findsame))
             mainpuzzle_update(2);
-        if ((mouseEvent->button() == Qt::RightButton) && (!gamemode))
+        if ((mouseEvent->button() == Qt::RightButton) && (!game_findsame))
         {
             int t = qrand() % imglist.length();
             currentindexes[2]=t;
@@ -2131,7 +2153,7 @@ bool paintform::eventFilter(QObject *target, QEvent *event)  // processing key /
         }
         if (mouseEvent->button() == Qt::LeftButton)
         {
-            if (gamemode)
+            if (game_findsame)
             {
                 if ((currentindexes[2]==prevpict) && (prevpuzzle!=4))
                     startround();
@@ -2156,9 +2178,9 @@ bool paintform::eventFilter(QObject *target, QEvent *event)  // processing key /
     if ((setloaded) && (target == ui->graphicsView_5) && (event->type() == QEvent::MouseButtonPress) && (!flowmode))
     {
         QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
-        if ((mouseEvent->button() == Qt::MiddleButton) && (!gamemode))
+        if ((mouseEvent->button() == Qt::MiddleButton) && (!game_findsame))
             mainpuzzle_update(3);
-        if ((mouseEvent->button() == Qt::RightButton) && (!gamemode))
+        if ((mouseEvent->button() == Qt::RightButton) && (!game_findsame))
         {
             int t = qrand() % imglist.length();
             currentindexes[3]=t;
@@ -2167,7 +2189,7 @@ bool paintform::eventFilter(QObject *target, QEvent *event)  // processing key /
         }
         if (mouseEvent->button() == Qt::LeftButton)
         {
-            if (gamemode)
+            if (game_findsame)
             {
                 if ((currentindexes[3]==prevpict) && (prevpuzzle!=5))
                     startround();
@@ -2192,9 +2214,9 @@ bool paintform::eventFilter(QObject *target, QEvent *event)  // processing key /
     if ((setloaded) && (target == ui->graphicsView_6) && (event->type() == QEvent::MouseButtonPress) && (!flowmode))
     {
         QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
-        if ((mouseEvent->button() == Qt::MiddleButton) && (!gamemode))
+        if ((mouseEvent->button() == Qt::MiddleButton) && (!game_findsame))
             mainpuzzle_update(4);
-        if ((mouseEvent->button() == Qt::RightButton) && (!gamemode))
+        if ((mouseEvent->button() == Qt::RightButton) && (!game_findsame))
         {
             int t = qrand() % imglist.length();
             currentindexes[4]=t;
@@ -2203,7 +2225,7 @@ bool paintform::eventFilter(QObject *target, QEvent *event)  // processing key /
         }
         if (mouseEvent->button() == Qt::LeftButton)
         {
-            if (gamemode)
+            if (game_findsame)
             {
                 if ((currentindexes[4]==prevpict) && (prevpuzzle!=6))
                     startround();
@@ -2228,9 +2250,9 @@ bool paintform::eventFilter(QObject *target, QEvent *event)  // processing key /
     if ((setloaded) && (target == ui->graphicsView_7) && (event->type() == QEvent::MouseButtonPress) && (!flowmode))
     {
         QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
-        if ((mouseEvent->button() == Qt::MiddleButton) && (!gamemode))
+        if ((mouseEvent->button() == Qt::MiddleButton) && (!game_findsame))
             mainpuzzle_update(5);
-        if ((mouseEvent->button() == Qt::RightButton) && (!gamemode))
+        if ((mouseEvent->button() == Qt::RightButton) && (!game_findsame))
         {
             int t = qrand() % imglist.length();
             currentindexes[5]=t;
@@ -2239,7 +2261,7 @@ bool paintform::eventFilter(QObject *target, QEvent *event)  // processing key /
         }
         if (mouseEvent->button() == Qt::LeftButton)
         {
-            if (gamemode)
+            if (game_findsame)
             {
                 if ((currentindexes[5]==prevpict) && (prevpuzzle!=7))
                     startround();
@@ -2264,9 +2286,9 @@ bool paintform::eventFilter(QObject *target, QEvent *event)  // processing key /
     if ((setloaded) && (target == ui->graphicsView_8) && (event->type() == QEvent::MouseButtonPress) && (!flowmode))
     {
         QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
-        if ((mouseEvent->button() == Qt::MiddleButton) && (!gamemode))
+        if ((mouseEvent->button() == Qt::MiddleButton) && (!game_findsame))
             mainpuzzle_update(6);
-        if ((mouseEvent->button() == Qt::RightButton) && (!gamemode))
+        if ((mouseEvent->button() == Qt::RightButton) && (!game_findsame))
         {
             int t = qrand() % imglist.length();
             currentindexes[6]=t;
@@ -2275,7 +2297,7 @@ bool paintform::eventFilter(QObject *target, QEvent *event)  // processing key /
         }
         if (mouseEvent->button() == Qt::LeftButton)
         {
-            if (gamemode)
+            if (game_findsame)
             {
                 if ((currentindexes[6]==prevpict) && (prevpuzzle!=8))
                     startround();
@@ -2300,9 +2322,9 @@ bool paintform::eventFilter(QObject *target, QEvent *event)  // processing key /
     if ((setloaded) && (target == ui->graphicsView_9) && (event->type() == QEvent::MouseButtonPress) && (!flowmode))
     {
         QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
-        if ((mouseEvent->button() == Qt::MiddleButton) && (!gamemode))
+        if ((mouseEvent->button() == Qt::MiddleButton) && (!game_findsame))
             mainpuzzle_update(7);
-        if ((mouseEvent->button() == Qt::RightButton) && (!gamemode))
+        if ((mouseEvent->button() == Qt::RightButton) && (!game_findsame))
         {
             int t = qrand() % imglist.length();
             currentindexes[7]=t;
@@ -2311,7 +2333,7 @@ bool paintform::eventFilter(QObject *target, QEvent *event)  // processing key /
         }
         if (mouseEvent->button() == Qt::LeftButton)
         {
-            if (gamemode)
+            if (game_findsame)
             {
                 if ((currentindexes[7]==prevpict) && (prevpuzzle!=9))
                     startround();
@@ -2336,9 +2358,9 @@ bool paintform::eventFilter(QObject *target, QEvent *event)  // processing key /
     if ((setloaded) && (target == ui->graphicsView_10) && (event->type() == QEvent::MouseButtonPress) && (!flowmode))
     {
         QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
-        if ((mouseEvent->button() == Qt::MiddleButton) && (!gamemode))
+        if ((mouseEvent->button() == Qt::MiddleButton) && (!game_findsame))
             mainpuzzle_update(8);
-        if ((mouseEvent->button() == Qt::RightButton) && (!gamemode))
+        if ((mouseEvent->button() == Qt::RightButton) && (!game_findsame))
         {
             int t = qrand() % imglist.length();
             currentindexes[8]=t;
@@ -2347,7 +2369,7 @@ bool paintform::eventFilter(QObject *target, QEvent *event)  // processing key /
         }
         if (mouseEvent->button() == Qt::LeftButton)
         {
-            if (gamemode)
+            if (game_findsame)
             {
                 if ((currentindexes[8]==prevpict) && (prevpuzzle!=10))
                     startround();
@@ -2372,9 +2394,9 @@ bool paintform::eventFilter(QObject *target, QEvent *event)  // processing key /
     if ((setloaded) && (target == ui->graphicsView_11) && (event->type() == QEvent::MouseButtonPress) && (!flowmode))
     {
         QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
-        if ((mouseEvent->button() == Qt::MiddleButton) && (!gamemode))
+        if ((mouseEvent->button() == Qt::MiddleButton) && (!game_findsame))
             mainpuzzle_update(9);
-        if ((mouseEvent->button() == Qt::RightButton) && (!gamemode))
+        if ((mouseEvent->button() == Qt::RightButton) && (!game_findsame))
         {
             int t = qrand() % imglist.length();
             currentindexes[9]=t;
@@ -2383,7 +2405,7 @@ bool paintform::eventFilter(QObject *target, QEvent *event)  // processing key /
         }
         if (mouseEvent->button() == Qt::LeftButton)
         {
-            if (gamemode)
+            if (game_findsame)
             {
                 if ((currentindexes[9]==prevpict) && (prevpuzzle!=11))
                     startround();
@@ -2408,9 +2430,9 @@ bool paintform::eventFilter(QObject *target, QEvent *event)  // processing key /
     if ((setloaded) && (target == ui->graphicsView_12) && (event->type() == QEvent::MouseButtonPress) && (!flowmode))
     {
         QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
-        if ((mouseEvent->button() == Qt::MiddleButton) && (!gamemode))
+        if ((mouseEvent->button() == Qt::MiddleButton) && (!game_findsame))
             mainpuzzle_update(10);
-        if ((mouseEvent->button() == Qt::RightButton) && (!gamemode))
+        if ((mouseEvent->button() == Qt::RightButton) && (!game_findsame))
         {
             int t = qrand() % imglist.length();
             currentindexes[10]=t;
@@ -2419,7 +2441,7 @@ bool paintform::eventFilter(QObject *target, QEvent *event)  // processing key /
         }
         if (mouseEvent->button() == Qt::LeftButton)
         {
-            if (gamemode)
+            if (game_findsame)
             {
                 if ((currentindexes[10]==prevpict) && (prevpuzzle!=12))
                     startround();
@@ -2444,9 +2466,9 @@ bool paintform::eventFilter(QObject *target, QEvent *event)  // processing key /
     if ((setloaded) && (target == ui->graphicsView_13) && (event->type() == QEvent::MouseButtonPress) && (!flowmode))
     {
         QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
-        if ((mouseEvent->button() == Qt::MiddleButton) && (!gamemode))
+        if ((mouseEvent->button() == Qt::MiddleButton) && (!game_findsame))
             mainpuzzle_update(11);
-        if ((mouseEvent->button() == Qt::RightButton) && (!gamemode))
+        if ((mouseEvent->button() == Qt::RightButton) && (!game_findsame))
         {
             int t = qrand() % imglist.length();
             currentindexes[11]=t;
@@ -2455,7 +2477,7 @@ bool paintform::eventFilter(QObject *target, QEvent *event)  // processing key /
         }
         if (mouseEvent->button() == Qt::LeftButton)
         {
-            if (gamemode)
+            if (game_findsame)
             {
                 if ((currentindexes[11]==prevpict) && (prevpuzzle!=13))
                     startround();
@@ -2480,9 +2502,9 @@ bool paintform::eventFilter(QObject *target, QEvent *event)  // processing key /
     if ((setloaded) && (target == ui->graphicsView_14) && (event->type() == QEvent::MouseButtonPress) && (!flowmode))
     {
         QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
-        if ((mouseEvent->button() == Qt::MiddleButton) && (!gamemode))
+        if ((mouseEvent->button() == Qt::MiddleButton) && (!game_findsame))
             mainpuzzle_update(12);
-        if ((mouseEvent->button() == Qt::RightButton) && (!gamemode))
+        if ((mouseEvent->button() == Qt::RightButton) && (!game_findsame))
         {
             int t = qrand() % imglist.length();
             currentindexes[12]=t;
@@ -2491,7 +2513,7 @@ bool paintform::eventFilter(QObject *target, QEvent *event)  // processing key /
         }
         if (mouseEvent->button() == Qt::LeftButton)
         {
-            if (gamemode)
+            if (game_findsame)
             {
                 if ((currentindexes[12]==prevpict) && (prevpuzzle!=14))
                     startround();
@@ -2516,9 +2538,9 @@ bool paintform::eventFilter(QObject *target, QEvent *event)  // processing key /
     if ((setloaded) && (target == ui->graphicsView_15) && (event->type() == QEvent::MouseButtonPress) && (!flowmode))
     {
         QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
-        if ((mouseEvent->button() == Qt::MiddleButton) && (!gamemode))
+        if ((mouseEvent->button() == Qt::MiddleButton) && (!game_findsame))
             mainpuzzle_update(13);
-        if ((mouseEvent->button() == Qt::RightButton) && (!gamemode))
+        if ((mouseEvent->button() == Qt::RightButton) && (!game_findsame))
         {
             int t = qrand() % imglist.length();
             currentindexes[13]=t;
@@ -2527,7 +2549,7 @@ bool paintform::eventFilter(QObject *target, QEvent *event)  // processing key /
         }
         if (mouseEvent->button() == Qt::LeftButton)
         {
-            if (gamemode)
+            if (game_findsame)
             {
                 if ((currentindexes[13]==prevpict) && (prevpuzzle!=15))
                     startround();
@@ -2875,7 +2897,7 @@ void paintform::setbackimage(QPixmap pm) // set back image from Pixmap (MindPlay
     pmain=pm;
     qim=pm.toImage();
     backloaded = true;
-    if (!scene->drawflow)
+    if (!scene->spacedview)
     {        
         scene->clear();
         scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
@@ -2914,7 +2936,7 @@ void paintform::setbackimageocv(QString filename) // set back image from left pa
             break;
         }
     backloaded = true;
-    if (scene->drawflow)
+    if (scene->spacedview)
     {
         scene->bkgndimg.load(filename);
         qpr.setBrush(QPalette::Background, scene->bkgndimg.scaled(this->size(),rationmode,Qt::SmoothTransformation));
@@ -2969,7 +2991,7 @@ void paintform::puzzle_onepic_switch()
     else
         ui->graphicsView->setGeometry(50,50,1500,800);
 
-    if (!flowmode)
+    if ((!flowmode) && (!grabmindplayflow) && (!pw->camerainp))
     {
         scene->addPixmap(mainpic.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
         QBrush qbr(mainpic.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
@@ -3010,7 +3032,7 @@ void paintform::on_pushButton_clicked() // load clean main pic (not filtered and
 {    
     if (!pmain.isNull())
     {     
-        if (!scene->drawflow)
+        if (!scene->spacedview)
         {            
             pmain = mainpic.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation);
             scene->addPixmap(mainpic.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
@@ -3044,7 +3066,7 @@ void paintform::on_pushButton_2_clicked() // load main image from file
         qim.load(filename);
         currimglist[14]=filename;
         backloaded = true;
-        if (scene->drawflow)
+        if (scene->spacedview)
         {
             scene->bkgndimg.load(filename);
             qpr.setBrush(QPalette::Background, scene->bkgndimg.scaled(this->size(),rationmode,Qt::SmoothTransformation));
@@ -3196,7 +3218,16 @@ void paintform::on_checkBox_6_clicked()
 // brain filtering mode: attention determines blurring effect
 // and flow parameters (number of puzzles for change and delay)
 {
-    bfiltmode=!bfiltmode;    
+    bfiltmode=!bfiltmode;
+    if (bfiltmode)
+    {
+        ui->spinBox_3->setStyleSheet("QSpinBox { background-color: yellow; }");
+        ui->spinBox_4->setStyleSheet("QSpinBox { background-color: yellow; }");
+    } else
+    {
+        ui->spinBox_3->setStyleSheet("QSpinBox { background-color: white; }");
+        ui->spinBox_4->setStyleSheet("QSpinBox { background-color: white; }");
+    }
 }
 
 void paintform::on_pushButton_6_clicked() // set main pic as random from folder
@@ -3212,7 +3243,7 @@ void paintform::on_pushButton_6_clicked() // set main pic as random from folder
     qim.load(filename);
     backloaded = true;
 
-    if (scene->drawflow)
+    if (scene->spacedview)
     {
         qpr.setBrush(QPalette::Background, scene->bkgndimg.scaled(this->size(),rationmode,Qt::SmoothTransformation));
         this->setPalette(qpr);
@@ -3232,6 +3263,10 @@ void paintform::on_checkBox_7_clicked()
 // attention modulation for paintScene (if on - modulates amplitude of brain waves with drawing)
 {
     scene->attmodul=!scene->attmodul;  
+    if (scene->attmodul)
+        ui->spinBox->setStyleSheet("QSpinBox { background-color: yellow; }");
+    else
+        ui->spinBox->setStyleSheet("QSpinBox { background-color: white; }");
 }
 
 void paintform::on_checkBox_8_clicked()  // puzzle mode on / off
@@ -3250,7 +3285,11 @@ void paintform::on_checkBox_8_clicked()  // puzzle mode on / off
 
     puzzle_onepic_switch();
 
-    ui->checkBox_13->setEnabled(puzzlemode);
+    if (!grabmindplayflow)
+        ui->checkBox_13->setEnabled(puzzlemode);
+
+    if ((!puzzlemode) && (grabmindplayflow))
+        ui->checkBox_17->setEnabled(false);
 
     if (firstpuzzle)
     {
@@ -3298,36 +3337,48 @@ void paintform::on_checkBox_10_clicked()    // changing pics in puzzles
         tpicschange->stop();
 }
 
-void paintform::on_pushButton_8_clicked()   // make icons for puzzles from raw images
-{
-    fd.setPath(folderpath);
-    fd.entryList(QStringList() << "*.jpg" << "*.JPG",QDir::Files);
-    pmarray.clear();
-    pmarray.resize(imglist.length());
-    randnumb = vector<int>(imglist.length());
-    iota(randnumb.begin(), randnumb.end(), 0);
-    random_shuffle(randnumb.begin(), randnumb.end());    
-    initpics();      
-}
-
 void paintform::on_radioButton_4_clicked()  // attention modulation
 {
     ui->radioButton_5->setStyleSheet("QRadioButton { color : black; }");
-    ui->label_24->setVisible(false);
-    ui->label_23->setVisible(true);
+   // ui->label_24->setVisible(false);
+   // ui->label_23->setVisible(true);
     ui->progressBar->setPalette(sp1);
     pw->attention_modulation=true;
     attent_modulaion=true;
+
+    if (!game_findsame)
+    {
+        QPen qpt_att = ui->widget->graph(0)->pen();
+        qpt_att.setWidth(3);
+        ui->widget->graph(0)->setPen(qpt_att);
+        QPen qpt_med = ui->widget->graph(1)->pen();
+        qpt_med.setWidth(1);
+        ui->widget->graph(1)->setPen(qpt_med);
+    }
+
+    ui->comboBox_3->setCurrentIndex(0);
  }
 
 void paintform::on_radioButton_5_clicked()  // meditation modulation
 {
     ui->radioButton_4->setStyleSheet("QRadioButton { color : black; }");
-    ui->label_23->setVisible(false);
-    ui->label_24->setVisible(true);
+   // ui->label_23->setVisible(false);
+   // ui->label_24->setVisible(true);
     ui->progressBar->setPalette(sp2);
     pw->attention_modulation=false;
     attent_modulaion=false;
+
+    if (!game_findsame)
+    {
+        QPen qpt_att = ui->widget->graph(0)->pen();
+        qpt_att.setWidth(1);
+        ui->widget->graph(0)->setPen(qpt_att);
+        QPen qpt_med = ui->widget->graph(1)->pen();
+        qpt_med.setWidth(3);
+        ui->widget->graph(1)->setPen(qpt_med);
+    }
+
+    ui->comboBox_3->setCurrentIndex(1);    
 }
 
 void paintform::on_checkBox_11_clicked()    // changing only limit number of puzzles
@@ -3358,12 +3409,13 @@ void paintform::on_checkBox_12_clicked()    // hide / show plots
 
 void paintform::on_checkBox_13_clicked()    // start / stop game mode
 {
-    gamemode = !gamemode;
+    game_findsame = !game_findsame;
     prevpict = -1;
     prevpuzzle = -1;
-    ui->checkBox_8->setEnabled(!gamemode);
-    ui->checkBox_10->setEnabled(!gamemode);
-    showestatt = gamemode;
+    ui->checkBox_8->setEnabled(!game_findsame);
+    ui->checkBox_10->setEnabled(!game_findsame);
+    ui->checkBox_18->setEnabled(!game_findsame);
+    showestatt = game_findsame;
     if (showestatt)
     {
         ui->widget_2->yAxis->setRange(0,100);
@@ -3373,8 +3425,27 @@ void paintform::on_checkBox_13_clicked()    // start / stop game mode
         ui->widget_2->yAxis->setRange(0,50);
         ui->widget_2->graph(6)->setVisible(false);
     }
-    if (gamemode)
+    if (game_findsame)
+    {
+        QPen qpt_att = ui->widget->graph(0)->pen();
+        qpt_att.setWidth(1);
+        ui->widget->graph(0)->setPen(qpt_att);
+        QPen qpt_med = ui->widget->graph(1)->pen();
+        qpt_med.setWidth(1);
+        ui->widget->graph(1)->setPen(qpt_med);
         startround();
+        on_checkBox_6_clicked();
+        ui->checkBox_6->setChecked(true);
+    }
+    else
+    {
+        if (attent_modulaion)
+            on_radioButton_4_clicked();
+        else
+            on_radioButton_5_clicked();
+        on_checkBox_6_clicked();
+        ui->checkBox_6->setChecked(false);
+    }
 }
 
 void paintform::on_checkBox_14_clicked()
@@ -3391,20 +3462,24 @@ void paintform::on_radioButton_6_clicked()
     scene->randfixcolor=true;
 }
 
+void paintform::turn_music_checkbox(bool fl)
+{
+    ui->checkBox_15->setEnabled(fl);
+}
+
 void paintform::on_checkBox_15_clicked()    // music activation (from MindPlay) by border
 {
     if (musicactiv)
     {
-        musicactiv=false;
-        pw->brainflow_on=false;
+        musicactiv=false;       
         pw->musicmode_on=false;
         mypen.setWidth(1);
         ui->widget->graph(2)->setPen(mypen);
-        ui->widget->graph(2)->pen().setWidth(1);
     }
     else
         musicactiv=true;
-    ui->spinBox_5->setEnabled(musicactiv);
+    ui->checkBox_22->setChecked(musicactiv);
+    pw->turn_music_checkbox(musicactiv);  
     ui->verticalSlider_2->setEnabled(musicactiv);
 }
 
@@ -3412,7 +3487,7 @@ void paintform::on_spinBox_5_valueChanged(int arg1)
 {
     soundborderlevel=arg1;
     ui->verticalSlider_2->setValue(arg1);
-    if (gamethrough)
+    if (game_gothrough)
         gamethroughborder=arg1;
 }
 
@@ -3452,7 +3527,7 @@ void paintform::on_pushButton_9_clicked()   // transfer main pic to MindPlay and
     if (puzzlemode)    
         pixMap = mainpic;        
     else
-    if (!scene->drawflow)    
+    if (!scene->spacedview)
         pixMap = ui->graphicsView->grab();            
     else    
         pixMap = scene->bkgndimg; 
@@ -3471,7 +3546,7 @@ void paintform::on_checkBox_16_clicked() // activate puzzle flow (puzzle gatheri
 {
     if (!puzzlemode)
     {
-        scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
+        scene->addPixmap(mainpic.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
         grabpuzzles();
         randompics();
     }
@@ -3524,9 +3599,11 @@ void paintform::on_checkBox_16_clicked() // activate puzzle flow (puzzle gatheri
     adaptivespinrate(flowmode);
 }
 
-void paintform::on_checkBox_17_clicked()
+void paintform::on_checkBox_17_clicked() // puzzle gathering game
 {
-    collectiveflow=!collectiveflow;
+    on_checkBox_16_clicked();
+    collectiveflow=!collectiveflow;    
+    ui->checkBox_23->setEnabled(collectiveflow);
 }
 
 void paintform::on_pushButton_10_clicked() // set new pictures folder
@@ -3534,10 +3611,8 @@ void paintform::on_pushButton_10_clicked() // set new pictures folder
     QString filePath=QFileDialog::getExistingDirectory(this, "Get Any Folder", folderpath);
     if (filePath!="")
     {
-        fd.setPath(filePath);
-        imglist = fd.entryList(QStringList() << "*.jpg" << "*.JPG",QDir::Files);
-        folderpath=filePath;
       //  pw->setpicfolder(filePath);
+        setpicfolder(filePath);
     }
 }
 
@@ -3545,21 +3620,26 @@ void paintform::on_checkBox_19_clicked() // adaptive border for music activation
 {
     music_adaptive_bord=!music_adaptive_bord;
     ui->verticalSlider_2->setEnabled(!music_adaptive_bord);
-    ui->spinBox_5->setEnabled(!music_adaptive_bord);
+   // ui->spinBox_5->setEnabled(!music_adaptive_bord);
+    if (music_adaptive_bord)
+        ui->spinBox_5->setStyleSheet("QSpinBox { background-color: yellow; }");
+    else
+        ui->spinBox_5->setStyleSheet("QSpinBox { background-color: white; }");
 }
 
 void paintform::on_checkBox_20_clicked()
 // spaced mode: main pic is filling as the whole form background image
 {    
-    scene->drawflow=!scene->drawflow;
+    scene->spacedview=!scene->spacedview;
     if (iconsready)
     {        
-        ui->checkBox_8->setEnabled(!scene->drawflow);
-        ui->checkBox_16->setEnabled(!scene->drawflow);
-        ui->checkBox_17->setEnabled(!scene->drawflow);
+        if (!game_gothrough)
+            ui->checkBox_8->setEnabled(!scene->spacedview);
+        ui->checkBox_16->setEnabled(!scene->spacedview);
+        ui->checkBox_17->setEnabled(!scene->spacedview);
     }
-    ui->pushButton_5->setEnabled(!scene->drawflow);
-    if (scene->drawflow)
+    ui->pushButton_5->setEnabled(!scene->spacedview);
+    if (scene->spacedview)
     {
        // scene->tim->start();
         scene->bkgndimg=pmain;
@@ -3590,14 +3670,17 @@ void paintform::on_checkBox_18_clicked()    // grab flow from MindPlay
     grabmindplayflow=!grabmindplayflow;
     if (grabmindplayflow)
     {
-        ui->checkBox_8->setEnabled(false);
+      //  ui->checkBox_8->setEnabled(false);
+        ui->checkBox_13->setEnabled(false);
         ui->checkBox_16->setEnabled(false);
         ui->checkBox_17->setEnabled(false);
     } else
     {
         if (iconsready)
         {
-            ui->checkBox_8->setEnabled(true);
+          //  ui->checkBox_8->setEnabled(true);
+            if (puzzlemode)
+                ui->checkBox_13->setEnabled(true);
             ui->checkBox_16->setEnabled(true);
             ui->checkBox_17->setEnabled(true);
         }
@@ -3618,7 +3701,7 @@ void paintform::on_pushButton_12_clicked()  // transfer current main pic to Mind
     {
         if (puzzlemode)
             pixMap = mainpic;
-        else if (!scene->drawflow)
+        else if (!scene->spacedview)
             pixMap = ui->graphicsView->grab();
         else
             pixMap = scene->bkgndimg;
@@ -3636,11 +3719,13 @@ void paintform::on_checkBox_22_clicked()
     pw->setmusicmode(ui->checkBox_22->isChecked());
 }
 
-void paintform::on_checkBox_23_clicked()
+void paintform::on_checkBox_23_clicked()    // start/stop "go through" game mode
 {
-    gamethrough = !gamethrough;
-    ui->checkBox_8->setEnabled(!gamethrough);
-    if (gamethrough)
+    game_gothrough = !game_gothrough;
+    if (!scene->spacedview)
+        ui->checkBox_8->setEnabled(!game_gothrough);
+    ui->checkBox_17->setEnabled(!game_gothrough);
+    if (game_gothrough)
     {
         movingItem->setX(movingItem->startX);
         movingItem->setY(movingItem->startY);
@@ -3652,6 +3737,7 @@ void paintform::on_checkBox_23_clicked()
         initborderlines();
         soundborderlevel = gamethroughborder;
         ui->spinBox_5->setValue(soundborderlevel);
+        ui->checkBox_15->setText("go through border");
         ui->graphicsView->setVisible(false);
         ui->graphicsView_16->setVisible(true);
         moveItemTimer->start();
@@ -3660,6 +3746,27 @@ void paintform::on_checkBox_23_clicked()
     {
         ui->graphicsView->setVisible(true);
         ui->graphicsView_16->setVisible(false);
+        ui->checkBox_15->setText("music activation border");
         moveItemTimer->stop();
     }
 }
+
+void paintform::on_comboBox_3_currentIndexChanged(int index)  // attention / meditation switch
+{
+    if (index==0)
+    {
+        on_radioButton_4_clicked();
+        ui->radioButton_4->setChecked(true);
+    }
+    else if (index==1)
+    {
+        on_radioButton_5_clicked();
+        ui->radioButton_5->setChecked(true);
+    }
+}
+
+void paintform::update_penamp(int p)
+{
+    ui->spinBox->setValue(p);
+}
+

@@ -9,8 +9,7 @@
 #include "myitem.h"
 
 // TO DO:
-// 1. attention game with overcoming set of lines
-// 2. drawing continuos structure with complexity dependent on attention
+// drawing continuos structures with complexity / speed of draw dependent on attention
 
 paintScene::paintScene(QObject *parent) : QGraphicsScene(parent)
 {    
@@ -22,7 +21,7 @@ paintScene::paintScene(QObject *parent) : QGraphicsScene(parent)
     drawbpoints = false;        // draw by points
     startedline = false;        // flag if current drawing line is started
     timeoff = true;             // if timer for drawing on contours is off
-    drawflow = false;           // drawing in flow (experimental mode)
+    spacedview = false;         // extended full form scene view, drawing on pics flow option (experimental mode)
     fxcolor = "orange";         // default fixed color    
     ac = 255;                   // transparency for pen color
 
@@ -102,12 +101,12 @@ void paintScene::applyfilteronbackimg()
 {
     colorize = new QGraphicsColorizeEffect;
     blur = new QGraphicsBlurEffect;
-    blur->setBlurRadius((100-pw->attent)/15);
+    blur->setBlurRadius((100-paintf->estattn)/15);
    // colorize->setColor(QColor(pw->alpha*5,256-pw->beta*5,256-pw->gamma*6,pw->meditt*2));
     QColor qcl = QColor(pw->theta*4,pw->beta*4,pw->gamma*4,pw->alpha*6);
    // qcl.setHsv(pw->beta*7,pw->alpha*7,pw->theta*6);
     colorize->setColor(qcl);//QColor(pw->theta*4,pw->beta*4,pw->gamma*4,pw->alpha*4));
-    colorize->setStrength((double)(100-pw->attent)/100);
+    colorize->setStrength((double)(100-paintf->estattn)/100);
 
     //qbim1 = applyEffectToImage(paintf->qim, blur, 0);
     qbim1 = applyEffectToImage(bkgndimg.toImage(), blur, 0);
@@ -126,12 +125,12 @@ void paintScene::applyfilter()
         {      
         colorize = new QGraphicsColorizeEffect;
         blur = new QGraphicsBlurEffect;
-        blur->setBlurRadius((100-paintf->estattn)/12);
+        blur->setBlurRadius((100-paintf->estattn)/15);
        // colorize->setColor(QColor(pw->alpha*5,256-pw->beta*5,256-pw->gamma*6,pw->meditt*2));
         QColor qcl = QColor(pw->theta*4,pw->beta*4,pw->gamma*4,pw->alpha*6);
        // qcl.setHsv(pw->beta*7,pw->alpha*7,pw->theta*6);
         colorize->setColor(qcl);//QColor(pw->theta*4,pw->beta*4,pw->gamma*4,pw->alpha*4));
-        colorize->setStrength((double)pw->attent/50);
+        colorize->setStrength((double)(100-paintf->estattn)/100);
 
         qbim1 = applyEffectToImage(paintf->qim, blur, 0);        
         qbim2 = applyEffectToImage(qbim1, colorize, 0);       
@@ -172,8 +171,13 @@ void paintScene::getdata(int x)     // signal acquisiton and normalization
    // if (x>meand*2) x = meand;
     if (attmodul)
     {
-        if (attentt<10) attentt = 10;
-        t0=((x-meand)*attentt)/40;
+        if (attentt<10)
+            attentt = 10;
+        t0=(x-meand)*attentt/40;
+        paintf->eegsize = attentt/20;
+        if (attentt<20)
+            paintf->eegsize = 1;
+        paintf->update_penamp(paintf->eegsize);
     }
     else
         t0=(x-meand)*paintf->eegsize/2;

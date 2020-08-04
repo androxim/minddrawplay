@@ -27,7 +27,7 @@ void Settings::on_pushButton_3_clicked() // "Apply" button
     pwd->filtercl->zerophaseinit(pwd->lcutoff,pwd->hcutoff,pwd->butterord,pwd->srfr);
     pwd->update_intervals_spinboxes();
     pwd->setpicfolder(ui->lineEdit->text());
-    pwd->attention_volume=ui->checkBox_2->isChecked();
+    pwd->adaptive_volume=ui->checkBox_2->isChecked();
     pwd->adaptivenumparts=ui->checkBox->isChecked();
     pwd->enable_num_intervals(!ui->checkBox->isChecked());
     close();
@@ -41,12 +41,13 @@ void Settings::on_pushButton_2_clicked()
 void Settings::init()
 { 
     eslength=pwd->imlength;    
+    ui->checkBox_2->setVisible(false);
     ui->spinBox_14->setValue(pwd->butterord);
     ui->spinBox_15->setValue(pwd->lcutoff);
     ui->spinBox_16->setValue(pwd->hcutoff);    
     ui->spinBox_20->setValue(pwd->srfr);
     ui->checkBox->setChecked(pwd->adaptivenumparts);
-    ui->checkBox_2->setChecked(pwd->attention_volume);
+    ui->checkBox_2->setChecked(pwd->adaptive_volume);
     ui->lineEdit->setText(pwd->folderpath); 
 }
 

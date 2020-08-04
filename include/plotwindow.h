@@ -86,15 +86,15 @@ public:
     int tv1, tv2, tv3, tv4, tv5, tv6, tv7, tv8, tv9, tv10;
     int pushshift, psleep, camera_interval;
     int lcutoff, hcutoff, butterord;
-    int nextdrawshift;
-    int tonescheck;
+    int nextdrawshift, tonescheck;
+    int buffercount;
 
     bool adaptivenumparts, backimageloaded, canbackchange, opencvstart;
     bool filteringback, blurback, hidebutt, attention_interval, fixback, colorizeback;
     bool attention_modulation, start, brainflow_on, estimation, updatewavesplot;
     bool usefiltering, musicmode_on, flowblinking, scalechange;
     bool spacemode, tank1mode, tank2mode, recordstarted, antirepeat, randmxt;       
-    bool mindwstart, fftfreqs, attention_volume, keys_emulated, simeeg;
+    bool mindwstart, fftfreqs, adaptive_volume, keys_emulated, simeeg;
     bool tunemode, paintfstart, rawsignalabove, camerainp;
 
     QString tank1[10] = {"b","B","g","G","d","D","E","C","f#","a"};
@@ -176,6 +176,7 @@ public:
     void radiobut3();
     void enable_num_intervals(bool fl);
     void enablehue();
+    void turn_music_checkbox(bool fl);
 
     QImage applyEffectToImage(QImage src, QGraphicsEffect *effect, int extent);
     void applyfilteronback();
@@ -329,6 +330,8 @@ private slots:
     void on_pushButton_2_clicked();
 
     void on_checkBox_15_clicked();
+
+    void on_checkBox_8_clicked();
 
 private:
     Ui::plot *ui;

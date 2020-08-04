@@ -43,7 +43,7 @@ public:
     int attentt, meditt, currlinenum, currlinedraw, drawrate;
     int* linelengths;
 
-    bool drawflow, randcolor, fixcolor, freqcolor, randfixcolor, drawbpoints;
+    bool spacedview, randcolor, fixcolor, freqcolor, randfixcolor, drawbpoints;
     bool startedline, horizline, vertline, attmodul, drawcontours, timeoff;
     double sumd, meand, angle;
 

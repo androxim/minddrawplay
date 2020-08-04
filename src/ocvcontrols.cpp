@@ -30,7 +30,14 @@ ocvcontrols::ocvcontrols(QWidget *parent) :
     wcolor = Scalar(255,255,255);
 
     ui->spinBox_16->setStyleSheet("QSpinBox { background-color: yellow; }");      
+    ui->spinBox_18->setStyleSheet("QSpinBox { background-color: yellow; }");
+    ui->spinBox_19->setStyleSheet("QSpinBox { background-color: yellow; }");
     ui->spinBox_20->setStyleSheet("QSpinBox { background-color: yellow; }");
+
+    sprintf(l_menu_item1,"ESC - stop flow");
+    sprintf(l_menu_item2,"1: color-overlay flow");
+    sprintf(l_menu_item3,"2: dreamflow");
+    sprintf(l_menu_item4,"3: puzzle gathering flow");
 
     ui->comboBox->setEnabled(histFeaturesReady);
     connect(this,&ocvcontrols::flow_direction_available,this,&ocvcontrols::set_flow_direction_available);
@@ -100,9 +107,40 @@ ocvcontrols::~ocvcontrols()
     delete ui;
 }
 
+void ocvcontrols::blocktabs(int i)
+{
+    if (i==1)
+    {
+        ui->Dilate->setEnabled(false);
+        ui->Waves->setEnabled(false);
+        ui->Cartoon->setEnabled(false);
+        ui->ORB->setEnabled(false);
+       // ui->Mixer->setEnabled(false);
+        ui->Puzzle->setEnabled(false);
+    } else if (i==2)
+        ui->Puzzle->setEnabled(false);
+    else if (i==3)
+    {
+        ui->Dilate->setEnabled(false);
+        ui->Waves->setEnabled(false);
+        ui->Cartoon->setEnabled(false);
+        ui->ORB->setEnabled(false);
+        ui->Mixer->setEnabled(false);
+    } else if (i==0)
+    {
+        ui->Dilate->setEnabled(true);
+        ui->Waves->setEnabled(true);
+        ui->Cartoon->setEnabled(true);
+        ui->ORB->setEnabled(true);
+        ui->Mixer->setEnabled(true);
+        ui->Puzzle->setEnabled(true);
+    }
+}
+
 void ocvcontrols::randpicchange_Update()
 {
-    changerandpic();
+    if (!puzzleflow_on)
+        changerandpic();
 }
 
 void ocvcontrols::drop_center_from_mousepos()
@@ -340,6 +378,8 @@ void ocvcontrols::start_stop_dreamflow(bool fl)
 {   
     on_checkBox_5_clicked();
     ui->checkBox_5->setChecked(fl);
+    currfilttype = totalfilts-1;
+    updateformvals();
 }
 
 void ocvcontrols::set_flow_direction_available()
@@ -382,6 +422,8 @@ void ocvcontrols::on_checkBox_5_clicked()
     dreamflow=!dreamflow;
     if (dreamflow)
     {
+        blocktabs(2);
+        mww->grab_labels_areas();
         mww->setdream0();        
         mww->dreamflow_timer->start();
         if (dropsmode)
@@ -400,6 +442,7 @@ void ocvcontrols::on_checkBox_5_clicked()
     }
     else
     {
+        blocktabs(0);
         mww->dreamflow_timer->stop();
         dropsT->stop();
         if (!drops_by_click_mode)
@@ -413,6 +456,7 @@ void ocvcontrols::on_checkBox_5_clicked()
             ui->checkBox_15->setEnabled(false);
             ui->checkBox_18->setEnabled(false);
         }
+        mww->stop_all_flows();
     }       
 }
 
@@ -593,7 +637,7 @@ void ocvcontrols::on_pushButton_5_clicked()
 void ocvcontrols::on_spinBox_20_valueChanged(int arg1)
 {
     corr_cell_part = (double)arg1/100;
-    int m = (int)cellnums*corr_cell_part;
+    unsigned int m = (int)cellnums*corr_cell_part;
     for (size_t t = 0; t < m; t++)
         mww->fillcell(cells_indexes[t],cols);
 }
@@ -655,20 +699,31 @@ void ocvcontrols::on_spinBox_21_valueChanged(int arg1)
     changepuzzleborder = arg1;
 }
 
-void ocvcontrols::on_pushButton_6_clicked()
+void ocvcontrols::start_stop_puzzleflow(bool fl)
 {
-    puzzleflow_on = !puzzleflow_on;
-    if (puzzleflow_on)
+    puzzleflow_on = fl;
+    if (fl)
     {
+        blocktabs(3);
+        currfilttype = totalfilts;
         ui->pushButton_6->setText("Stop");
         mww->fillcells();
+        updateformvals();
         mww->puzzleflow->start();
     }
     else
     {
+        blocktabs(0);
         ui->pushButton_6->setText("Start");
         mww->puzzleflow->stop();
+        mww->stop_all_flows();
     }
+}
+
+void ocvcontrols::on_pushButton_6_clicked()
+{
+    puzzleflow_on = !puzzleflow_on;
+    start_stop_puzzleflow(puzzleflow_on);    
 }
 
 void ocvcontrols::on_checkBox_23_clicked()

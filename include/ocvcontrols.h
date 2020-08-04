@@ -29,8 +29,9 @@ public:
     bool drawbrushcontour = true; bool drops_by_click_mode = false;
     bool circle_brush = true; bool histFeaturesReady = false;
     bool multi_img_dflow = false; bool multi_img_by_att = false;
-    int picwidth = 2000, picheight = 1125;
-    int currfilterarea = 250, currfilterrate = 12, currfilttype = 5, totalfilts = 5;
+    int picwidth = 2000, picheight = 1125; bool color_overlay_flow = false;
+    int currfilterarea = 250, currfilterrate = 12, currfilttype = 5, totalfilts = 6;
+
     int sigma_color = 25, sigma_space = 50, kernel_s = 5;                              // cartoonize params
     int wave_freqs = 42, wave_amp = 9;                                                 // waves params
     int dilation_size = 1, dilation_elem = 2;                                          // dilate params
@@ -40,25 +41,28 @@ public:
     std::vector<int> cells_indexes, free_cells;                                        // puzzle params
     bool puzzleflow_on = false, puzzle_edges = true, white_edges = true;               // puzzle params
     double corr_cell_part = 0.8; int puzzleflowrate = 100, changepuzzleborder = 90;    // puzzle params
-    int cell_size = 200; int cols = 10; int rows = 5; int cellnums = 50;               // puzzle params
-    bool corrcells_by_att = true, puzzlerate_by_att = false, cellsize_by_att = false;  // puzzle params
+    int cell_size = 200; int cols = 10; int rows = 5; unsigned int cellnums = 50;      // puzzle params
+    bool corrcells_by_att = true, puzzlerate_by_att = true, cellsize_by_att = true;    // puzzle params
 
     int mixtype = 3, transp = 80, multi_set_size = 2, randpicn;                        // mixer params
     bool changerandpic_byclick = false; bool changebyattention = false;                // mixer params
     bool dreamflow = false; int dreamflowrate = 77; bool polygonmask = false;          // mixer params
     bool changepic_bytime = false; int changepic_interval = 3; QTimer* pichngT;        // mixer params
     QPoint seed; int x_left, x_right, y_top, y_bottom, drops_interval = 50;            // mixer params
-    bool dropsmode = false; QTimer* dropsT; int dropsgrow_step = 24; Scalar wcolor;    // mixer params
+    bool dropsmode = true; QTimer* dropsT; int dropsgrow_step = 24; Scalar wcolor;     // mixer params
     int firstdrop_size = 30; bool plotdroprect = true; bool drops_by_att = false;      // mixer params
     bool poly_by_att = true; int pointsinpoly = 3; bool drops_from_mousepos = false;   // mixer params
 
     bool attmodul_area = false; bool attent_modulated_dreams = false;    // attention modulated filter area and rate of dreamflow
     bool hueonly = false; bool transp_by_att = false;                    // hue only, without overlay; transparency by attention    
     bool directionswitch_by_att = false;    
-    bool showlabel = true; char l_str[50];  // attention label parameters
-    int l_posx = 1500, l_posy = 80, lfont_scale = 4, lfont_size = 5, lw = 484, lh = 80;
     int flowdirection = 0; Mat randpic; int allngb = 30, ngbarea = 20; // area of neighbours for nearest / farest pic
     // 0: "random" - next pic is randomly from all, 1: "similar" - from N nearest, -1: "opposite" - from N farest
+
+    bool showlabel = true; char l_str[50];  // attention label parameters
+    char l_menu_item1[50], l_menu_item2[50], l_menu_item3[50], l_menu_item4[50];
+    int l_posx = 1500, l_posy = 80, lfont_scale = 4, lfont_size = 5, lw = 484, lh = 80;
+    int l_menu_posx = 30, l_menu_posy = 50, l_menu_fontsize = 4, l_menu_fontscale = 3, lmenuw = 625, lmenuh = 180;
 
     leftpanel* leftpan;
     MainWindow* mww;
@@ -67,8 +71,10 @@ public:
     void randmixer_mode_on();
     void setcurrdream(int t);
     void start_stop_dreamflow(bool fl);
+    void start_stop_puzzleflow(bool fl);
     void drop_center_from_mousepos();
     void setcameracheckbox(bool fl);
+    void blocktabs(int i);
     explicit ocvcontrols(QWidget *parent = 0);
     ~ocvcontrols();
 

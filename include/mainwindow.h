@@ -122,6 +122,9 @@ public:
     void fillcells();
     void swapcells(int t1, int t2, int cols);
 
+    void stop_all_flows();
+    void grab_labels_areas();
+
     ~MainWindow();
 
 signals:

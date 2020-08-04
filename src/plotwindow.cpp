@@ -52,6 +52,7 @@ plotwindow::plotwindow(QWidget *parent) :
     nextdrawshift = 200; // shift of y-axis when graphcount > eegintervals-2 (visual adjustment)
     simsrfr = 500; // frequency of simulated EEG flow
     picchangeborder = 70; // border for changing back image by attention>border
+    buffercount = 0; // number of points in data buffer
 
     simeeg = false; // simulated EEG flow
     tunemode = true; // allow to change parameters of deviations from mean brain waves expressions
@@ -65,7 +66,7 @@ plotwindow::plotwindow(QWidget *parent) :
     // change only when attention becomes > border after it was less
     attention_modulation = true; // attention / meditation modulation
     attention_interval = false; // attention / meditation modulated length of acquired EEG intervals
-    attention_volume = true; // attention modulated volume of tones
+    adaptive_volume = true; // attention / meditation modulated volume of tones
     minvolumebord = 25; // min value of volume if attention modulated
     opencvstart = false; // MindOCV window start flag
     mindwstart = false;  // flag for EEG device connection
@@ -94,10 +95,10 @@ plotwindow::plotwindow(QWidget *parent) :
     filtercl = new filters(butterord,lcutoff,hcutoff,srfr); // filter constructor
 
     arrc.xc = QVector<double>(NMAX);    // vectors for current EEG data
-    arrc.amp0 = QVector<double>(NMAX);    
+   // arrc.amp0 = QVector<double>(NMAX);
     for (int j=0; j<NMAX; j++)
     {
-        arrc.amp0[j] = 0;
+       // arrc.amp0[j] = 0;
         arrc.xc[j] = j;
     }
 
@@ -245,6 +246,12 @@ void plotwindow::doplot() // configure ui elements
     ui->label_24->setPalette(sp2);
     ui->label_24->setGeometry(350,20,181,26);
     ui->label_24->setVisible(false);
+    ui->label_23->setVisible(false);
+    ui->checkBox_13->setGeometry(950,26,81,20);
+    ui->checkBox_15->setGeometry(1046,26,91,20);
+    ui->checkBox_15->setChecked(blurback);
+    ui->checkBox_14->setGeometry(1141,26,91,20);
+    ui->checkBox_11->setGeometry(1241,26,181,20);
     ui->progressBar->setGeometry(700,26,236,20);
     ui->horizontalSlider_2->setGeometry(700,26,160,20);
     ui->horizontalSlider_2->setValue(picchangeborder);
@@ -280,8 +287,9 @@ void plotwindow::doplot() // configure ui elements
     ui->pushButton_17->setGeometry(1215,950,88,22);
     ui->pushButton_20->setGeometry(1312,950,88,22);
     ui->spinBox_22->setGeometry(1522,920,40,20);
-    ui->label_25->setGeometry(1430,915,91,35);
-    ui->checkBox_13->setGeometry(1430,950,80,20);
+    ui->label_25->setGeometry(1430,915,91,35);   
+    ui->label_25->setVisible(false);
+    ui->spinBox_22->setVisible(false);
 
     ui->checkBox_2->setGeometry(1055,920,155,25);
     ui->label_17->setGeometry(1220,922,87,21);
@@ -305,11 +313,12 @@ void plotwindow::doplot() // configure ui elements
 
     ui->label_7->setGeometry(675,810,140,25);
     ui->label_7->setVisible(false);
-    ui->checkBox_3->setGeometry(800,810,100,25);
     ui->pushButton_24->setGeometry(920,810,90,25);
-    ui->pushButton_4->setGeometry(1140,810,70,25);
     ui->pushButton_2->setGeometry(1020,810,90,25);
-    ui->spinBox_7->setGeometry(610,810,50,25);
+    ui->pushButton_4->setGeometry(1030,840,76,25);
+    ui->pushButton_25->setGeometry(1150,810,120,25);
+    ui->pushButton_6->setGeometry(1290,810,75,25);
+    ui->pushButton_23->setGeometry(1375,810,75,25);
     ui->spinBox_7->setEnabled(false);
 
     ui->checkBox_6->setChecked(false);
@@ -319,19 +328,11 @@ void plotwindow::doplot() // configure ui elements
     ui->checkBox_5->setGeometry(1210,900,125,25);
 
     ui->radioButton->setGeometry(1330,846,95,20);
-    ui->pushButton_25->setGeometry(1286,810,120,25);
-    ui->checkBox_15->setGeometry(1430,813,110,21);
-    ui->checkBox_15->setChecked(blurback);
-    ui->checkBox_14->setGeometry(1430,833,130,20);
-    ui->checkBox_11->setGeometry(1430,853,145,20);
-    ui->checkBox_12->setGeometry(1430,873,130,20);
-    ui->comboBox->setGeometry(1430,893,90,20);
+    ui->comboBox->setGeometry(585,26,105,20);
     ui->radioButton_2->setGeometry(1330,866,95,20);
     ui->radioButton_3->setGeometry(1330,886,95,20);
 
     ui->pushButton->setGeometry(1200,880,70,25);
-    ui->pushButton_6->setGeometry(15,869,75,25);
-    ui->pushButton_23->setGeometry(15,889,75,25);
     ui->pushButton_6->setVisible(true);
     ui->pushButton->setVisible(false);
 
@@ -343,32 +344,41 @@ void plotwindow::doplot() // configure ui elements
     ui->checkBox_3->setChecked(usefiltering);
     ui->spinBox_8->setGeometry(205,810,35,25);
     ui->spinBox_17->setGeometry(195,838,45,25);
+    ui->label_12->setGeometry(285,810,92,25);
+    ui->spinBox_7->setGeometry(385,810,40,25);
+    ui->label_22->setGeometry(460,805,50,25);
+    ui->horizontalSlider_3->setGeometry(460,827,50,12);
+    ui->spinBox_21->setGeometry(520,810,45,20);
+    ui->spinBox_21->setStyleSheet("QSpinBox { background-color: yellow; }");
+    ui->checkBox_8->setGeometry(580,810,101,20);
     ui->checkBox_9->setGeometry(285,840,130,25);
     ui->label_19->setGeometry(425,840,80,25);
     ui->spinBox_18->setGeometry(510,840,45,25);
-    ui->spinBox_18->setValue(memorylength);
+    ui->spinBox_18->setValue(memorylength);    
     ui->label_20->setGeometry(570,840,85,25);
     ui->spinBox_19->setGeometry(666,840,45,25);
     ui->checkBox_10->setGeometry(730,840,140,25);
+    ui->checkBox_3->setGeometry(730,810,140,25);
     ui->label_21->setGeometry(875,840,90,25);
-    ui->spinBox_20->setGeometry(970,840,35,25);
-    ui->label_22->setGeometry(1030,833,50,25);
-    ui->horizontalSlider_3->setGeometry(1030,855,50,12);
+    ui->spinBox_20->setGeometry(970,840,35,25);    
     ui->horizontalSlider_3->setValue(100);
-    ui->spinBox_21->setGeometry(1090,840,45,25);
     ui->spinBox_20->setValue(mxttimeout);
     ui->spinBox_19->setValue(maxtonerepeats);
     ui->checkBox_9->setChecked(antirepeat);
-    ui->label_12->setGeometry(510,810,92,25);
-    ui->label_6->setGeometry(285,810,140,25);
-    ui->horizontalSlider->setGeometry(285,830,120,12);
+
+    ui->label_6->setGeometry(85,25,168,26);
+    ui->horizontalSlider->setGeometry(100,41,100,12);
+    ui->horizontalSlider->setVisible(false);
+    ui->spinBox_5->setGeometry(260,28,50,20);
+    ui->checkBox_12->setGeometry(330,28,190,20);
+
     if (mindwstart)
         ui->horizontalSlider->setValue(imlength*1.953125);
     else if (simeeg)
         ui->horizontalSlider->setValue(imlength*2);
     ui->horizontalSlider->setTickInterval(50);
     ui->horizontalSlider->setSingleStep(50);
-    ui->spinBox_5->setGeometry(425,810,50,25);
+
     ui->label_9->setGeometry(50,810,150,25);
     ui->label_18->setGeometry(50,835,140,25);
     ui->spinBox_8->setValue(maxtones);
@@ -397,8 +407,8 @@ void plotwindow::plot(QCustomPlot *customPlot) // configure plot for brain waves
     legendFont.setBold(true);
     customPlot->legend->setFont(legendFont);
     customPlot->legend->setBrush(QBrush(QColor(255,255,255,230)));
-    customPlot->graph(0)->setPen(QPen(Qt::green));
-    customPlot->graph(0)->setData(arrc.xc, arrc.amp0);
+   // customPlot->graph(0)->setPen(QPen(Qt::green));
+   // customPlot->graph(0)->setData(arrc.xc, arrc.amp0);
     graphcount=0;
     ui->checkBox_4->setChecked(true);
     customPlot->xAxis->setLabel("x");
@@ -509,8 +519,9 @@ bool plotwindow::eventFilter(QObject *target, QEvent *event)
         {      
             musicmode_on=!musicmode_on;
             ui->checkBox_4->setChecked(musicmode_on);
+            ui->checkBox_5->setChecked(!musicmode_on);
+            on_checkBox_5_clicked();
             numst=ui->spinBox_7->value();           
-
         }
         // start / stop processing brain waves flow
         if ((mouseEvent->button() == Qt::RightButton) && ((appcn->ready) || (mindwstart) || (simeeg)))
@@ -733,7 +744,7 @@ bool plotwindow::eventFilter(QObject *target, QEvent *event)
         if (keyEvent->key()==Qt::Key_Alt)         // switch to vertical zoom with mouse wheel
             ui->widget->axisRect()->setRangeZoom(Qt::Vertical);
 
-        if (keyEvent->key()==Qt::Key_K)     // start / stop camera input
+        if ((keyEvent->key()==Qt::Key_K) && (!filteringback))     // start / stop camera input
             camerainp_on_off();
 
         // tones play by keys
@@ -837,16 +848,17 @@ void plotwindow::camerainp_on_off() // turn on-off camera input
     {
         camera.release();
         camerainp = false;
-        camerainput->stop();
+        camerainput->stop();     
     }
 }
 
 void plotwindow::camerainput_Update() // processing camera input
 {
     camera >> trp;
+    flip(trp,trp,1);
     QPixmap pm = QPixmap::fromImage(Mat2QImagRGB(trp));
     setbackimage(pm,false);
-    if (paintfstart)
+    if ((paintfstart) && (paintf->grabmindplayflow))
         paintf->setbackimage(ui->widget->grab());
 }
 
@@ -893,7 +905,7 @@ void plotwindow::updatedata(int start) // update EEG data array with new interva
     }
 
     for (int i=0; i<imlength; i++)
-        eegdata[graphcount][start+i]=drawshift+arrc.amp0[i];
+        eegdata[graphcount][start+i]=drawshift+arrc.amp0[buffercount-imlength+i];
 }
 
 void plotwindow::update_attention(int t)
@@ -901,7 +913,7 @@ void plotwindow::update_attention(int t)
     // updated attention value, check condition on back image change
     attent=t;
     ui->label_23->setText("ATTENTION: "+QString::number(t)+"%");
-    if ((attention_volume) && (t>minvolumebord))
+    if ((adaptive_volume) && (t>minvolumebord))
         on_horizontalSlider_3_valueChanged(t);
 
     if (attention_modulation)
@@ -929,7 +941,11 @@ void plotwindow::update_meditation(int t)
     ui->label_24->setText("MEDITATION: "+QString::number(t)+"%");
 
     if (!attention_modulation)
+    {
+        if ((adaptive_volume) && (t>minvolumebord))
+            on_horizontalSlider_3_valueChanged(t);
         ui->progressBar->setValue(t);
+    }
 
     if ((!fixback) && (!attention_modulation) && (backimageloaded) && (t<picchangeborder))
         if (!canbackchange)
@@ -1461,7 +1477,6 @@ void plotwindow::playtones() // process determined tones and play
 {
     if (brainflow_on)
     {
-        cleanbuttons();
         int z=0;
         if ((antirepeat) && (strLst2.length()>memorylength))
         {
@@ -1529,12 +1544,12 @@ void plotwindow::determine_brainwaves_expression()
 
     int length = 2048; int bordfreq=70;
     for (int i=0; i<imlength; i++)
-        t[i].real(arrc.amp0[i]);
+        t[i].real(arrc.amp0[buffercount-imlength+i]);
 
-    for (int i=imlength; i<length; i++)  // zero-padding
+    for (int i = imlength; i<length; i++)  // zero-padding
         t[i].real(0);
 
-    for (int i=0; i<length; i++)
+    for (int i = 0; i<length; i++)
         t[i].imag(0);
 
     cdata = CArray(t,length);
@@ -1549,9 +1564,9 @@ void plotwindow::determine_brainwaves_expression()
             deltafr+=temppow;
         if ((i>=4*4) && (i<8*4))
             thetafr+=temppow;
-        if ((i>=8*4) && (i<15*4))
+        if ((i>=8*4) && (i<14*4))
             alphafr+=temppow;
-        if ((i>=15*4) && (i<33*4))
+        if ((i>=14*4) && (i<33*4))
             betafr+=temppow;
         if ((i>=33*4) && (i<50*4))
             gammafr+=temppow;
@@ -1619,16 +1634,16 @@ void plotwindow::analyse_interval() // main function for processing interval of 
            // mw->setattent(paintf->getestattval());
     }
 
-    if ((paintfstart) && (paintf->bfiltmode) && (!paintf->gamemode) && (!paintf->flowmode))
+    if ((paintfstart) && (paintf->bfiltmode) && (!paintf->game_findsame) && (!paintf->flowmode))
     {
         // filter main image in MindDraw
-        if (!pss->drawflow)
+        if (!pss->spacedview)
             pss->applyfilter();
         else
             pss->applyfilteronbackimg();
     }
 
-    if ((paintfstart) && (paintf->bfiltmode) && (paintf->gamemode))
+    if ((paintfstart) && (paintf->bfiltmode) && (paintf->game_findsame))
     {
         // filter puzzles in MindDraw game mode
         paintf->filtering_allpuzzles(5);
@@ -1664,6 +1679,7 @@ void plotwindow::analyse_interval() // main function for processing interval of 
 
 void plotwindow::letsplay() // playing of tones
 {
+    cleanbuttons();
     if (tank1mode)
         playtank1(tones);
     else if (tank2mode)
@@ -1742,9 +1758,15 @@ void plotwindow::plot_interval()    // plotting of each EEG interval, shifting f
 
 void plotwindow::getandprocess_eeg_data(double d1) // getting and processing EEG data
 {
-    arrc.amp0[counter]=d1;
-        counter++;
-    if (counter>=imlength)
+    arrc.amp0.push_back(d1);
+    counter++;
+    buffercount++;
+    if (buffercount==srfr*4)
+    {
+        arrc.amp0.pop_front();
+        buffercount--;
+    }
+    if ((buffercount>=imlength) && (counter>=imlength))
         process_eeg_data();
   //  xraw=(int)d1;
 }
@@ -1755,7 +1777,7 @@ void plotwindow::process_eeg_data() // processing EEG data
      if (counter>=imlength)
      {        
          if (usefiltering)
-             filtercl->zerophasefilt(0,imlength,arrc.amp0);
+             filtercl->zerophasefilt(buffercount-imlength,imlength,arrc.amp0);
          if (updatewavesplot)
              plot_interval();
          analyse_interval();
@@ -2068,10 +2090,15 @@ void plotwindow::musicmode_on_off() // music mode on / off and change correspond
         ui->pushButton_14->setVisible(false);
         ui->pushButton_15->setVisible(false);
         ui->pushButton_16->setVisible(false);
+        paintf->turn_music_checkbox(true);
     } else
-    {
+    {        
         if (delta_vals.size()>0)
+        {
             musicmode_on=true;
+            brainflow_on=true;
+        }
+        paintf->turn_music_checkbox(false);
         ui->checkBox_5->setVisible(true);
         if (!ui->checkBox_5->isChecked())
         {
@@ -2607,7 +2634,7 @@ void plotwindow::on_radioButton_clicked() // tankdrum1 (Gmaj) mode
     ui->spinBox_2->setVisible(true);
     ui->spinBox_4->setVisible(true);
   //  if ((!backimageloaded) && (mindplay) && (!hidebutt))
-    if ((!hidebutt) && (musicmode_on))
+    if ((!hidebutt) && ((musicmode_on) || (delta_vals.size()==0)))
     {
         ui->pushButton_14->setVisible(true);
         ui->pushButton_16->setVisible(true);
@@ -2616,14 +2643,16 @@ void plotwindow::on_radioButton_clicked() // tankdrum1 (Gmaj) mode
     {
         backimg.load(":/pics/pics/empty.jpg");
         ui->widget->setBackground(backimg,true,Qt::IgnoreAspectRatio);
-        ui->widget->replot();
+        if (!camerainp)
+            ui->widget->replot();
         ui->widget->xAxis->grid()->setVisible(true);
         ui->widget->yAxis->grid()->setVisible(true);
     } else if (!backimageloaded)
     {
         backimg.load(":/pics/pics/oriongmaj.jpg");
         ui->widget->setBackground(backimg,true,Qt::IgnoreAspectRatio);
-        ui->widget->replot();
+        if (!camerainp)
+            ui->widget->replot();
         ui->widget->xAxis->grid()->setVisible(false);
         ui->widget->yAxis->grid()->setVisible(false);
     }
@@ -2662,7 +2691,7 @@ void plotwindow::on_radioButton_2_clicked()  // tankdrum2 (Bmaj) mode
     ui->spinBox_2->setVisible(true);
     ui->spinBox_4->setVisible(true);
   //  if ((!backimageloaded) && (mindplay) && (!hidebutt))
-    if ((!hidebutt) && (musicmode_on))
+    if ((!hidebutt) && ((musicmode_on) || (delta_vals.size()==0)))
     {
         ui->pushButton_14->setVisible(true);
         ui->pushButton_16->setVisible(true);
@@ -2671,14 +2700,16 @@ void plotwindow::on_radioButton_2_clicked()  // tankdrum2 (Bmaj) mode
     {
         backimg.load(":/pics/pics/empty.jpg");
         ui->widget->setBackground(backimg,true,Qt::IgnoreAspectRatio);
-        ui->widget->replot();
+        if (!camerainp)
+            ui->widget->replot();
         ui->widget->xAxis->grid()->setVisible(true);
         ui->widget->yAxis->grid()->setVisible(true);
     } else if (!backimageloaded)
     {
         backimg.load(":/pics/pics/zodiac0.jpg");
         ui->widget->setBackground(backimg,true,Qt::IgnoreAspectRatio);
-        ui->widget->replot();
+        if (!camerainp)
+            ui->widget->replot();
         ui->widget->xAxis->grid()->setVisible(false);
         ui->widget->yAxis->grid()->setVisible(false);
     }
@@ -2717,14 +2748,16 @@ void plotwindow::on_radioButton_3_clicked() // spacedrum Dmin mode
     {
         backimg.load(":/pics/pics/empty.jpg");
         ui->widget->setBackground(backimg,true,Qt::IgnoreAspectRatio);
-        ui->widget->replot();
+        if (!camerainp)
+            ui->widget->replot();
         ui->widget->xAxis->grid()->setVisible(true);
         ui->widget->yAxis->grid()->setVisible(true);
     } else if (!backimageloaded)
     {
         backimg.load(":/pics/pics/spacedmin.jpg");
         ui->widget->setBackground(backimg,true,Qt::IgnoreAspectRatio);
-        ui->widget->replot();
+        if (!camerainp)
+            ui->widget->replot();
         ui->widget->xAxis->grid()->setVisible(false);
         ui->widget->yAxis->grid()->setVisible(false);
     }
@@ -2750,9 +2783,11 @@ void plotwindow::on_pushButton_23_clicked()  // load backgroumd image from file
 
 void plotwindow::on_checkBox_11_clicked()  // grab MindOCV flow
 {
-    filteringback=!filteringback;
-    colorizeback=false;
+    filteringback = !filteringback;
+    colorizeback = false;
+    ocvf->showlabel = false;
     ui->checkBox_14->setEnabled(!ui->checkBox_11->isChecked());
+    ui->checkBox_15->setEnabled(!ui->checkBox_11->isChecked());
 }
 
 void plotwindow::on_comboBox_currentIndexChanged(int index) // attention / meditation modulation
@@ -2761,15 +2796,19 @@ void plotwindow::on_comboBox_currentIndexChanged(int index) // attention / medit
     {
         attention_modulation=true;
         ui->progressBar->setPalette(sp1);
-        ui->label_23->setVisible(true);
-        ui->label_24->setVisible(false);
+        ui->checkBox_12->setText("attention modulation");
+        ui->checkBox_8->setText("by attention");
+       // ui->label_23->setVisible(true);
+       // ui->label_24->setVisible(false);
     }
     else
     {
         attention_modulation=false;
         ui->progressBar->setPalette(sp2);
-        ui->label_23->setVisible(false);
-        ui->label_24->setVisible(true);
+        ui->checkBox_12->setText("meditation modulation");
+        ui->checkBox_8->setText("by meditation");
+       // ui->label_23->setVisible(false);
+       // ui->label_24->setVisible(true);
     }
 }
 
@@ -2840,4 +2879,18 @@ void plotwindow::on_pushButton_2_clicked() // set MindOCV puc from current MindP
 void plotwindow::on_checkBox_15_clicked() // blurring of back image
 {
     blurback=!blurback;
+}
+
+void plotwindow::turn_music_checkbox(bool fl)
+{
+    ui->checkBox_4->setChecked(fl);
+}
+
+void plotwindow::on_checkBox_8_clicked()
+{
+    adaptive_volume = !adaptive_volume;
+    if (adaptive_volume)
+        ui->spinBox_21->setStyleSheet("QSpinBox { background-color: yellow; }");
+    else
+        ui->spinBox_21->setStyleSheet("QSpinBox { background-color: white; }");
 }
