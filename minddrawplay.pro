@@ -27,7 +27,12 @@ SOURCES += src\main.cpp\
     src\rightpanel.cpp \
     src\ocvcontrols.cpp \
     src\filters.cpp \
-    src\myitem.cpp
+    src\myitem.cpp \
+    oscpack\IpEndpointName.cpp \
+    oscpack\NetworkingUtils.cpp \
+    oscpack\UdpSocket.cpp \
+    oscpack\OscOutboundPacketStream.cpp \
+    oscpack\OscTypes.cpp
 
 HEADERS  += include\mainwindow.h \
             include\qcustomplot.h \
@@ -44,7 +49,15 @@ HEADERS  += include\mainwindow.h \
     include\rightpanel.h \
     include\ocvcontrols.h \
     include\filters.h \
-    include\myitem.h
+    include\myitem.h \
+    oscpack\IpEndpointName.h \
+    oscpack\NetworkingUtils.h \
+    oscpack\OscOutboundPacketStream.h \
+    oscpack\UdpSocket.h \
+    oscpack\OscException.h \
+    oscpack\OscTypes.h \
+    oscpack\OscHostEndianness.h
+
 
 FORMS    += ui\mainwindow.ui \
             ui\plotwindow.ui \
@@ -55,7 +68,7 @@ FORMS    += ui\mainwindow.ui \
     ui\rightpanel.ui \
     ui\ocvcontrols.ui
 
-LIBS += -lwsock32 -lws2_32 -mthreads -L$$PWD/./ -lthinkgear
+LIBS += -lwsock32 -lws2_32 -lwinmm -mthreads -L$$PWD/./ -lthinkgear
 
 INCLUDEPATH += C:\OpenCV\OpenCV_bin\install\include
 
@@ -68,7 +81,9 @@ LIBS += C:\OpenCV\OpenCV_bin\bin\libopencv_core412.dll \
         C:\OpenCV\OpenCV_bin\bin\libopencv_videoio412.dll \
         C:\OpenCV\OpenCV_bin\bin\libopencv_features2d412.dll
 
-INCLUDEPATH += $$PWD/include/.
+INCLUDEPATH += $$PWD/include/. \
+               $$PWD/oscpack/.
+
 DEPENDPATH += $$PWD/.
 
 RESOURCES += \

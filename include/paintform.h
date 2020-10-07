@@ -55,7 +55,7 @@ public:
 
     bool music_adaptive_bord, firstpuzzle, spacedflow, collectiveflow, grabmindplayflow;
     bool game_findsame, flowmode, puzzlegrabed, canpuzzlechange, backloaded, showestatt;
-    bool erasepen, bfiltmode, puzzlemode, fixedmain, changingpics, iconsready;
+    bool erasepen, bfiltmode, puzzlemode, fixedmain, changingpics, iconsready, canchangeback;
     bool attent_modulaion, limitpicschange, setloaded, musicactiv, game_gothrough;
 
     QVector<double> attent_arr, medit_arr, border_arr, xc, fxc, estatt_arr;

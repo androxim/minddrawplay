@@ -746,3 +746,8 @@ void ocvcontrols::on_comboBox_3_currentIndexChanged(int index)
     else if (index==1)
         white_edges = false;
 }
+
+void ocvcontrols::on_checkBox_24_clicked()
+{
+    doublepicsmode = !doublepicsmode;
+}

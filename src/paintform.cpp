@@ -28,13 +28,13 @@ paintform::paintform(QWidget *parent) :
     changingpics = false; // flag for changing pics in puzzle representation
     grabmindplayflow = false; // grab flow from MindPlay
     canpuzzlechange = true;   // to prevent constant change of gathered puzzles, if attention/meditation > border
-    firstpuzzle = true; // flag for checking if first puzzle (loading new set of pics)
-    showestatt = false; // show estimated attention on plot with brain waves expression values
+    firstpuzzle = true;     // flag for checking if first puzzle (loading new set of pics)
+    showestatt = false;     // show estimated attention on plot with brain waves expression values
     limitpicschange = false;// if only limited number of puzzles are changing around main pic
     bfiltmode = false;      // if main pic / puzzles in game mode are changing colors / blurring by attention
     erasepen = false;       // if pen is in erase mode
     setloaded = false;      // if puzzle set is loaded
-    game_findsame = false;       // flag for game mode (finding 2 same pics among 15)
+    game_findsame = false;  // flag for game mode (finding 2 same pics among 15)
     musicactiv = false;     // flag for music playing from MindPlay by attention / meditation > border
     puzzlegrabed = false;   // create and save puzzles from single pic
     flowmode = false;       // flowmode - gathering puzzle, collectiveflow - behind overlays of different pics
@@ -42,8 +42,9 @@ paintform::paintform(QWidget *parent) :
     spacedflow = false;     // experimental mode for drawing structures
     attent_modulaion = true;// attention / meditation modulation
     music_adaptive_bord = false;  // adaptive border for music activation mode
-    backloaded = false;     // flag if background image is loaded
-    game_gothrough = false;    // game through mode (moving item by attention / meditation)
+    backloaded = false;           // flag if background image is loaded
+    game_gothrough = false;       // game through mode (moving item by attention / meditation)
+    canchangeback = true;         // prevent constant change of back image on condition: attention / meditation > border
 
     prevpuzzle = -1;             // previous puzzle number with puzzle clicks
     prevpict = -1;               // previous pictures index with puzzle clicks
@@ -632,7 +633,8 @@ void paintform::setpicfolder(QString fpath) // set folder for pictures
     random_shuffle(randnumb.begin(), randnumb.end());
     iconsready=false;
     pmarray.resize(imglist.length());
-    initpics();
+    if (imglist.length()>14)
+        initpics();
 }
 
 void paintform::setdflowtime(int t) // set flow time - delay for chaning puzzles
@@ -797,8 +799,10 @@ void paintform::updatefreqarrs(double deltat, double thetat, double alphat, doub
     }
     if (estattn<5) estattn=5;
     if (estattn>100) estattn=100;
-    estatt_arr[numfrsamples]=estattn;    
+    estatt_arr[numfrsamples]=estattn;       
     fxc[numfrsamples]=numfrsamples;
+
+    // pw->update_attention(estattn); // if use estimated attention for MindPlay
 
     if (game_findsame)
     {
@@ -990,9 +994,19 @@ void paintform::updateattention(int t) // update attention dependent variables
             updateborderlines((double)(130-t)/100);
         }
 
-        // change of back image randomly by attention > border
-        if ((!fixedmain) && (!flowmode) && (!game_findsame) && (t>borderpicchange) && (bfiltmode))
+        // canchangeback - flag to prevent constant change of back image when attention / meditation > border:
+        // change only when it becomes > border after it was less
+        if ((!fixedmain) && (!flowmode) && (!game_findsame) && (t<borderpicchange))
+            if (!canchangeback)
+                canchangeback = true;
+
+        // change of back image randomly by attention / meditation > border
+        if ((!fixedmain) && (!flowmode) && (!game_findsame) && (t>borderpicchange) && (canchangeback))
+        {
             on_pushButton_6_clicked();
+            canchangeback = false;
+        }
+
      }
 
   //  scene->clear();
@@ -1078,8 +1092,18 @@ void paintform::updatemeditation(int t) // update meditation array, plot and dep
        ui->label_5->setText(QString::number(t)+"%");
        ui->label_24->setText("MEDITATION: "+QString::number(t)+"%");
 
-       if ((!fixedmain) && (!flowmode) && (!game_findsame) && (t>borderpicchange) && (bfiltmode))
+
+       // canchangeback - flag to prevent constant change of back image when attention / meditation > border:
+       // change only when it becomes > border after it was less
+       if ((!fixedmain) && (!flowmode) && (!game_findsame) && (t<borderpicchange))
+           if (!canchangeback)
+               canchangeback = true;
+
+       if ((!fixedmain) && (!flowmode) && (!game_findsame) && (t>borderpicchange) && (canchangeback))
+       {
            on_pushButton_6_clicked();
+           canchangeback = false;
+       }
     }
 }
 

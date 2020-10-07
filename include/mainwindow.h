@@ -158,6 +158,8 @@ private slots:
 
     void on_pushButton_7_clicked();
 
+    void on_checkBox_clicked();
+
 private:
     Ui::MainWindow *ui;
     plotwindow *plotw;

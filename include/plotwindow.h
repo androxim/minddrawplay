@@ -23,6 +23,10 @@
 
 #define NMAX 15360 // max length of single EEG line, 15360: 30 sec for 512 sampling rate
 
+#define ADDRESS "127.0.0.1"     // OSC streamer parameters
+#define PORT 9023
+#define OUTPUT_BUFFER_SIZE 512
+
 namespace Ui {
 class plot;
 }
@@ -95,7 +99,7 @@ public:
     bool usefiltering, musicmode_on, flowblinking, scalechange;
     bool spacemode, tank1mode, tank2mode, recordstarted, antirepeat, randmxt;       
     bool mindwstart, fftfreqs, adaptive_volume, keys_emulated, simeeg;
-    bool tunemode, paintfstart, rawsignalabove, camerainp;
+    bool tunemode, paintfstart, rawsignalabove, camerainp, oscstreaming;
 
     QString tank1[10] = {"b","B","g","G","d","D","E","C","f#","a"};
     QString tank2[10] = {"c#","C#","b","B","f#","F#","g#","G#","d#","D#"};
@@ -185,6 +189,7 @@ public:
     void updateimlength(int t);
     void playtones();
     void process_eeg_data();
+    void osc_streaming(int attent, int meditt, int delta, int theta, int alpha, int beta, int gamma, int hgamma);
 
 private slots:
 

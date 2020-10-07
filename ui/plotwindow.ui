@@ -14,7 +14,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MindDrawPlay beta 2.4 | MindPlay</string>
+   <string>MindDrawPlay | MindPlay</string>
   </property>
   <widget class="QCustomPlot" name="widget" native="true">
    <property name="geometry">

@@ -140,13 +140,13 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     plotw = new plotwindow();
-    plotw->setWindowTitle("MindDrawPlay beta 2.4 | MindPlay");
+    plotw->setWindowTitle("MindDrawPlay | MindPlay");
     plotw->setFixedSize(1560,978);
     plotw->move(QApplication::desktop()->screen()->rect().center() - plotw->rect().center()-QPoint(10,30));
     plotw->start=false;
 
     paintw = new paintform();
-    paintw->setWindowTitle("MindDrawPlay beta 2.4 | MindDraw");
+    paintw->setWindowTitle("MindDrawPlay | MindDraw");
     paintw->pw=plotw;
     paintw->mww=this;
     paintw->setFixedSize(1560,970);    
@@ -178,7 +178,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     folderpath = "D:/PICS";       // default path for pictures
     plotw->folderpath = folderpath;
-    paintw->setpicfolder(folderpath);
     QDir fd(folderpath);
     imglist = fd.entryList(QStringList() << "*.jpg" << "*.JPG",QDir::Files);
     leftpw->imgnumber = imglist.length()-2;     // -2 because excluding current main and overlay pics
@@ -195,7 +194,7 @@ MainWindow::MainWindow(QWidget *parent) :
     paintw_started = false;          // MindDraw window run detector
     opencvstart = false;             // MindOCV window run detector
     storymode = false;               // mode when main pic is fixed, but not overlay
-    canchangepuzzle = true;         // when puzzle is completed, to prevent constant pic changes with high attention
+    canchangepuzzle = true;          // when puzzle is completed, to prevent constant pic changes with high attention
 
     bciconnect = false;              // for data from BCI2000
     connectWin = new appconnect();
@@ -1317,7 +1316,7 @@ void MainWindow::on_pushButton_2_clicked() // BCI2000 window run
     str1 << "Enter sampling rate: ";
     int srate = QInputDialog::getInt(this,"Sampling rate",str1.str().c_str(), 512, 1, 1024, 1, &ok1);
     if (ok1)
-        plotw->srfr=srate;
+        plotw->srfr = srate;
     str2 << "Enter EEG source channel number: ";
     int channel = QInputDialog::getInt(this,"Channel number",str2.str().c_str(), 1, 1, 64, 1, &ok2);
     if (ok2)
@@ -1331,7 +1330,7 @@ void MainWindow::on_pushButton_2_clicked() // BCI2000 window run
         if (connectWin->ready)
         {
             printdata("Connection with BCI2000 established! :)");
-            plotw->srfr=512;
+            plotw->srfr = srate;
             ui->pushButton_5->setEnabled(false);
             ui->label->setText("Channel number: "+QString::number(channel));
             ui->label->setVisible(true);
@@ -1349,7 +1348,6 @@ void MainWindow::on_pushButton_3_clicked() // MindPlay window run
     plotw->appcn=connectWin;
     paintw->scene->init(plotw, this);
     connectWin->ps=paintw->scene;
-
     paintw->scene->init(plotw, this);
     paintw->move(QApplication::desktop()->screen()->rect().center() - paintw->rect().center()+QPoint(-10,-35));
     paintw->scene->clear();
@@ -1374,6 +1372,7 @@ void MainWindow::on_pushButton_4_clicked() // MindDraw window run
     paintw->scene->clear();
     paintw->show();
     paintw->loadempty();
+    paintw->setpicfolder(folderpath);
    // paintw->startpolyt();
     connectWin->ps=paintw->scene;
     if (plotw->start)    
@@ -1414,17 +1413,19 @@ void MainWindow::setattent(int i)
     //picfilt->setInterval(opencvinterval);
 
     if (ocvform->puzzleflow_on)
-    {
+    {        
         if (ocvform->corrcells_by_att)
         {
+            puzzleflow->stop();
             ocvform->corr_cell_part = (double)elem4/90;
             if (elem4<10)
                 ocvform->corr_cell_part = 0.1;
             if (elem4>ocvform->changepuzzleborder)
                 ocvform->corr_cell_part = 1;
-            unsigned int m = (int)ocvform->cellnums*ocvform->corr_cell_part;
-            for (size_t t = 0; t < m; t++)
+            int m = (int)ocvform->cellnums*ocvform->corr_cell_part;
+            for (int t = 0; t < m; t++)
                 fillcell(ocvform->cells_indexes[t],ocvform->cols);
+            puzzleflow->start();
             ocvform->updateformvals();
 
             if (elem4>ocvform->changepuzzleborder)
@@ -1458,7 +1459,7 @@ void MainWindow::setattent(int i)
         if (ocvform->cellsize_by_att)
         {
             puzzleflow->stop();
-            ocvform->cell_size = 100 + elem4*2;
+            ocvform->cell_size = round((double)(100 + elem4*2)/10)*10;
             ocvform->cols = ocvform->picwidth / ocvform->cell_size;
             ocvform->rows = ocvform->picheight / ocvform->cell_size;
             ocvform->cellnums = ocvform->cols * ocvform->rows;
@@ -1738,6 +1739,7 @@ void MainWindow::checkoverlay()
 void MainWindow::makeHistFeatures()     // computing image histogram features
 {
     QString picst;
+    hist_features.clear();
     for (int i=0; i<imglist.length(); i++)
     {
         picst = folderpath+"/"+imglist.at(i);
@@ -1748,7 +1750,7 @@ void MainWindow::makeHistFeatures()     // computing image histogram features
     histfinished = true;
     emit histFinished();
     ocvform->histFeaturesReady = true;
-    if (opencvstart)
+    if ((opencvstart) && (ocvform->allngb<imglist.length()))
         emit ocvform->flow_direction_available();
 }
 
@@ -1760,14 +1762,17 @@ void MainWindow::addScaledImage(int num) // add rescaled image
 void MainWindow::scalingFinished()  // when all rescaling through QtConcurrent is finished
 {
    // qDebug() << time_take.elapsed();
-    ui->pushButton_6->setEnabled(true);
-    if (opencvstart)
+    if (imglist.size()>7)
     {
-        shuffleicons(true);
-        leftpw->fillpics();
-        shuffleicons(false);
-        rightpw->fillpics();
-        ProcessingMix();
+        ui->pushButton_6->setEnabled(true);
+        if (opencvstart)
+        {
+            shuffleicons(true);
+            leftpw->fillpics();
+            shuffleicons(false);
+            rightpw->fillpics();
+            ProcessingMix();
+        }
     }
 }
 
@@ -1853,6 +1858,7 @@ void MainWindow::mindwaveconnect() // function to connect to MindWave device
         plotw->mindwstart=true;
         plotw->simeeg=false;
         rs->starting();
+        ui->checkBox->setEnabled(true);
         ui->pushButton_5->setEnabled(false);
         if (!estattention)
             estattention=true;
@@ -1873,13 +1879,14 @@ void MainWindow::mindwtUpdate() // processing data from MindWave device
         plotw->chnums=1;
         if ( TG_GetValueStatus(connectionId, TG_DATA_RAW) != 0 )
         {
-            mw_raw = TG_GetValue(connectionId, TG_DATA_RAW);
+            mw_raw = TG_GetValue(connectionId, TG_DATA_RAW);         
+
             if (abs(mw_raw)<180)
             if (plotw->start)
                 plotw->getandprocess_eeg_data(mw_raw/2);
             if (rs->start)
                 rs->updatesignal(mw_raw/2);
-            if (abs(mw_raw)<100) // anti blink artifacts for drawing
+            if (abs(mw_raw)<180) // anti blink artifacts for drawing
             if (paintw_started)
                 paintw->scene->getdata(mw_raw/2);
                 //cout<<"RAW value: "<<mw_raw<<endl;
@@ -2068,11 +2075,17 @@ void MainWindow::swapcells(int t1, int t2, int cols)  // swap cells by indexes
     QPoint cellpos2 = getcellposition(t2, cols);
     Rect cellRect1(cellpos1.x(), cellpos1.y(), ocvform->cell_size, ocvform->cell_size);
     Rect cellRect2(cellpos2.x(), cellpos2.y(), ocvform->cell_size, ocvform->cell_size);
-        // int pic1n = qrand()%curr_img_set.size();
-        // int pic2n = qrand()%curr_img_set.size();
-        // dstt = curr_img_set[pic1n](cellRect1).clone(); // multi-pics puzzling
-    dstt = src(cellRect1).clone();    
- //   addWeighted(dst(cellRect2), (double)ocvform->transp / 100, dstt, 1 - (double)ocvform->transp / 100, 0, dstt);
+    // int pic1n = qrand()%curr_img_set.size();
+    // int pic2n = qrand()%curr_img_set.size();
+    // dstt = curr_img_set[pic1n](cellRect1).clone(); // multi-pics puzzling
+
+    if (ocvform->doublepicsmode)
+        dstt = srccopy(cellRect1).clone();
+    else
+        dstt = src(cellRect1).clone();
+
+    //addWeighted(dst(cellRect2), (double)ocvform->transp / 100, dstt, 1 - (double)ocvform->transp / 100, 0, dstt);
+
     if (ocvform->puzzle_edges)
     {
         if (ocvform->white_edges)
@@ -2080,10 +2093,19 @@ void MainWindow::swapcells(int t1, int t2, int cols)  // swap cells by indexes
         else
             rectangle(dstt, Point(0,0), Point(dstt.rows-2,dstt.rows-2),Scalar(qrand()%256,qrand()%256,qrand()%256),2);
     }
-    dstt.copyTo(dst(cellRect2));
-        // dstt = curr_img_set[pic2n](cellRect2).clone(); // multi-pics puzzling
-    dstt = src(cellRect2).clone();    
-   // addWeighted(dst(cellRect1), (double)ocvform->transp / 100, dstt, 1 - (double)ocvform->transp / 100, 0, dstt);
+    if (ocvform->doublepicsmode)
+        dstt.copyTo(dst(cellRect1));
+    else
+        dstt.copyTo(dst(cellRect2));
+
+    // dstt = curr_img_set[pic2n](cellRect2).clone(); // multi-pics puzzling    
+    if (ocvform->doublepicsmode)
+        dstt = srccopy(cellRect2).clone();
+    else
+        dstt = src(cellRect2).clone();
+
+    //addWeighted(dst(cellRect1), (double)ocvform->transp / 100, dstt, 1 - (double)ocvform->transp / 100, 0, dstt);
+
     if (ocvform->puzzle_edges)
     {
         if (ocvform->white_edges)
@@ -2091,7 +2113,10 @@ void MainWindow::swapcells(int t1, int t2, int cols)  // swap cells by indexes
         else
             rectangle(dstt, Point(0,0), Point(dstt.rows-2,dstt.rows-2),Scalar(qrand()%256,qrand()%256,qrand()%256),2);
     }
-    dstt.copyTo(dst(cellRect1));
+    if (ocvform->doublepicsmode)
+        dstt.copyTo(dst(cellRect2));
+    else
+        dstt.copyTo(dst(cellRect1));
 }
 
 void MainWindow::fillcell(int t, int cols)  // filling cell by its index
@@ -2100,7 +2125,7 @@ void MainWindow::fillcell(int t, int cols)  // filling cell by its index
     Rect cellRect(cellpos.x(), cellpos.y(), ocvform->cell_size, ocvform->cell_size);
     dstt = src(cellRect).clone();
   //  addWeighted(dst(cellRect), (double)ocvform->transp / 100, dstt, 1 - (double)ocvform->transp / 100, 0, dstt);
-    dstt.copyTo(dst(cellRect));
+    dstt.copyTo(dst(cellRect));    
 }
 
 void MainWindow::fillcells()    // filling vector of indexes and correct cells
@@ -2114,7 +2139,7 @@ void MainWindow::fillcells()    // filling vector of indexes and correct cells
 }
 
 void::MainWindow::puzzleflow_Update() // timer for puzzle flow gathering
-{
+{    
     dst = src.clone();
     int m = (int)(ocvform->cellnums*ocvform->corr_cell_part);
     ocvform->free_cells.clear();
@@ -2125,10 +2150,10 @@ void::MainWindow::puzzleflow_Update() // timer for puzzle flow gathering
         int p = qrand()%(ocvform->free_cells.size()-1)+1;
         swapcells(ocvform->free_cells[0],ocvform->free_cells[p],ocvform->cols);
         ocvform->free_cells.erase(ocvform->free_cells.begin()+p);
-        ocvform->free_cells.erase(ocvform->free_cells.begin());
+        ocvform->free_cells.erase(ocvform->free_cells.begin());        
     }
-    if (ocvform->free_cells.size()==1)
-        fillcell(ocvform->free_cells[0],ocvform->cols);
+    //if (ocvform->free_cells.size()==0)
+    //    fillcell(ocvform->free_cells[1],ocvform->cols);
 
     if (ocvform->showlabel)
     {
@@ -2188,7 +2213,7 @@ void MainWindow::keys_processing()      // processing keys pressing
     char key = cv::waitKey(5) % 256;
     if (key == 't') // test stuff button    
     {                
-      //  neurostyle();        
+      //  neurostyle();
     }
     else if (key == 'w')      // swap main and overlay pics
         swap_main_overlay();
@@ -2406,6 +2431,9 @@ void MainWindow::on_pushButton_7_clicked()
     if (fPath!="")
     {
         setfolderpath(fPath);
+        if (plotw->paintfstart)
+            paintw->setpicfolder(folderpath);
+
         imgarray.clear();
 
         ui->pushButton_6->setEnabled(false);
@@ -2557,4 +2585,10 @@ void MainWindow::getchi2dists(int t)
         nearest_pics[i]=chi2distances.at(i).first;
         farest_pics[i]=chi2distances.at(tl-i-1).first;
     }
+}
+
+void MainWindow::on_checkBox_clicked()
+{
+    if (ui->checkBox->isEnabled())
+        plotw->oscstreaming = !plotw->oscstreaming;
 }

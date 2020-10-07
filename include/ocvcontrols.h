@@ -38,7 +38,7 @@ public:
     int nfeatures = 100, nlevels = 6, edgetreshold = 20; float scalef = 1.1;           // ORB params
     QColor fcolor = QColor(255,255,255); bool randfcolor = false;                      // ORB params
 
-    std::vector<int> cells_indexes, free_cells;                                        // puzzle params
+    std::vector<int> cells_indexes, free_cells; bool doublepicsmode = false;           // puzzle params
     bool puzzleflow_on = false, puzzle_edges = true, white_edges = true;               // puzzle params
     double corr_cell_part = 0.8; int puzzleflowrate = 100, changepuzzleborder = 90;    // puzzle params
     int cell_size = 200; int cols = 10; int rows = 5; unsigned int cellnums = 50;      // puzzle params
@@ -215,6 +215,8 @@ private slots:
     void on_comboBox_2_currentIndexChanged(int index);
 
     void on_comboBox_3_currentIndexChanged(int index);
+
+    void on_checkBox_24_clicked();
 
 private:
     Ui::ocvcontrols *ui;

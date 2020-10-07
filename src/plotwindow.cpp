@@ -24,6 +24,8 @@
 #include <windows.h>
 #include "QThread"
 #include <numeric>
+#include "OscOutboundPacketStream.h"
+#include "UdpSocket.h"
 
 
 const complex<double> I(0.0,1.0);
@@ -76,6 +78,7 @@ plotwindow::plotwindow(QWidget *parent) :
     fixback = true; // fix background image independently of attention values
     camerainp = false; // camera input for background
     updatewavesplot = true; // plotting new EEG intervals
+    oscstreaming = false;            // streaming attention, meditation and waves expression levels via OSC
 
     strLstM2 = new QStringListModel();      // list of determined tones
     strLstM2->setStringList(strLst2);
@@ -925,7 +928,7 @@ void plotwindow::update_attention(int t)
         if (!canbackchange)
             canbackchange=true;
 
-    if ((!fixback) && (attention_modulation) && (backimageloaded) && (t>picchangeborder))
+    if ((!fixback) && (attention_modulation) && (t>picchangeborder))
         if (canbackchange)
         {
             on_pushButton_6_clicked();
@@ -951,7 +954,7 @@ void plotwindow::update_meditation(int t)
         if (!canbackchange)
             canbackchange=true;
 
-    if ((!fixback) && (!attention_modulation) && (backimageloaded) && (t>picchangeborder))
+    if ((!fixback) && (!attention_modulation) && (t>picchangeborder))
         if (canbackchange)
         {
             on_pushButton_6_clicked();
@@ -1568,9 +1571,9 @@ void plotwindow::determine_brainwaves_expression()
             alphafr+=temppow;
         if ((i>=14*4) && (i<33*4))
             betafr+=temppow;
-        if ((i>=33*4) && (i<50*4))
+        if ((i>=33*4) && (i<55*4))
             gammafr+=temppow;
-        if ((i>=50*4))
+        if ((i>=55*4))
             hgammafr+=temppow;
     }
     deltafr/=totalpow;
@@ -1625,6 +1628,9 @@ void plotwindow::analyse_interval() // main function for processing interval of 
 
     if (((filteringback) || (colorizeback) || (blurback)) && (!backimg.isNull())) // filtering back image
         applyfilteronback();
+
+    if (oscstreaming)
+        osc_streaming(attent,meditt,delta,theta,alpha,beta,gamma,hgamma);
 
     if (paintfstart) // update brain waves expression arrays and plot in MindDraw
     {        
@@ -1779,12 +1785,12 @@ void plotwindow::process_eeg_data() // processing EEG data
          if (usefiltering)
              filtercl->zerophasefilt(buffercount-imlength,imlength,arrc.amp0);
          if (updatewavesplot)
-             plot_interval();
+             plot_interval();         
          analyse_interval();
          if (attention_interval) // attention modulated length of interval
          {
              if (attention_modulation)
-                 curmodval = attent;
+                 curmodval = attent; // paintf->estattn; // in case of estimated attention
              else
                  curmodval = meditt;
              if (curmodval<20)
@@ -2228,6 +2234,32 @@ void plotwindow::pushenter() // emulate enter_key press
     // Release the key
     ip.ki.dwFlags = KEYEVENTF_KEYUP; // KEYEVENTF_KEYUP for key release
     SendInput(1, &ip, sizeof(INPUT));
+}
+
+void plotwindow::osc_streaming(int attent, int meditt, int delta, int theta, int alpha, int beta, int gamma, int hgamma)
+{
+    UdpTransmitSocket transmitSocket( IpEndpointName( ADDRESS, PORT ) );
+
+    char buffer[OUTPUT_BUFFER_SIZE];
+    osc::OutboundPacketStream p( buffer, OUTPUT_BUFFER_SIZE );
+
+    int estatt = 0;
+    if (paintfstart)
+        estatt = paintf->estattn;
+
+    p.Clear();
+    p << osc::BeginBundleImmediate
+        << osc::BeginMessage("/attention1") << (int)estatt << osc::EndMessage
+        << osc::BeginMessage("/attention2") << (int)attent << osc::EndMessage
+        << osc::BeginMessage("/meditation") << (int)meditt << osc::EndMessage
+        << osc::BeginMessage("/delta") << (int)delta << osc::EndMessage
+        << osc::BeginMessage("/theta") << (int)theta << osc::EndMessage
+        << osc::BeginMessage("/alpha") << (int)alpha << osc::EndMessage
+        << osc::BeginMessage("/beta") << (int)beta << osc::EndMessage
+        << osc::BeginMessage("/gamma") << (int)gamma << osc::EndMessage
+        << osc::BeginMessage("/hgamma") << (int)hgamma << osc::EndMessage
+      << osc::EndBundle;
+    transmitSocket.Send(p.Data(),p.Size());
 }
 
 /* ui processing */
