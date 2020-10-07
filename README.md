@@ -10,7 +10,7 @@ but also can work with other EEG devices through BCI2000 module and can be adapt
 
 MindDrawPlay – is a project of experimental interactive audio-visual art, 
 representing translation of brain waves to drawing, visual and musical spaces, flows and controls. 
-It has been grown on abase of research work in the direction of Brain-Computer Interfaces. 
+It has been grown on a base of research work in the direction of Brain-Computer Interfaces. 
 Combining technology advances – such as mobile EEG devices (in particular, MindWave Neurosky) 
 and musical knowledge – such as pentatonic scales (hang and tank drums tones), 
 it allows everyone to see, to hear his brain activity represented by set of sounds 
