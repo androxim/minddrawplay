@@ -69,7 +69,7 @@ plotwindow::plotwindow(QWidget *parent) :
     attention_modulation = true; // attention / meditation modulation
     attention_interval = false; // attention / meditation modulated length of acquired EEG intervals
     adaptive_volume = true; // attention / meditation modulated volume of tones
-    minvolumebord = 25; // min value of volume if attention modulated
+    minvolumebord = 20; // min value of volume if attention modulated
     opencvstart = false; // MindOCV window start flag
     mindwstart = false;  // flag for EEG device connection
     paintfstart = false; // flag for MindDraw window start
@@ -78,7 +78,8 @@ plotwindow::plotwindow(QWidget *parent) :
     fixback = true; // fix background image independently of attention values
     camerainp = false; // camera input for background
     updatewavesplot = true; // plotting new EEG intervals
-    oscstreaming = false;            // streaming attention, meditation and waves expression levels via OSC
+    oscstreaming = false;   // streaming attention, meditation and waves expression levels via OSC
+    adaptivepicsborder = false; // adaptive border based on attention/meditation for background pics change
 
     strLstM2 = new QStringListModel();      // list of determined tones
     strLstM2->setStringList(strLst2);
@@ -157,6 +158,9 @@ plotwindow::plotwindow(QWidget *parent) :
     sceneforfilt.addItem(&itemforfilt);
     resforfilt=QImage(QSize(1500, 800), QImage::Format_ARGB32);
     ptr = new QPainter(&resforfilt);
+
+    detector = dlib::get_frontal_face_detector();
+    dlib::deserialize("C:/dlib/dlib-19.21/shape_predictor_68_face_landmarks.dat") >> shape_model;
 
     splayer.init(); // initialization of sound player: tones and play slots in separate threads           
 }
@@ -855,14 +859,68 @@ void plotwindow::camerainp_on_off() // turn on-off camera input
     }
 }
 
+double euclidean_dist(int x1, int y1, int x2, int y2)
+{
+    return sqrt(pow(x1-x2,2)+pow(y1-y2,2));
+}
+
+void plotwindow::get_eyes_ar()
+{
+    frame.release();
+    frame = trp.clone();
+
+    int width = 400; // 320
+    int height = 240; // 180;
+    Size size(width, height);
+    cv::resize(frame, frame, size);
+
+    dlib::array2d<dlib::bgr_pixel> dlib_image;
+    dlib::assign_image(dlib_image, dlib::cv_image<dlib::bgr_pixel>(frame));
+
+    std::vector<dlib::rectangle> detected_faces = detector(dlib_image);
+
+    int number_of_detected_faces = detected_faces.size();
+
+    std::vector<dlib::full_object_detection> shapes;
+
+    double t1,t2,t3, l_eye_ar, r_eye_ar;
+
+    for (int i = 0; i < number_of_detected_faces; i++)
+    {
+        dlib::full_object_detection shape = shape_model(dlib_image, detected_faces[i]);
+
+        shapes.push_back(shape);
+
+        t1 = euclidean_dist(shape.part(37).x(),shape.part(37).y(),shape.part(41).x(),shape.part(41).y());
+        t2 = euclidean_dist(shape.part(38).x(),shape.part(38).y(),shape.part(40).x(),shape.part(40).y());
+        t3 = euclidean_dist(shape.part(36).x(),shape.part(36).y(),shape.part(39).x(),shape.part(39).y());
+
+        l_eye_ar = (t1+t2) / (2.0 * t3);
+
+        t1 = euclidean_dist(shape.part(43).x(),shape.part(43).y(),shape.part(47).x(),shape.part(47).y());
+        t2 = euclidean_dist(shape.part(44).x(),shape.part(44).y(),shape.part(46).x(),shape.part(46).y());
+        t3 = euclidean_dist(shape.part(42).x(),shape.part(42).y(),shape.part(45).x(),shape.part(45).y());
+
+        r_eye_ar = (t1+t2) / (2.0 * t3);
+
+        eyes_ar = (l_eye_ar + r_eye_ar) / 2;
+    }
+}
+
 void plotwindow::camerainput_Update() // processing camera input
 {
     camera >> trp;
-    flip(trp,trp,1);
+    flip(trp,trp,1);        
+    get_eyes_ar();
+
+    if (adaptive_volume)
+        on_horizontalSlider_3_valueChanged(400*(eyes_ar-0.1));
+
     QPixmap pm = QPixmap::fromImage(Mat2QImagRGB(trp));
     setbackimage(pm,false);
     if ((paintfstart) && (paintf->grabmindplayflow))
         paintf->setbackimage(ui->widget->grab());
+
 }
 
 void plotwindow::print_tones(QString str)  // update list of played tones
@@ -916,7 +974,7 @@ void plotwindow::update_attention(int t)
     // updated attention value, check condition on back image change
     attent=t;
     ui->label_23->setText("ATTENTION: "+QString::number(t)+"%");
-    if ((adaptive_volume) && (t>minvolumebord))
+    if ((adaptive_volume) && (t>minvolumebord) && (!camerainp))
         on_horizontalSlider_3_valueChanged(t);
 
     if (attention_modulation)
@@ -928,14 +986,26 @@ void plotwindow::update_attention(int t)
         if (!canbackchange)
             canbackchange=true;
 
-    if ((!fixback) && (attention_modulation) && (t>picchangeborder))
-        if (canbackchange)
+    if ((!fixback) && (attention_modulation))
+    {
+        if (adaptivepicsborder)
+        {
+            int mlevel = paintf->getaverage_mentallevel(3,true);
+            if (mlevel>80)
+                picchangeborder = 10 + mlevel;
+            else
+                picchangeborder = 20 + mlevel;
+            if (picchangeborder > 100)
+                picchangeborder = 100;
+            ui->horizontalSlider_2->setValue(picchangeborder);
+        }
+        if ((canbackchange) && (t>picchangeborder))
         {
             on_pushButton_6_clicked();
             canbackchange=false;
         }
+    }
 }
-
 
 void plotwindow::update_meditation(int t)
 {
@@ -954,12 +1024,25 @@ void plotwindow::update_meditation(int t)
         if (!canbackchange)
             canbackchange=true;
 
-    if ((!fixback) && (!attention_modulation) && (t>picchangeborder))
-        if (canbackchange)
+    if ((!fixback) && (!attention_modulation))
+    {
+        if (adaptivepicsborder)
+        {
+            int mlevel = paintf->getaverage_mentallevel(3,false);
+            if (mlevel>80)
+                picchangeborder = 10 + mlevel;
+            else
+                picchangeborder = 20 + mlevel;
+            if (picchangeborder > 100)
+                picchangeborder = 100;
+            ui->horizontalSlider_2->setValue(picchangeborder);
+        }
+        if ((canbackchange) && (t>picchangeborder))
         {
             on_pushButton_6_clicked();
             canbackchange=false;
         }
+    }
 }
 
 void plotwindow::radiobut1()    // switch on tankdrum1 tones from MindDraw window
@@ -1793,8 +1876,11 @@ void plotwindow::process_eeg_data() // processing EEG data
                  curmodval = attent; // paintf->estattn; // in case of estimated attention
              else
                  curmodval = meditt;
-             if (curmodval<20)
-                 imlength=100;
+             if (curmodval<10)
+                 curmodval=10;
+             imlength = (curmodval+1)*4;
+             /* if (curmodval<20)
+                 imlength=150;
              else if ((curmodval>20) && (curmodval<40))
                  imlength=150;
              else if ((curmodval>40) && (curmodval<60))
@@ -1802,7 +1888,7 @@ void plotwindow::process_eeg_data() // processing EEG data
              else if ((curmodval>60) && (curmodval<80))
                  imlength=400;
              else if (curmodval>80)
-                 imlength=600;
+                 imlength=600; */
              ui->spinBox_5->setValue(imlength*2);
              ui->horizontalSlider->setValue(imlength*2);
              paintf->update_estrate(imlength*2);
@@ -2631,7 +2717,11 @@ void plotwindow::on_spinBox_21_valueChanged(int arg1)
 
 void plotwindow::on_horizontalSlider_3_valueChanged(int value)
 {
-    volume = (qreal) (value) / 100;
+    if (value>100)
+        value = 100;
+    if (value<0)
+        value = 3;
+    volume = (qreal) (value) / 100;    
     settonesvolume();
     ui->spinBox_21->setValue(value);
 }
@@ -2882,6 +2972,7 @@ void plotwindow::on_spinBox_22_valueChanged(int arg1)
 void plotwindow::on_checkBox_13_clicked() // fix back image on / off (with attention > border)
 {
     fixback=!fixback;
+    adaptivepicsborder = true;
     ui->horizontalSlider_2->setVisible(!fixback);
 }
 
@@ -2925,4 +3016,9 @@ void plotwindow::on_checkBox_8_clicked()
         ui->spinBox_21->setStyleSheet("QSpinBox { background-color: yellow; }");
     else
         ui->spinBox_21->setStyleSheet("QSpinBox { background-color: white; }");
+}
+
+void plotwindow::on_horizontalSlider_2_sliderPressed()
+{
+    adaptivepicsborder = false;
 }

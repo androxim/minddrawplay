@@ -21,6 +21,13 @@
 #include "opencv2/opencv.hpp"
 #include "opencv2/imgproc.hpp"
 
+#include <dlib/opencv.h>
+#include <dlib/image_io.h>
+#include <dlib/gui_widgets.h>
+#include <dlib/image_processing.h>
+#include <dlib/image_processing/frontal_face_detector.h>
+#include <dlib/image_processing/render_face_detections.h>
+
 #define NMAX 15360 // max length of single EEG line, 15360: 30 sec for 512 sampling rate
 
 #define ADDRESS "127.0.0.1"     // OSC streamer parameters
@@ -64,6 +71,9 @@ public:
     QStringList strLst2; QStringListModel *strLstM2;  // list of playing tones
     QString tones, lasttones;
 
+    dlib::frontal_face_detector detector;
+    dlib::shape_predictor shape_model;
+
     QGraphicsBlurEffect *blurp;
     QGraphicsColorizeEffect *colorizep;
     QStringList imglist; QString folderpath; QDir fd;
@@ -75,6 +85,7 @@ public:
     QPixmap pm, pmx, backimg;
     QPalette sp1, sp2;
     QImage QM, qbim1, qbim2;
+    cv::Mat frame;
     qreal volume;
     QVector<double> eegdata[20];
     QVector<int> delta_vals, theta_vals, alpha_vals, beta_vals, gamma_vals;
@@ -85,7 +96,7 @@ public:
     int counter, stims, recparts, chnums, sampleblock, sourcech, picchangeborder;
     int simsrfr, maxtonerepeats, memorylength, attent, minvolumebord, meditt;
     int maxshown_eeglines, xraw, delta, theta, alpha, beta, gamma, hgamma;
-    double meandelta, meantheta, meanalpha, meanbeta, meangamma, meanhgamma;
+    double meandelta, meantheta, meanalpha, meanbeta, meangamma, meanhgamma, eyes_ar;
     int sdelta, stheta, salpha, sbeta, sgamma, shgamma, points_for_mean;
     int tv1, tv2, tv3, tv4, tv5, tv6, tv7, tv8, tv9, tv10;
     int pushshift, psleep, camera_interval;
@@ -96,7 +107,7 @@ public:
     bool adaptivenumparts, backimageloaded, canbackchange, opencvstart;
     bool filteringback, blurback, hidebutt, attention_interval, fixback, colorizeback;
     bool attention_modulation, start, brainflow_on, estimation, updatewavesplot;
-    bool usefiltering, musicmode_on, flowblinking, scalechange;
+    bool usefiltering, musicmode_on, flowblinking, scalechange, adaptivepicsborder;
     bool spacemode, tank1mode, tank2mode, recordstarted, antirepeat, randmxt;       
     bool mindwstart, fftfreqs, adaptive_volume, keys_emulated, simeeg;
     bool tunemode, paintfstart, rawsignalabove, camerainp, oscstreaming;
@@ -190,6 +201,7 @@ public:
     void playtones();
     void process_eeg_data();
     void osc_streaming(int attent, int meditt, int delta, int theta, int alpha, int beta, int gamma, int hgamma);
+    void get_eyes_ar();
 
 private slots:
 
@@ -337,6 +349,8 @@ private slots:
     void on_checkBox_15_clicked();
 
     void on_checkBox_8_clicked();
+
+    void on_horizontalSlider_2_sliderPressed();
 
 private:
     Ui::plot *ui;

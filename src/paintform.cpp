@@ -1107,6 +1107,23 @@ void paintform::updatemeditation(int t) // update meditation array, plot and dep
     }
 }
 
+int paintform::getaverage_mentallevel(int interval, bool attention)
+// get average mental level for last [interval] seconds
+{
+    double t = 0;
+    if (attention)
+    {
+        for (int i=0; i<interval; i++)
+            t+=attent_arr[numsamples-i];
+    }
+    else
+    {
+        for (int i=0; i<interval; i++)
+            t+=medit_arr[numsamples-i];
+    }
+    return (int)(t / interval);
+}
+
 void paintform::updateset_withlimitpics()
 // update limit number of puzzles: some currentin indexes are changed, some stays the same
 {

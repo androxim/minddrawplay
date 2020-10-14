@@ -64,7 +64,7 @@ Mat waves(Rect srcRect);                // waves filter
 Mat cartoon(Rect srcRect);              // cartoonize filter
 Mat orbdetect(Rect srcRect);            // ORB features detector
 Mat mixfilt(Rect srcRect);              // mixer of pics with transparency
-Mat ripples(Rect srcRect);             // ripples effect filter
+Mat ripples(Rect srcRect);              // ripples effect filter
 // ==== openCV functions end ====
 
 // ==== openCV variables ====
@@ -85,6 +85,7 @@ bool firstrun = true;
 bool estattention = false;  // if attention is streaming from MindWave device
 bool fullscr = false;
 bool mwconnected = false;
+bool rawplotshort = true;
 
 int elem1 = 255;  // HUE variable
 int elem2 = 255;  // Saturation
@@ -179,14 +180,22 @@ MainWindow::MainWindow(QWidget *parent) :
     folderpath = "D:/PICS";       // default path for pictures
     plotw->folderpath = folderpath;
     QDir fd(folderpath);
-    imglist = fd.entryList(QStringList() << "*.jpg" << "*.JPG",QDir::Files);
-    leftpw->imgnumber = imglist.length()-2;     // -2 because excluding current main and overlay pics
-    rightpw->imgnumber = imglist.length()-2;    
-    picsarr = vector<int>(imglist.length());
-    ocvform->randpicn = qrand()%imglist.length();
-    ui->lineEdit->setText(folderpath);
-    for (int i=0; i<imglist.length(); i++)
-        imgpaths.push_back(imglist[i]);
+    if (!fd.exists())
+    {
+        QMessageBox msgBox;
+        msgBox.setText("Please choose a folder with .jpg files!");
+        msgBox.exec();
+    } else
+    {
+        imglist = fd.entryList(QStringList() << "*.jpg" << "*.JPG",QDir::Files);
+        leftpw->imgnumber = imglist.length()-2;     // -2 because excluding current main and overlay pics
+        rightpw->imgnumber = imglist.length()-2;
+        picsarr = vector<int>(imglist.length());
+        ocvform->randpicn = qrand()%imglist.length();
+        ui->lineEdit->setText(folderpath);
+        for (int i=0; i<imglist.length(); i++)
+            imgpaths.push_back(imglist[i]);
+    }
 
     //ocvcontrshow = true;             // if openCV filters control form shown
 
@@ -1741,7 +1750,7 @@ void MainWindow::makeHistFeatures()     // computing image histogram features
     QString picst;
     hist_features.clear();
     for (int i=0; i<imglist.length(); i++)
-    {
+    {        
         picst = folderpath+"/"+imglist.at(i);
         tempimg = imread(picst.toStdString());
         pichist = tempimg;
@@ -2328,21 +2337,20 @@ void MainWindow::keys_processing()      // processing keys pressing
             ocvform->currfilttype++;
         ocvform->updateformvals();
     }
-    else if ((key == 'r') && (ocvform->color_overlay_flow))      // start receiving camera input for overlay flow
+    else if ((key == 'k') && (ocvform->color_overlay_flow))      // start / stop receiving camera input for overlay flow
     {
         if (!ocvform->camerainp)
         {
             cam.open(0);           
             ocvform->camerainp = true;
             ocvform->updateformvals();
+        } else
+        {
+            cam.release();
+            ocvform->camerainp = false;
+            ocvform->updateformvals();
         }
-    }
-    else if ((key == 's') && (ocvform->color_overlay_flow))        // stop receiving camera input for overlay flow
-    {
-        cam.release();
-        ocvform->camerainp = false;
-        ocvform->updateformvals();
-    }       
+    }      
     else if ((key == '.') && (ocvform->transp>1))      // decrease transparency for mixer filter
     {
         ocvform->transp--;
@@ -2374,8 +2382,24 @@ void MainWindow::keys_processing()      // processing keys pressing
     }
     else if (key == 'g')                   // switch flow direction by attention > border
         ocvform->directionswitch_by_att=!ocvform->directionswitch_by_att;
-    else if (key == 'h')                    // story mode: main pic is fixed, overlay pic change by attention > border
-        storymode=!storymode;                  
+    else if (key == 'h')                   // story mode: main pic is fixed, overlay pic change by attention > border
+        storymode=!storymode;
+    else if (key == 'r')                   // extend / shorten raw plot form
+    {
+        if (rawplotshort)
+        {
+            rs->setGeometry(0,0,1940,80);
+            rs->move(0,0);
+            rawplotshort = false;
+        }
+        else
+        {
+            rs->setGeometry(0,0,1600,80);
+            rs->move(158,0);
+            rawplotshort = true;
+        }
+        rs->changefsize(!rawplotshort);
+    }
 }
 
 void MainWindow::picfiltUpdate() // function for MindOCV hue-overlay flow updates
@@ -2548,8 +2572,9 @@ void MainWindow::gethistfeatures() // function to get histogram representation o
 
     int axesX = int(w * 0.75) / 2;
     int axesY = int(h * 0.75) / 2;
+
     Mat maskellip(imghist.size(), CV_8U, Scalar(0));
-    cv::ellipse(maskellip, Point(cX, cY), Size(axesX, axesY), 0, 0, 360, Scalar(255), -1);
+    cv::ellipse(maskellip, Point(cX, cY), Size(axesX, axesY), 0, 0, 360, Scalar(255), -1);    
 
     for (int i=0; i<4; i++)
     {
@@ -2560,8 +2585,8 @@ void MainWindow::gethistfeatures() // function to get histogram representation o
         features.insert(features.end(),ftemp.begin(),ftemp.end());
     }
     ftemp = gethistogram(imghist,maskellip);
-    features.insert(features.end(),ftemp.begin(),ftemp.end());
 
+    features.insert(features.end(),ftemp.begin(),ftemp.end());
     hist_features.push_back(features);
 }
 

@@ -127,9 +127,10 @@ public:
     void updatemusicmode(bool fl);
     void setsoundtype(int index);
     double getestattval();
+    int getaverage_mentallevel(int interval, bool attention);
     void update_estrate(int t);
     void setbackimageocv(QString filename);   
-    void adaptivespinrate(bool fl);
+    void adaptivespinrate(bool fl);    
     void updateset_allpics_similarly(int* picnums);
     void swappuzzles(int t1, int t2);
     void mainpuzzle_update(int t);

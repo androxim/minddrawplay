@@ -14,9 +14,9 @@
 paintScene::paintScene(QObject *parent) : QGraphicsScene(parent)
 {    
     t0=0;   // normalized amplitude of raw brain signal for drawing lines with mouse move
-    freqcolor = true;           // frequency dependent color
+    freqcolor = false;           // frequency dependent color
     randcolor = false;          // random color on each point
-    randfixcolor = false;       // random color on each new line
+    randfixcolor = true;       // random color on each new line
     drawcontours = false;       // draw on contours
     drawbpoints = false;        // draw by points
     startedline = false;        // flag if current drawing line is started

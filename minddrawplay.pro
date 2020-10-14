@@ -12,6 +12,8 @@ TEMPLATE = app
 CONFIG += c++11 \
           resources_big
 
+QMAKE_CXXFLAGS_RELEASE += -mavx
+
 SOURCES += src\main.cpp\
            src\mainwindow.cpp \
            src\qcustomplot.cpp \
@@ -58,7 +60,6 @@ HEADERS  += include\mainwindow.h \
     oscpack\OscTypes.h \
     oscpack\OscHostEndianness.h
 
-
 FORMS    += ui\mainwindow.ui \
             ui\plotwindow.ui \
     ui\settings.ui \
@@ -70,7 +71,10 @@ FORMS    += ui\mainwindow.ui \
 
 LIBS += -lwsock32 -lws2_32 -lwinmm -mthreads -L$$PWD/./ -lthinkgear
 
-INCLUDEPATH += C:\OpenCV\OpenCV_bin\install\include
+INCLUDEPATH += C:\OpenCV\OpenCV_bin\install\include \
+               C:\dlib\dlib-19.21\include \
+               $$PWD/include/. \
+               $$PWD/oscpack/.
 
 LIBS += C:\OpenCV\OpenCV_bin\bin\libopencv_core412.dll \
         C:\OpenCV\OpenCV_bin\bin\libopencv_highgui412.dll \
@@ -79,14 +83,11 @@ LIBS += C:\OpenCV\OpenCV_bin\bin\libopencv_core412.dll \
         C:\OpenCV\OpenCV_bin\bin\libopencv_calib3d412.dll \
         C:\OpenCV\OpenCV_bin\bin\libopencv_video412.dll \
         C:\OpenCV\OpenCV_bin\bin\libopencv_videoio412.dll \
-        C:\OpenCV\OpenCV_bin\bin\libopencv_features2d412.dll
-
-INCLUDEPATH += $$PWD/include/. \
-               $$PWD/oscpack/.
+        C:\OpenCV\OpenCV_bin\bin\libopencv_features2d412.dll \
+        -L"C:\dlib\dlib-19.21\build" \
+        -ldlib
 
 DEPENDPATH += $$PWD/.
 
 RESOURCES += \
     resf.qrc
-
-
