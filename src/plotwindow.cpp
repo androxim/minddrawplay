@@ -55,6 +55,7 @@ plotwindow::plotwindow(QWidget *parent) :
     simsrfr = 500; // frequency of simulated EEG flow
     picchangeborder = 70; // border for changing back image by attention>border
     buffercount = 0; // number of points in data buffer
+    nemehanika_bord = 64; // border of color changes in neMehanika emulation
 
     simeeg = false; // simulated EEG flow
     tunemode = true; // allow to change parameters of deviations from mean brain waves expressions
@@ -128,13 +129,11 @@ plotwindow::plotwindow(QWidget *parent) :
     // emulation of some controls on neMehanika interactive animations: www.nemehanika.ru
     neuro_neMehanika_camera = new QTimer(this); // timer for neMehanika animation camera control
     neuro_neMehanika_camera->connect(neuro_neMehanika_camera,SIGNAL(timeout()), this, SLOT(neuro_neMeh_camera_update()));
-    neuro_neMehanika_camera->setInterval(1000);
-   // neuro_neMehanika_camera->start();
+    neuro_neMehanika_camera->setInterval(500);
     keys_emulated = false; // flag for keybord press emulation for neMehanika controls (KEY_Q/KEY_E)
     neuro_neMehanika_colors = new QTimer(this); // timer for neMehanika animation colors change
     neuro_neMehanika_colors->connect(neuro_neMehanika_colors,SIGNAL(timeout()), this, SLOT(neuro_neMeh_colors_update()));
     neuro_neMehanika_colors->setInterval(200);
-   // neuro_neMehanika_colors->start();
 
     tonescheck = 20; // interval for determining tones from brain waves expression
     init_timersinthread(); // init timers in separate threads for tones determining    
@@ -754,6 +753,13 @@ bool plotwindow::eventFilter(QObject *target, QEvent *event)
         if ((keyEvent->key()==Qt::Key_K) && (!filteringback))     // start / stop camera input
             camerainp_on_off();
 
+        if (keyEvent->key()==Qt::Key_M) // start emulation of neMehanika controls
+        {
+            neuro_neMehanika_camera->start();
+            neuro_neMehanika_colors->start();
+            brl->show_attentionborder();
+        }
+
         // tones play by keys
         if (keyEvent->key()==Qt::Key_B)
         {
@@ -1307,7 +1313,7 @@ void plotwindow::cleanbuttons() // clean played tones buttons for new interval t
 
 void plotwindow::neuro_neMeh_colors_update() // emulate Enter press / change of colors in neMehanika
 {
-    if ((keys_emulated) && (attent>64))
+    if ((keys_emulated) && (attent>nemehanika_bord))
         pushenter();
 }
 
@@ -1318,7 +1324,7 @@ void plotwindow::neuro_neMeh_camera_update() // detect start of keys emulation, 
     if ((GetKeyState('E') & 0x8000) && (keys_emulated))
         keys_emulated=false;
 
-    psleep = 10;
+    psleep = 20;
 
     if ((mindwstart) && (keys_emulated))
     {
@@ -1714,6 +1720,9 @@ void plotwindow::analyse_interval() // main function for processing interval of 
 
     if (oscstreaming)
         osc_streaming(attent,meditt,delta,theta,alpha,beta,gamma,hgamma);
+
+    brl->updatelevels(attent,meditt);
+    //brl->updatelevels(paintf->getestattval(),meditt);
 
     if (paintfstart) // update brain waves expression arrays and plot in MindDraw
     {        
@@ -2323,6 +2332,7 @@ void plotwindow::pushenter() // emulate enter_key press
 }
 
 void plotwindow::osc_streaming(int attent, int meditt, int delta, int theta, int alpha, int beta, int gamma, int hgamma)
+// streaming brain data through OSC
 {
     UdpTransmitSocket transmitSocket( IpEndpointName( ADDRESS, PORT ) );
 
@@ -2346,6 +2356,11 @@ void plotwindow::osc_streaming(int attent, int meditt, int delta, int theta, int
         << osc::BeginMessage("/hgamma") << (int)hgamma << osc::EndMessage
       << osc::EndBundle;
     transmitSocket.Send(p.Data(),p.Size());
+}
+
+void plotwindow::set_nemehanika_bord(int t)  // set border for color changes in neMehanika emulation
+{
+    nemehanika_bord = t;
 }
 
 /* ui processing */
@@ -2907,7 +2922,7 @@ void plotwindow::on_checkBox_11_clicked()  // grab MindOCV flow
 {
     filteringback = !filteringback;
     colorizeback = false;
-    ocvf->showlabel = false;
+    ocvf->showmenu = false;
     ui->checkBox_14->setEnabled(!ui->checkBox_11->isChecked());
     ui->checkBox_15->setEnabled(!ui->checkBox_11->isChecked());
 }

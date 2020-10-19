@@ -14,6 +14,7 @@
 #include "leftpanel.h"
 #include "rightpanel.h"
 #include "ocvcontrols.h"
+#include "brainlevels.h"
 
 class plotwindow;
 class appconnect;
@@ -22,6 +23,7 @@ class paintform;
 class leftpanel;
 class rightpanel;
 class ocvcontrols;
+class brainlevels;
 
 using namespace std;
 
@@ -69,6 +71,11 @@ public:
     vector<int> picsarr;
     QVector<QString> imgpaths;
     QFutureWatcher<QImage> *imageScaling;
+
+    plotwindow *plotw;
+    paintform *paintw;
+    brainlevels *br_levels;
+    appconnect *connectWin;
 
     explicit MainWindow(QWidget *parent = 0);      
     void printdata(QString str);
@@ -124,6 +131,7 @@ public:
 
     void stop_all_flows();
     void grab_labels_areas();
+    void set_showlevelscheckbox(bool fl);
 
     ~MainWindow();
 
@@ -160,11 +168,10 @@ private slots:
 
     void on_checkBox_clicked();
 
+    void on_checkBox_2_clicked();
+
 private:
-    Ui::MainWindow *ui;
-    plotwindow *plotw;
-    paintform *paintw;    
-    appconnect *connectWin;  
+    Ui::MainWindow *ui; 
 
 };
 

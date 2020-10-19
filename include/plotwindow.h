@@ -50,6 +50,7 @@ class paintScene;
 class paintform;
 class ocvcontrols;
 class filters;
+class brainlevels;
 
 class plotwindow : public QWidget
 {
@@ -66,6 +67,7 @@ public:
     ocvcontrols* ocvf;      // pointer on MindOCV window object
     appconnect* appcn;      // pointer on AppConnect object (BCI2000)
     filters* filtercl;      // pointer on object with standard signal filters
+    brainlevels* brl;       // pointer on BrainLevels window object
 
     soundplayer splayer;    // sound player object with sound samples and timers associated with own thread
     QStringList strLst2; QStringListModel *strLstM2;  // list of playing tones
@@ -102,7 +104,7 @@ public:
     int pushshift, psleep, camera_interval;
     int lcutoff, hcutoff, butterord;
     int nextdrawshift, tonescheck;
-    int buffercount;
+    int buffercount, nemehanika_bord;
 
     bool adaptivenumparts, backimageloaded, canbackchange, opencvstart;
     bool filteringback, blurback, hidebutt, attention_interval, fixback, colorizeback;
@@ -202,6 +204,7 @@ public:
     void process_eeg_data();
     void osc_streaming(int attent, int meditt, int delta, int theta, int alpha, int beta, int gamma, int hgamma);
     void get_eyes_ar();
+    void set_nemehanika_bord(int t);
 
 private slots:
 

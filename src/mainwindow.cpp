@@ -142,12 +142,14 @@ MainWindow::MainWindow(QWidget *parent) :
 
     plotw = new plotwindow();
     plotw->setWindowTitle("MindDrawPlay | MindPlay");
+    plotw->setWindowFlags(Qt::Window | Qt::WindowMinimizeButtonHint | Qt::WindowMaximizeButtonHint);
     plotw->setFixedSize(1560,978);
     plotw->move(QApplication::desktop()->screen()->rect().center() - plotw->rect().center()-QPoint(10,30));
     plotw->start=false;
 
     paintw = new paintform();
     paintw->setWindowTitle("MindDrawPlay | MindDraw");
+    paintw->setWindowFlags(Qt::Window | Qt::WindowMinimizeButtonHint | Qt::WindowMaximizeButtonHint);
     paintw->pw=plotw;
     paintw->mww=this;
     paintw->setFixedSize(1560,970);    
@@ -176,6 +178,13 @@ MainWindow::MainWindow(QWidget *parent) :
     ocvform->leftpan = leftpw;
     plotw->ocvf = ocvform;
     paintw->ocvfm = ocvform;
+
+    br_levels = new brainlevels();
+    br_levels->setFixedSize(701,61);
+    br_levels->mww = this;
+    br_levels->plw = plotw;
+    plotw->brl = br_levels;
+    br_levels->move(QPoint(1050,0));
 
     folderpath = "D:/PICS";       // default path for pictures
     plotw->folderpath = folderpath;
@@ -452,8 +461,8 @@ void Processing() // processing of HUE, Saturation, Value changes
 
     cvtColor(img,image,COLOR_HSV2RGB);
 
-    if (ocvform->showlabel)
-        sprintf(ocvform->l_str,"Attention: %d",elem4);
+    //if (ocvform->showlabel)
+    //    sprintf(ocvform->l_str,"Attention: %d",elem4);
 
     if (!ocvform->hueonly)
     {
@@ -467,11 +476,11 @@ void Processing() // processing of HUE, Saturation, Value changes
         else
             addWeighted(image, alphaval, srccopy, 1 - alphaval, 0, dst);                
 
-        if (ocvform->showlabel)
+        if (ocvform->showmenu)
         {
-            label_area = dst(Rect(ocvform->l_posx-5,ocvform->l_posy-60,ocvform->lw,ocvform->lh)).clone();
+           // label_area = dst(Rect(ocvform->l_posx-5,ocvform->l_posy-60,ocvform->lw,ocvform->lh)).clone();
             menu_area = dst(Rect(ocvform->l_menu_posx-5,ocvform->l_menu_posy-30,ocvform->lmenuw,ocvform->lmenuh)).clone();
-            putText(dst, ocvform->l_str, Point2f(ocvform->l_posx,ocvform->l_posy), FONT_HERSHEY_PLAIN, ocvform->lfont_scale, Scalar(0,0,255,255), ocvform->lfont_size);
+           // putText(dst, ocvform->l_str, Point2f(ocvform->l_posx,ocvform->l_posy), FONT_HERSHEY_PLAIN, ocvform->lfont_scale, Scalar(0,0,255,255), ocvform->lfont_size);
             if (ocvform->color_overlay_flow)
                 drawcontrolmenu(dst,1);
             else if (ocvform->dreamflow)
@@ -485,11 +494,11 @@ void Processing() // processing of HUE, Saturation, Value changes
     }
     else
     {
-        if (ocvform->showlabel)
+        if (ocvform->showmenu)
         {
-            label_area = image(Rect(ocvform->l_posx-5,ocvform->l_posy-60,ocvform->lw,ocvform->lh)).clone();
+           // label_area = image(Rect(ocvform->l_posx-5,ocvform->l_posy-60,ocvform->lw,ocvform->lh)).clone();
             menu_area = image(Rect(ocvform->l_menu_posx-5,ocvform->l_menu_posy-30,ocvform->lmenuw,ocvform->lmenuh)).clone();
-            putText(image, ocvform->l_str, Point2f(ocvform->l_posx,ocvform->l_posy), FONT_HERSHEY_PLAIN, ocvform->lfont_scale, Scalar(0,0,255,255), ocvform->lfont_size);
+           // putText(image, ocvform->l_str, Point2f(ocvform->l_posx,ocvform->l_posy), FONT_HERSHEY_PLAIN, ocvform->lfont_scale, Scalar(0,0,255,255), ocvform->lfont_size);
             if (ocvform->color_overlay_flow)
                 drawcontrolmenu(image,1);
             else if (ocvform->dreamflow)
@@ -528,12 +537,12 @@ void ProcessingMix() // processing of overlay changes, alphaval - transparency
     clear_dst.release();
     clear_dst = dst.clone();
 
-    if (ocvform->showlabel)
+    if (ocvform->showmenu)
     {
-        label_area = dst(Rect(ocvform->l_posx-5,ocvform->l_posy-60,ocvform->lw,ocvform->lh)).clone();
+       // label_area = dst(Rect(ocvform->l_posx-5,ocvform->l_posy-60,ocvform->lw,ocvform->lh)).clone();
         menu_area = dst(Rect(ocvform->l_menu_posx-5,ocvform->l_menu_posy-30,ocvform->lmenuw,ocvform->lmenuh)).clone();
-        sprintf(ocvform->l_str,"Attention: %d",elem4);
-        putText(dst, ocvform->l_str, Point2f(ocvform->l_posx,ocvform->l_posy), FONT_HERSHEY_PLAIN, ocvform->lfont_scale, Scalar(0,0,255,255), ocvform->lfont_size);
+       // sprintf(ocvform->l_str,"Attention: %d",elem4);
+       // putText(dst, ocvform->l_str, Point2f(ocvform->l_posx,ocvform->l_posy), FONT_HERSHEY_PLAIN, ocvform->lfont_scale, Scalar(0,0,255,255), ocvform->lfont_size);
         if (ocvform->color_overlay_flow)
             drawcontrolmenu(dst,1);
         else if (ocvform->dreamflow)
@@ -1030,9 +1039,9 @@ QString MainWindow::getimagepath(int t) // return image path for ocvcontrol form
 
 void MainWindow::setdream0() // grab initial image before starting expanding mode in dreamflow
 {   
-    if (ocvform->showlabel)
+    if (ocvform->showmenu)
     {
-        label_area.copyTo(dst(Rect(ocvform->l_posx-5,ocvform->l_posy-60,ocvform->lw,ocvform->lh)));
+       // label_area.copyTo(dst(Rect(ocvform->l_posx-5,ocvform->l_posy-60,ocvform->lw,ocvform->lh)));
         menu_area.copyTo(dst(Rect(ocvform->l_menu_posx-5,ocvform->l_menu_posy-30,ocvform->lmenuw,ocvform->lmenuh)));
     }
     dream0 = dst.clone();
@@ -1093,10 +1102,10 @@ void MainWindow::dreamflow_Update() // timer for dreamflow mode, when new pic ap
 {
     int x, y, area = 50;
     Rect srcDstRect; 
-    if (ocvform->showlabel)
+    if (ocvform->showmenu)
     {
-        label_area.copyTo(dst(Rect(ocvform->l_posx-5,ocvform->l_posy-60,ocvform->lw,ocvform->lh)));
-        label_area.copyTo(dream0(Rect(ocvform->l_posx-5,ocvform->l_posy-60,ocvform->lw,ocvform->lh)));
+       // label_area.copyTo(dst(Rect(ocvform->l_posx-5,ocvform->l_posy-60,ocvform->lw,ocvform->lh)));
+       // label_area.copyTo(dream0(Rect(ocvform->l_posx-5,ocvform->l_posy-60,ocvform->lw,ocvform->lh)));
         menu_area.copyTo(dst(Rect(ocvform->l_menu_posx-5,ocvform->l_menu_posy-30,ocvform->lmenuw,ocvform->lmenuh)));
         menu_area.copyTo(dream0(Rect(ocvform->l_menu_posx-5,ocvform->l_menu_posy-30,ocvform->lmenuw,ocvform->lmenuh)));
     }
@@ -1145,11 +1154,11 @@ void MainWindow::dreamflow_Update() // timer for dreamflow mode, when new pic ap
     else
         dstt.copyTo(dst(srcDstRect));
 
-    if (ocvform->showlabel)
+    if (ocvform->showmenu)
     {
-        label_area = dst(Rect(ocvform->l_posx-5,ocvform->l_posy-60,ocvform->lw,ocvform->lh)).clone();
+       // label_area = dst(Rect(ocvform->l_posx-5,ocvform->l_posy-60,ocvform->lw,ocvform->lh)).clone();
         menu_area = dst(Rect(ocvform->l_menu_posx-5,ocvform->l_menu_posy-30,ocvform->lmenuw,ocvform->lmenuh)).clone();
-        sprintf(ocvform->l_str,"Attention: %d",elem4);
+       // sprintf(ocvform->l_str,"Attention: %d",elem4);
         putText(dst, ocvform->l_str, Point2f(ocvform->l_posx,ocvform->l_posy), FONT_HERSHEY_PLAIN, ocvform->lfont_scale, Scalar(0,0,255,255), ocvform->lfont_size);
         putText(dream0, ocvform->l_str, Point2f(ocvform->l_posx,ocvform->l_posy), FONT_HERSHEY_PLAIN, ocvform->lfont_scale, Scalar(0,0,255,255), ocvform->lfont_size);
         drawcontrolmenu(dst,2);
@@ -1356,14 +1365,12 @@ void MainWindow::on_pushButton_3_clicked() // MindPlay window run
     plotw->doplot();
     plotw->appcn=connectWin;
     paintw->scene->init(plotw, this);
-    connectWin->ps=paintw->scene;
-    paintw->scene->init(plotw, this);
+    connectWin->ps=paintw->scene;    
     paintw->move(QApplication::desktop()->screen()->rect().center() - paintw->rect().center()+QPoint(-10,-35));
     paintw->scene->clear();
-    paintw->show();
     paintw->loadempty();
     plotw->paintfstart=true;
-   // paintw->startpolyt();
+    paintw->setpicfolder(folderpath);
     connectWin->ps=paintw->scene;
     if (plotw->start)
         plotw->pss=paintw->scene;
@@ -1375,17 +1382,7 @@ void MainWindow::on_pushButton_3_clicked() // MindPlay window run
 void MainWindow::on_pushButton_4_clicked() // MindDraw window run
 {
     on_pushButton_3_clicked();
-    //plotw->hide();
-    paintw->scene->init(plotw, this);  
-    plotw->paintfstart=true;
-    paintw->scene->clear();
     paintw->show();
-    paintw->loadempty();
-    paintw->setpicfolder(folderpath);
-   // paintw->startpolyt();
-    connectWin->ps=paintw->scene;
-    if (plotw->start)    
-        plotw->pss=paintw->scene;    
 }
 
 void MainWindow::on_pushButton_5_clicked()
@@ -1461,7 +1458,7 @@ void MainWindow::setattent(int i)
         }
         if (ocvform->puzzlerate_by_att)
         {
-            ocvform->puzzleflowrate = 50 + elem4*2.5;
+            ocvform->puzzleflowrate = 100 + elem4*2.5;
             puzzleflow->setInterval(ocvform->puzzleflowrate);
             ocvform->updateformvals();
         }
@@ -1566,6 +1563,8 @@ void MainWindow::run_opencvform()   // MindOCV window run
         rightpw->show();
         rightpw->fillpics();
         ocvform->show();
+        br_levels->show();
+        set_showlevelscheckbox(true);
     }
     else
     {
@@ -1681,22 +1680,22 @@ void MainWindow::checkoverlay()
             prevoverpic = curroverpic;
 
             if (ocvform->flowdirection==0)
-                curroverpic = riconsarr[qrand() % (imglist.length()-2)];
+                curroverpic = riconsarr[qrand() % (imglist.length()-2)];                        
             else if (ocvform->flowdirection==1)
             {
                 getchi2dists(prevoverpic);
                 curroverpic = nearest_pics[ocvform->ngbarea/5+qrand()%ocvform->ngbarea];
+                getchi2dists(curroverpic);
             }
             else
             {
                 getchi2dists(prevoverpic);
                 curroverpic = farest_pics[ocvform->ngbarea/5+qrand()%ocvform->ngbarea];
+                getchi2dists(curroverpic);
             }
 
-            getchi2dists(curroverpic);
             fillpuzzle_withneighbours();
             fillmaininpuzzle(curroverpic);
-
             lchanged=true;
             rchanged=true;
             defineiconsarr();
@@ -1708,7 +1707,7 @@ void MainWindow::checkoverlay()
             curr_img_set[0] = src.clone();
             srccopy = imread(ocvpic.toStdString());                        
             cv::resize(srccopy, srccopy, cv::Size(ocvform->picwidth,ocvform->picheight), 0, 0, cv::INTER_LINEAR);
-            curr_img_set[1] = srccopy.clone();
+            curr_img_set[1] = srccopy.clone();        
             if (!ocvform->hueonly)
             {
                 if (ocvform->camerainp)  // grab input from camera as overlay (strcopy) pic
@@ -1918,8 +1917,8 @@ void MainWindow::mindwtUpdate() // processing data from MindWave device
                     if (opencvstart)        // update attention by estimated value, but 1 per sec
                     {
                         if (ocvform->attent_modul)
-                            setattent(paintw->getestattval());
-                           // setattent(mw_atten);
+                            //setattent(paintw->getestattval());
+                            setattent(mw_atten);
                         else
                             setattent(mw_medit);
                         curoverl=elem4;
@@ -2164,11 +2163,11 @@ void::MainWindow::puzzleflow_Update() // timer for puzzle flow gathering
     //if (ocvform->free_cells.size()==0)
     //    fillcell(ocvform->free_cells[1],ocvform->cols);
 
-    if (ocvform->showlabel)
+    if (ocvform->showmenu)
     {
-        label_area = dst(Rect(ocvform->l_posx-5,ocvform->l_posy-60,ocvform->lw,ocvform->lh)).clone();
+       // label_area = dst(Rect(ocvform->l_posx-5,ocvform->l_posy-60,ocvform->lw,ocvform->lh)).clone();
         menu_area = dst(Rect(ocvform->l_menu_posx-5,ocvform->l_menu_posy-30,ocvform->lmenuw,ocvform->lmenuh)).clone();
-        if (ocvform->attent_modul)
+       /* if (ocvform->attent_modul)
         {
             sprintf(ocvform->l_str,"Attention: %d",elem4);
             putText(dst, ocvform->l_str, Point2f(ocvform->l_posx,ocvform->l_posy), FONT_HERSHEY_PLAIN, ocvform->lfont_scale, Scalar(0,0,255,255), ocvform->lfont_size);
@@ -2179,7 +2178,7 @@ void::MainWindow::puzzleflow_Update() // timer for puzzle flow gathering
             sprintf(ocvform->l_str,"Meditation: %d",mw_medit);
             putText(dst, ocvform->l_str, Point2f(ocvform->l_posx,ocvform->l_posy), FONT_HERSHEY_PLAIN, ocvform->lfont_scale, Scalar(0,255,0,255), ocvform->lfont_size);
             putText(dream0, ocvform->l_str, Point2f(ocvform->l_posx,ocvform->l_posy), FONT_HERSHEY_PLAIN, ocvform->lfont_scale, Scalar(0,255,0,255), ocvform->lfont_size);
-        }
+        } */
         drawcontrolmenu(dst,3);
     }
 
@@ -2318,8 +2317,8 @@ void MainWindow::keys_processing()      // processing keys pressing
     }
     else if (key == '-')                        // hide / show label of attention
     {
-        label_area = dst(Rect(ocvform->l_posx-5,ocvform->l_posy-60,ocvform->lw,ocvform->lh)).clone();
-        ocvform->showlabel = !ocvform->showlabel;
+       // label_area = dst(Rect(ocvform->l_posx-5,ocvform->l_posy-60,ocvform->lw,ocvform->lh)).clone();
+        ocvform->showmenu = !ocvform->showmenu;
     }
     else if ((key == 'z') && (!ocvform->color_overlay_flow))     // change filter on the left one
     {
@@ -2399,6 +2398,11 @@ void MainWindow::keys_processing()      // processing keys pressing
             rawplotshort = true;
         }
         rs->changefsize(!rawplotshort);
+    }
+    else if (key=='l')
+    {
+        br_levels->show();
+        set_showlevelscheckbox(true);
     }
 }
 
@@ -2612,8 +2616,24 @@ void MainWindow::getchi2dists(int t)
     }
 }
 
+void MainWindow::set_showlevelscheckbox(bool fl)
+{
+    ui->checkBox_2->setChecked(fl);
+}
+
 void MainWindow::on_checkBox_clicked()
 {
     if (ui->checkBox->isEnabled())
         plotw->oscstreaming = !plotw->oscstreaming;
+}
+
+void MainWindow::on_checkBox_2_clicked()
+{
+    if (ui->checkBox_2->isChecked())
+    {
+        plotw->doplot();
+        br_levels->show();
+    }
+    else
+        br_levels->hide();
 }

@@ -3272,18 +3272,17 @@ void paintform::on_checkBox_6_clicked()
 }
 
 void paintform::on_pushButton_6_clicked() // set main pic as random from folder
-{
-    int rimg = qrand() % imglist.length();
+{    
+    int rimg = qrand() % imglist.length();    
     QString filename=folderpath+"/"+imglist.at(rimg);
-    mainpic.load(filename);
+    mainpic.load(filename);    
     currimglist[14]=filename;
     currentindexes[14]=rimg;
-    mainindex = rimg;    
+    mainindex = rimg;
     scene->bkgndimg.load(filename);
-    pmain.load(filename);
+    pmain.load(filename);    
     qim.load(filename);
-    backloaded = true;
-
+    backloaded = true;    
     if (scene->spacedview)
     {
         qpr.setBrush(QPalette::Background, scene->bkgndimg.scaled(this->size(),rationmode,Qt::SmoothTransformation));
@@ -3293,10 +3292,10 @@ void paintform::on_pushButton_6_clicked() // set main pic as random from folder
     } else
     {
         qim=qim.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation);
-        scene->clear();
+        scene->clear();        
         scene->addPixmap(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
         QBrush qbr(pmain.scaled(ui->graphicsView->width(),ui->graphicsView->height(),rationmode,Qt::SmoothTransformation));
-        ui->graphicsView_16->setBackgroundBrush(qbr);
+        ui->graphicsView_16->setBackgroundBrush(qbr);        
     }     
 }
 

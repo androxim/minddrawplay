@@ -30,11 +30,12 @@ SOURCES += src\main.cpp\
     src\ocvcontrols.cpp \
     src\filters.cpp \
     src\myitem.cpp \
+    src\brainlevels.cpp \
     oscpack\IpEndpointName.cpp \
     oscpack\NetworkingUtils.cpp \
     oscpack\UdpSocket.cpp \
     oscpack\OscOutboundPacketStream.cpp \
-    oscpack\OscTypes.cpp
+    oscpack\OscTypes.cpp \
 
 HEADERS  += include\mainwindow.h \
             include\qcustomplot.h \
@@ -52,13 +53,14 @@ HEADERS  += include\mainwindow.h \
     include\ocvcontrols.h \
     include\filters.h \
     include\myitem.h \
+    include\brainlevels.h \
     oscpack\IpEndpointName.h \
     oscpack\NetworkingUtils.h \
     oscpack\OscOutboundPacketStream.h \
     oscpack\UdpSocket.h \
     oscpack\OscException.h \
     oscpack\OscTypes.h \
-    oscpack\OscHostEndianness.h
+    oscpack\OscHostEndianness.h \
 
 FORMS    += ui\mainwindow.ui \
             ui\plotwindow.ui \
@@ -67,7 +69,8 @@ FORMS    += ui\mainwindow.ui \
     ui\rawsignal.ui \
     ui\leftpanel.ui \
     ui\rightpanel.ui \
-    ui\ocvcontrols.ui
+    ui\ocvcontrols.ui \
+    ui\brainlevels.ui
 
 LIBS += -lwsock32 -lws2_32 -lwinmm -mthreads -L$$PWD/./ -lthinkgear
 
