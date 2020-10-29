@@ -2,6 +2,7 @@
 
 ![MindDrawPlay screen](mdpscreen.jpg)
 ![MindDrawPlay screen2](mdpscreen_2.jpg)
+![MindDrawPlay screen3](statistics.JPG)
 
 Code is written in C++ / Qt, the project is specifically made for mobile EEG devices MindWave NeuroSky / MyndPlay, 
 but also can work with other EEG devices through BCI2000 module and can be adapted for other mobile or full EEG systems.
@@ -21,6 +22,7 @@ interactive immersion into flows of your mindspace.
 
 The brain waves data (expressions of delta, theta, alpha, beta, gamma bands, attention and meditation levels)
 can be streamed via OSC to any external application (see example of integration with TouchDesigner: osc_mdp.toe)
+and can be saved to a file for further analysis with simple statistics in application or externally.
 
 broader overview in "about.pdf" 
 
