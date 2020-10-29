@@ -1,6 +1,9 @@
 #ifndef EIGEN_WARNINGS_DISABLED
 #define EIGEN_WARNINGS_DISABLED
 
+// See: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=89325
+#pragma GCC diagnostic ignored "-Wattributes"
+
 #ifdef _MSC_VER
   // 4100 - unreferenced formal parameter (occurred e.g. in aligned_allocator::destroy(pointer p))
   // 4101 - unreferenced local variable

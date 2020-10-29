@@ -15,6 +15,7 @@
 #include "rightpanel.h"
 #include "ocvcontrols.h"
 #include "brainlevels.h"
+#include "statistics.h"
 
 class plotwindow;
 class appconnect;
@@ -24,6 +25,7 @@ class leftpanel;
 class rightpanel;
 class ocvcontrols;
 class brainlevels;
+class statistics;
 
 using namespace std;
 
@@ -76,6 +78,7 @@ public:
     paintform *paintw;
     brainlevels *br_levels;
     appconnect *connectWin;
+    statistics *statsWin;
 
     explicit MainWindow(QWidget *parent = 0);      
     void printdata(QString str);
@@ -169,6 +172,10 @@ private slots:
     void on_checkBox_clicked();
 
     void on_checkBox_2_clicked();
+
+    void on_pushButton_8_clicked();
+
+    void on_pushButton_9_clicked();
 
 private:
     Ui::MainWindow *ui; 

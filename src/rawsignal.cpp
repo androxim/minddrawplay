@@ -60,7 +60,7 @@ rawsignal::~rawsignal()
 }
 
 rawsignal::updatesignal(int t)
-{    
+{
     signal[numsmp]=t*2;
     xc[numsmp]=numsmp;
     numsmp++;

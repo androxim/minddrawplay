@@ -72,6 +72,9 @@ public:
     soundplayer splayer;    // sound player object with sound samples and timers associated with own thread
     QStringList strLst2; QStringListModel *strLstM2;  // list of playing tones
     QString tones, lasttones;
+    QString recfilename, start_sessiom_time;
+    ostringstream streamrec;
+    QFile recordFile;
 
     dlib::frontal_face_detector detector;
     dlib::shape_predictor shape_model;
@@ -94,16 +97,17 @@ public:
 
     double** rawdata; int* indexes; int* tvals;
     int srfr, numst, imlength, stlength, drawshift, graphcount, scaletimeout, tonedelay;
-    int stepsPerPress, tonenumbers, maxtones, chorddelay, mxttimeout, curmodval, nums;
+    int stepsPerPress, tonenumbers, maxtones, chorddelay, mxttimeout, curmodval, nums_waves_values;
     int counter, stims, recparts, chnums, sampleblock, sourcech, picchangeborder;
     int simsrfr, maxtonerepeats, memorylength, attent, minvolumebord, meditt;
     int maxshown_eeglines, xraw, delta, theta, alpha, beta, gamma, hgamma;
-    double meandelta, meantheta, meanalpha, meanbeta, meangamma, meanhgamma, eyes_ar;
+    double meandelta, meantheta, meanalpha, meanbeta, meangamma, meanhgamma;
+    double eyes_ar, eyes_volume_val;
     int sdelta, stheta, salpha, sbeta, sgamma, shgamma, points_for_mean;
     int tv1, tv2, tv3, tv4, tv5, tv6, tv7, tv8, tv9, tv10;
+    int nextdrawshift, tonescheck, total_intervals;
     int pushshift, psleep, camera_interval;
-    int lcutoff, hcutoff, butterord;
-    int nextdrawshift, tonescheck;
+    int lcutoff, hcutoff, butterord;    
     int buffercount, nemehanika_bord;
 
     bool adaptivenumparts, backimageloaded, canbackchange, opencvstart;
@@ -111,8 +115,8 @@ public:
     bool attention_modulation, start, brainflow_on, estimation, updatewavesplot;
     bool usefiltering, musicmode_on, flowblinking, scalechange, adaptivepicsborder;
     bool spacemode, tank1mode, tank2mode, recordstarted, antirepeat, randmxt;       
-    bool mindwstart, fftfreqs, adaptive_volume, keys_emulated, simeeg;
-    bool tunemode, paintfstart, rawsignalabove, camerainp, oscstreaming;
+    bool mindwstart, fftfreqs, attention_volume, keys_emulated, simeeg, eyes_volume;
+    bool tunemode, paintfstart, rawsignalabove, camerainp, oscstreaming, savewavestofile;
 
     QString tank1[10] = {"b","B","g","G","d","D","E","C","f#","a"};
     QString tank2[10] = {"c#","C#","b","B","f#","F#","g#","G#","d#","D#"};
@@ -184,6 +188,9 @@ public:
     void cleanbuttons();
     void settonesvolume();
     void quitthreads();
+    void update_waves_meanvalues();
+    void savewaves();
+    void write_recfile_head();
 
     void update_attention(int t);
     void update_meditation(int t);
@@ -351,9 +358,9 @@ private slots:
 
     void on_checkBox_15_clicked();
 
-    void on_checkBox_8_clicked();
-
     void on_horizontalSlider_2_sliderPressed();
+
+    void on_comboBox_2_currentIndexChanged(int index);
 
 private:
     Ui::plot *ui;

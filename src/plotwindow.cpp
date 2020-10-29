@@ -47,7 +47,8 @@ plotwindow::plotwindow(QWidget *parent) :
     drawshift = -150; graphcount = 0; // shift of brain waves flow lines, number of brain waves lines
     counter = 0; // counter of acquired data points in current interval
     recparts = 0; // number of recorded intervals in current brain waves flow line
-    chnums = 3, sampleblock = 4; // (BCI2000): number of channels, samples in block
+    chnums = 3, sampleblock = 4; // (BCI2000): number of channels, samples in block (should be adapted for other than MindWave devices)
+    nums_waves_values = 0; // number of waves value in array for waves expression
     chorddelay = 0; // delay in chord, only when max tones at one moment > 1
     volume = 1; // volume of sound samples
     maxshown_eeglines = 8; // number of max displaying eeg lines
@@ -56,10 +57,11 @@ plotwindow::plotwindow(QWidget *parent) :
     picchangeborder = 70; // border for changing back image by attention>border
     buffercount = 0; // number of points in data buffer
     nemehanika_bord = 64; // border of color changes in neMehanika emulation
+    eyes_volume_val = 77; // default value for modulation volume by eyes
+    total_intervals = 0; // total number of processed intervals of data
 
     simeeg = false; // simulated EEG flow
-    tunemode = true; // allow to change parameters of deviations from mean brain waves expressions
-    paintfstart = false; // flag for MindDraw window start
+    tunemode = true; // allow to change parameters of deviations from mean brain waves expressions    
     rawsignalabove = true; // flag for position of raw signal plot
     backimageloaded = false; // background image loaded
     colorizeback = false; // colorization effect of background image
@@ -69,7 +71,7 @@ plotwindow::plotwindow(QWidget *parent) :
     // change only when attention becomes > border after it was less
     attention_modulation = true; // attention / meditation modulation
     attention_interval = false; // attention / meditation modulated length of acquired EEG intervals
-    adaptive_volume = true; // attention / meditation modulated volume of tones
+    attention_volume = true; // attention / meditation modulated volume of tones
     minvolumebord = 20; // min value of volume if attention modulated
     opencvstart = false; // MindOCV window start flag
     mindwstart = false;  // flag for EEG device connection
@@ -81,6 +83,8 @@ plotwindow::plotwindow(QWidget *parent) :
     updatewavesplot = true; // plotting new EEG intervals
     oscstreaming = false;   // streaming attention, meditation and waves expression levels via OSC
     adaptivepicsborder = false; // adaptive border based on attention/meditation for background pics change
+    eyes_volume = false; // volume of tones by eyes state (open / close) ratio
+    savewavestofile = true; // saving brain waves data to file
 
     strLstM2 = new QStringListModel();      // list of determined tones
     strLstM2->setStringList(strLst2);
@@ -355,8 +359,8 @@ void plotwindow::doplot() // configure ui elements
     ui->label_22->setGeometry(460,805,50,25);
     ui->horizontalSlider_3->setGeometry(460,827,50,12);
     ui->spinBox_21->setGeometry(520,810,45,20);
-    ui->spinBox_21->setStyleSheet("QSpinBox { background-color: yellow; }");
-    ui->checkBox_8->setGeometry(580,810,101,20);
+    ui->spinBox_21->setStyleSheet("QSpinBox { background-color: yellow; }");    
+    ui->comboBox_2->setGeometry(580,810,101,20);
     ui->checkBox_9->setGeometry(285,840,130,25);
     ui->label_19->setGeometry(425,840,80,25);
     ui->spinBox_18->setGeometry(510,840,45,25);
@@ -532,7 +536,11 @@ bool plotwindow::eventFilter(QObject *target, QEvent *event)
         // start / stop processing brain waves flow
         if ((mouseEvent->button() == Qt::RightButton) && ((appcn->ready) || (mindwstart) || (simeeg)))
         {
-            numst=ui->spinBox_7->value();         
+            if ((nums_waves_values==0) && (savewavestofile))
+                write_recfile_head();
+
+            numst=ui->spinBox_7->value();
+
             if (brainflow_on)
                 brainflow_on=false;
             else
@@ -543,7 +551,7 @@ bool plotwindow::eventFilter(QObject *target, QEvent *event)
                 brainflow_on=true;
                 if (ui->checkBox_4->isChecked())
                     musicmode_on=true;
-            }            
+            }
         }        
     }
 
@@ -840,6 +848,18 @@ bool plotwindow::eventFilter(QObject *target, QEvent *event)
     return false;
 }
 
+void plotwindow::write_recfile_head()
+{
+    start_sessiom_time = QDateTime::currentDateTime().toString("ddMMyyyy-hhmmss");
+    recfilename  = QCoreApplication::applicationDirPath() + "/mdp_" + start_sessiom_time + ".dat";
+    recordFile.setFileName(recfilename);
+    recordFile.open(QIODevice::WriteOnly);
+    streamrec << "Session started: " << start_sessiom_time.toStdString() << "\n";
+    streamrec << "est_attention, attention, meditation, delta, theta, alpha, beta, gamma, hgamma" << endl;
+    recordFile.write(streamrec.str().data(), streamrec.str().length());
+    recordFile.flush();
+}
+
 QImage Mat2QImagRGB(cv::Mat const& srct)
 {
      cv::Mat temp;
@@ -919,14 +939,13 @@ void plotwindow::camerainput_Update() // processing camera input
     flip(trp,trp,1);        
     get_eyes_ar();
 
-    if (adaptive_volume)
-        on_horizontalSlider_3_valueChanged(400*(eyes_ar-0.1));
+    if (eyes_volume)
+        eyes_volume_val = 500*(eyes_ar-0.1);
 
     QPixmap pm = QPixmap::fromImage(Mat2QImagRGB(trp));
     setbackimage(pm,false);
     if ((paintfstart) && (paintf->grabmindplayflow))
         paintf->setbackimage(ui->widget->grab());
-
 }
 
 void plotwindow::print_tones(QString str)  // update list of played tones
@@ -980,11 +999,13 @@ void plotwindow::update_attention(int t)
     // updated attention value, check condition on back image change
     attent=t;
     ui->label_23->setText("ATTENTION: "+QString::number(t)+"%");
-    if ((adaptive_volume) && (t>minvolumebord) && (!camerainp))
-        on_horizontalSlider_3_valueChanged(t);
 
     if (attention_modulation)
+    {
+        if ((attention_volume) && (t>minvolumebord))
+            on_horizontalSlider_3_valueChanged(t);
         ui->progressBar->setValue(t);
+    }
 
     // canbackchange - flag to prevent constant change of back image when attention > border:
     // change only when attention becomes > border after it was less
@@ -1021,7 +1042,7 @@ void plotwindow::update_meditation(int t)
 
     if (!attention_modulation)
     {
-        if ((adaptive_volume) && (t>minvolumebord))
+        if ((attention_volume) && (t>minvolumebord))
             on_horizontalSlider_3_valueChanged(t);
         ui->progressBar->setValue(t);
     }
@@ -1680,12 +1701,10 @@ void plotwindow::determine_brainwaves_expression()
     hgamma=hgammafr*100;
 }
 
-void plotwindow::analyse_interval() // main function for processing interval of EEG data
-{  
-    determine_brainwaves_expression();
-
-    if ((brainflow_on) || (musicmode_on)) // update mean values of brain waves expression
-    {                
+void plotwindow::update_waves_meanvalues() // update mean values of brain waves expression
+{
+    if ((brainflow_on) || (musicmode_on))
+    {               
         if (delta_vals.size() > points_for_mean-1)
         {
             delta_vals.pop_front();
@@ -1707,22 +1726,52 @@ void plotwindow::analyse_interval() // main function for processing interval of 
         sbeta = accumulate(beta_vals.begin(), beta_vals.end(), 0);
         sgamma = accumulate(gamma_vals.begin(), gamma_vals.end(), 0);
 
-        nums = delta_vals.size();
-        meandelta=(double)sdelta/nums;
-        meantheta=(double)stheta/nums;
-        meanalpha=(double)salpha/nums;
-        meanbeta=(double)sbeta/nums;
-        meangamma=(double)sgamma/nums;
+        nums_waves_values = delta_vals.size();
+        meandelta=(double)sdelta/nums_waves_values;
+        meantheta=(double)stheta/nums_waves_values;
+        meanalpha=(double)salpha/nums_waves_values;
+        meanbeta=(double)sbeta/nums_waves_values;
+        meangamma=(double)sgamma/nums_waves_values;
     }
+}
 
-    if (((filteringback) || (colorizeback) || (blurback)) && (!backimg.isNull())) // filtering back image
-        applyfilteronback();
+void plotwindow::savewaves()
+{            
+    streamrec.str(std::string());
+    streamrec << (int)paintf->getestattval() << "," <<
+                 attent << "," << meditt << "," <<
+                 delta << "," << theta << "," <<
+                 alpha << "," << beta << "," <<
+                 gamma << "," << hgamma << "\n";
+    recordFile.write(streamrec.str().data(), streamrec.str().length());
+    recordFile.flush();
+}
 
-    if (oscstreaming)
+void plotwindow::analyse_interval() // main function for processing intervals of EEG data
+{  
+    determine_brainwaves_expression();
+
+    update_waves_meanvalues();
+
+    if (brainflow_on)
+        total_intervals++;
+
+    if (((filteringback) || (colorizeback) || (blurback)) && (!backimg.isNull()))
+        applyfilteronback();  // // filtering background image
+
+    if (eyes_volume)        // volume control by eyes openness ratio
+        on_horizontalSlider_3_valueChanged(eyes_volume_val);
+
+    if (oscstreaming)       // streaming data through OSC
         osc_streaming(attent,meditt,delta,theta,alpha,beta,gamma,hgamma);
 
-    brl->updatelevels(attent,meditt);
-    //brl->updatelevels(paintf->getestattval(),meditt);
+    if ((brainflow_on) && (savewavestofile))    // saving brain data to file
+        savewaves();
+
+    if (brl->attention_I)    // update mental activity values on brainlevels form
+        brl->updatelevels(paintf->getestattval(),meditt);
+    else
+        brl->updatelevels(attent,meditt);
 
     if (paintfstart) // update brain waves expression arrays and plot in MindDraw
     {        
@@ -1748,8 +1797,9 @@ void plotwindow::analyse_interval() // main function for processing interval of 
         paintf->filteringmain_ingame(5);
     }  
 
-    if ((paintfstart) && (paintf->grabmindplayflow)) // streaming of MindPlay image and flow to MindDraw
+    if ((paintfstart) && (paintf->grabmindplayflow))
     {
+        // streaming of MindPlay image and flow to MindDraw
         pmx = ui->widget->grab();
         paintf->setbackimage(pmx);
         paintf->mainpic=pmx;
@@ -1760,7 +1810,7 @@ void plotwindow::analyse_interval() // main function for processing interval of 
     update_brainexp_levels(delta, meandelta, theta, meantheta, alpha, meanalpha, beta, meanbeta, gamma, meangamma);
 
     if (musicmode_on)
-        playtones();
+        playtones();  // playing of tones
 
     if (flowblinking) // change of brain flow lines colors
     {
@@ -1888,16 +1938,6 @@ void plotwindow::process_eeg_data() // processing EEG data
              if (curmodval<10)
                  curmodval=10;
              imlength = (curmodval+1)*4;
-             /* if (curmodval<20)
-                 imlength=150;
-             else if ((curmodval>20) && (curmodval<40))
-                 imlength=150;
-             else if ((curmodval>40) && (curmodval<60))
-                 imlength=250;
-             else if ((curmodval>60) && (curmodval<80))
-                 imlength=400;
-             else if (curmodval>80)
-                 imlength=600; */
              ui->spinBox_5->setValue(imlength*2);
              ui->horizontalSlider->setValue(imlength*2);
              paintf->update_estrate(imlength*2);
@@ -2734,8 +2774,8 @@ void plotwindow::on_horizontalSlider_3_valueChanged(int value)
 {
     if (value>100)
         value = 100;
-    if (value<0)
-        value = 3;
+    if (value<5)
+        value = 55;
     volume = (qreal) (value) / 100;    
     settonesvolume();
     ui->spinBox_21->setValue(value);
@@ -2923,6 +2963,7 @@ void plotwindow::on_checkBox_11_clicked()  // grab MindOCV flow
     filteringback = !filteringback;
     colorizeback = false;
     ocvf->showmenu = false;
+    ui->checkBox_13->setEnabled(!ui->checkBox_11->isChecked());
     ui->checkBox_14->setEnabled(!ui->checkBox_11->isChecked());
     ui->checkBox_15->setEnabled(!ui->checkBox_11->isChecked());
 }
@@ -2933,8 +2974,8 @@ void plotwindow::on_comboBox_currentIndexChanged(int index) // attention / medit
     {
         attention_modulation=true;
         ui->progressBar->setPalette(sp1);
-        ui->checkBox_12->setText("attention modulation");
-        ui->checkBox_8->setText("by attention");
+        ui->checkBox_12->setText("attention modulation");   
+        ui->comboBox_2->setItemText(1,"by attention");
        // ui->label_23->setVisible(true);
        // ui->label_24->setVisible(false);
     }
@@ -2943,7 +2984,7 @@ void plotwindow::on_comboBox_currentIndexChanged(int index) // attention / medit
         attention_modulation=false;
         ui->progressBar->setPalette(sp2);
         ui->checkBox_12->setText("meditation modulation");
-        ui->checkBox_8->setText("by meditation");
+        ui->comboBox_2->setItemText(1,"by meditation");
        // ui->label_23->setVisible(false);
        // ui->label_24->setVisible(true);
     }
@@ -3024,16 +3065,28 @@ void plotwindow::turn_music_checkbox(bool fl)
     ui->checkBox_4->setChecked(fl);
 }
 
-void plotwindow::on_checkBox_8_clicked()
-{
-    adaptive_volume = !adaptive_volume;
-    if (adaptive_volume)
-        ui->spinBox_21->setStyleSheet("QSpinBox { background-color: yellow; }");
-    else
-        ui->spinBox_21->setStyleSheet("QSpinBox { background-color: white; }");
-}
-
 void plotwindow::on_horizontalSlider_2_sliderPressed()
 {
     adaptivepicsborder = false;
+}
+
+void plotwindow::on_comboBox_2_currentIndexChanged(int index)
+{
+    if (index == 0)
+    {
+        eyes_volume = false;
+        attention_volume = false;
+        ui->spinBox_21->setStyleSheet("QSpinBox { background-color: white; }");
+    } else
+    if (index == 1)
+    {
+        eyes_volume = false;
+        attention_volume = true;
+        ui->spinBox_21->setStyleSheet("QSpinBox { background-color: yellow; }");
+    } else
+    {
+        eyes_volume = true;
+        attention_volume = false;
+        ui->spinBox_21->setStyleSheet("QSpinBox { background-color: yellow; }");
+    }
 }

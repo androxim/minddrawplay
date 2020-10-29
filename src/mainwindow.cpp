@@ -180,11 +180,15 @@ MainWindow::MainWindow(QWidget *parent) :
     paintw->ocvfm = ocvform;
 
     br_levels = new brainlevels();
-    br_levels->setFixedSize(701,61);
+    br_levels->setFixedSize(701,40);
     br_levels->mww = this;
     br_levels->plw = plotw;
     plotw->brl = br_levels;
     br_levels->move(QPoint(1050,0));
+
+    statsWin = new statistics();
+    statsWin->setWindowTitle("MindDrawPlay | Statistics");
+    statsWin->setFixedSize(974,444);
 
     folderpath = "D:/PICS";       // default path for pictures
     plotw->folderpath = folderpath;
@@ -228,6 +232,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->listView->setAutoScroll(true);
     ui->label->setVisible(false);
     ui->label_2->setVisible(false);
+    ui->pushButton_2->setVisible(false);
 
     mindwt = new QTimer(this);  // timer for processing data from MindWave device
     mindwt->connect(mindwt, SIGNAL(timeout()), this, SLOT(mindwtUpdate()));
@@ -243,7 +248,6 @@ MainWindow::MainWindow(QWidget *parent) :
     simulateEEG->connect(simulateEEG,SIGNAL(timeout()), this, SLOT(simulateEEGUpdate()));
     simulateEEG->setInterval(1);
     simeeg = false; plotw->simeeg = false;
-    // simulateEEG->start();
     // ==== set of variables for simulated EEG data mode end ====
 
     canchangehue = true;  // HUE and Overlay values are changing from previous to new values in cycle
@@ -1159,8 +1163,8 @@ void MainWindow::dreamflow_Update() // timer for dreamflow mode, when new pic ap
        // label_area = dst(Rect(ocvform->l_posx-5,ocvform->l_posy-60,ocvform->lw,ocvform->lh)).clone();
         menu_area = dst(Rect(ocvform->l_menu_posx-5,ocvform->l_menu_posy-30,ocvform->lmenuw,ocvform->lmenuh)).clone();
        // sprintf(ocvform->l_str,"Attention: %d",elem4);
-        putText(dst, ocvform->l_str, Point2f(ocvform->l_posx,ocvform->l_posy), FONT_HERSHEY_PLAIN, ocvform->lfont_scale, Scalar(0,0,255,255), ocvform->lfont_size);
-        putText(dream0, ocvform->l_str, Point2f(ocvform->l_posx,ocvform->l_posy), FONT_HERSHEY_PLAIN, ocvform->lfont_scale, Scalar(0,0,255,255), ocvform->lfont_size);
+       // putText(dst, ocvform->l_str, Point2f(ocvform->l_posx,ocvform->l_posy), FONT_HERSHEY_PLAIN, ocvform->lfont_scale, Scalar(0,0,255,255), ocvform->lfont_size);
+       // putText(dream0, ocvform->l_str, Point2f(ocvform->l_posx,ocvform->l_posy), FONT_HERSHEY_PLAIN, ocvform->lfont_scale, Scalar(0,0,255,255), ocvform->lfont_size);
         drawcontrolmenu(dst,2);
         drawcontrolmenu(dream0,2);
     }
@@ -1276,7 +1280,7 @@ void MainWindow::updatemainpic(int num)
     }
     if (!ocvform->color_overlay_flow)
         ocvform->setcurrdream(currmainpic);
-    if (plotw->start)
+    if ((plotw->start) && !((plotw->filteringback) && (!plotw->colorizeback)))
         plotw->setbackimg_fromleftpanel(ocvpic);
     if (paintw_started)
         paintw->setbackimageocv(ocvpic);     
@@ -1322,12 +1326,25 @@ void MainWindow::on_pushButton_clicked() // close the App
     if (mwconnected)
         TG_FreeConnection(connectionId);
     if (plotw->start)
+    {
         plotw->quitthreads();
+        if (plotw->total_intervals>0)
+        {
+            plotw->streamrec.str(std::string());
+            plotw->streamrec << "Session ended: " << (QDateTime::currentDateTime().toString("ddMMyyyy-hhmmss")).toStdString();
+            plotw->recordFile.write(plotw->streamrec.str().data(), plotw->streamrec.str().length());
+            plotw->recordFile.close();
+        }
+    }
     cv::destroyAllWindows();
     QApplication::quit();
 }
 
 void MainWindow::on_pushButton_2_clicked() // BCI2000 window run
+// in case of other device than MindWave NeuroSky -
+// the function should be adapted for particular EEG device parameters used with BCI2000
+// to account for number of samples in streaming blocks and sampling rate
+// also functions of appconnect module (connectWin object here) should be adapted
 {          
     bool ok1,ok2;
     stringstream str1, str2;
@@ -1564,6 +1581,9 @@ void MainWindow::run_opencvform()   // MindOCV window run
         rightpw->fillpics();
         ocvform->show();
         br_levels->show();
+        plotw->doplot();
+        plotw->paintfstart = true;
+        paintw_started = true;
         set_showlevelscheckbox(true);
     }
     else
@@ -1858,6 +1878,7 @@ void MainWindow::mindwaveconnect() // function to connect to MindWave device
     {
         printdata("Connection with MindWave established! :)");
         ui->pushButton_2->setEnabled(false);
+        ui->pushButton_8->setEnabled(false);
         simulateEEG->stop();
         simeeg=false;
         plotw->srfr=512;     // sampling rate
@@ -1917,18 +1938,17 @@ void MainWindow::mindwtUpdate() // processing data from MindWave device
                     if (opencvstart)        // update attention by estimated value, but 1 per sec
                     {
                         if (ocvform->attent_modul)
-                            //setattent(paintw->getestattval());
-                            setattent(mw_atten);
+                        {
+                            if (br_levels->attention_I)
+                                setattent(mw_atten);
+                            else
+                                setattent(paintw->getestattval());
+                        }
                         else
                             setattent(mw_medit);
                         curoverl=elem4;
                     }
-                }
-              //  if (opencvstart)        // update attention by device value, 1 per sec
-              //  {
-              //      setattent(mw_atten);
-              //      curoverl=elem4;
-              //  }
+                }              
                 // cout<<"Attention value: "<<mw_atten<<endl;
             }
         }
@@ -2023,12 +2043,12 @@ void MainWindow::simulateEEGUpdate() // simulated EEG data (in development)
     static std::mt19937 gen(chrono::system_clock::now().time_since_epoch().count());
     std::normal_distribution<double> dist(mean, stddev);
     double noise = 20*dist(gen);
-    deltaamp = zdeltaamp + dist(gen)*5;
-    thetaamp = zthetaamp + dist(gen)*12;
-    alphaamp = zalphaamp + dist(gen)*13;
-    betaamp = zbetaamp + dist(gen)*12;
-    gammaamp = zgammaamp + dist(gen)*10;
-    hgammaamp = zhgammaamp + dist(gen)*3;
+    deltaamp = zdeltaamp + dist(gen)*10;
+    thetaamp = zthetaamp + dist(gen)*24;
+    alphaamp = zalphaamp + dist(gen)*26;
+    betaamp = zbetaamp + dist(gen)*24;
+    gammaamp = zgammaamp + dist(gen)*20;
+    hgammaamp = zhgammaamp + dist(gen)*8;
     if (currentel>100)
     {
         deltaphs = qrand() % 20;
@@ -2632,8 +2652,24 @@ void MainWindow::on_checkBox_2_clicked()
     if (ui->checkBox_2->isChecked())
     {
         plotw->doplot();
+        plotw->paintfstart=true;
         br_levels->show();
     }
     else
         br_levels->hide();
+}
+
+void MainWindow::on_pushButton_8_clicked()
+{
+    simeeg = true; plotw->simeeg = true;
+    ui->pushButton_5->setEnabled(false);
+    simulateEEG->start();
+}
+
+void MainWindow::on_pushButton_9_clicked()
+{
+    statsWin->update_filenames();
+    if (statsWin->recordsfound)
+        statsWin->update_plots();
+    statsWin->show();
 }
