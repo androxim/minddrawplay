@@ -13,7 +13,7 @@ class statistics : public QWidget
     Q_OBJECT
 
 public:
-    int num_samples, max_bars_val, label_shift;
+    int num_samples, max_bars_val;
     bool recordsfound;
 
     QVector<int> braindata[9];

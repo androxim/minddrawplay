@@ -14,8 +14,6 @@ statistics::statistics(QWidget *parent) :
     bars_x = QVector<double>();
     bars_y = QVector<double>();
 
-    label_shift = 5;
-
     recordsfound = false;
 
     initplots();
@@ -28,61 +26,7 @@ statistics::~statistics()
 
 void statistics::initplots()
 {    
-    QCPItemText *textLabel1 = new QCPItemText(ui->attention_hist);
-    textLabel1->setPositionAlignment(Qt::AlignTop|Qt::AlignHCenter);
-    textLabel1->position->setType(QCPItemPosition::ptAxisRectRatio);
-    textLabel1->position->setCoords(0.5, 0);
-    textLabel1->setText("Attention");
-    textLabel1->setFont(QFont(font().family(), 10));
-
-    QCPItemText *textLabel2 = new QCPItemText(ui->meditation_hist);
-    textLabel2->setPositionAlignment(Qt::AlignTop|Qt::AlignHCenter);
-    textLabel2->position->setType(QCPItemPosition::ptAxisRectRatio);
-    textLabel2->position->setCoords(0.5, 0);
-    textLabel2->setText("Meditation");
-    textLabel2->setFont(QFont(font().family(), 10));
-
-    QCPItemText *textLabel3 = new QCPItemText(ui->delta_hist);
-    textLabel3->setPositionAlignment(Qt::AlignTop|Qt::AlignHCenter);
-    textLabel3->position->setType(QCPItemPosition::ptAxisRectRatio);
-    textLabel3->position->setCoords(0.5, 0);
-    textLabel3->setText("Delta");
-    textLabel3->setFont(QFont(font().family(), 10));
-
-    QCPItemText *textLabel4 = new QCPItemText(ui->theta_hist);
-    textLabel4->setPositionAlignment(Qt::AlignTop|Qt::AlignHCenter);
-    textLabel4->position->setType(QCPItemPosition::ptAxisRectRatio);
-    textLabel4->position->setCoords(0.5, 0);
-    textLabel4->setText("Theta");
-    textLabel4->setFont(QFont(font().family(), 10));
-
-    QCPItemText *textLabel5 = new QCPItemText(ui->alpha_hist);
-    textLabel5->setPositionAlignment(Qt::AlignTop|Qt::AlignHCenter);
-    textLabel5->position->setType(QCPItemPosition::ptAxisRectRatio);
-    textLabel5->position->setCoords(0.5, 0);
-    textLabel5->setText("Alpha");
-    textLabel5->setFont(QFont(font().family(), 10));
-
-    QCPItemText *textLabel6 = new QCPItemText(ui->beta_hist);
-    textLabel6->setPositionAlignment(Qt::AlignTop|Qt::AlignHCenter);
-    textLabel6->position->setType(QCPItemPosition::ptAxisRectRatio);
-    textLabel6->position->setCoords(0.5, 0);
-    textLabel6->setText("Beta");
-    textLabel6->setFont(QFont(font().family(), 10));
-
-    QCPItemText *textLabel7 = new QCPItemText(ui->gamma_hist);
-    textLabel7->setPositionAlignment(Qt::AlignTop|Qt::AlignHCenter);
-    textLabel7->position->setType(QCPItemPosition::ptAxisRectRatio);
-    textLabel7->position->setCoords(0.5, 0);
-    textLabel7->setText("Gamma");
-    textLabel7->setFont(QFont(font().family(), 10));
-
-    QCPItemText *textLabel8 = new QCPItemText(ui->hgamma_hist);
-    textLabel8->setPositionAlignment(Qt::AlignTop|Qt::AlignHCenter);
-    textLabel8->position->setType(QCPItemPosition::ptAxisRectRatio);
-    textLabel8->position->setCoords(0.5, 0);
-    textLabel8->setText("High-Gamma");
-    textLabel8->setFont(QFont(font().family(), 10));
+   //
 }
 
 void statistics::readdata_fromfile(QString fname)
@@ -140,7 +84,7 @@ void statistics::update_plots()
     bars1->setPen(Qt::NoPen);
     bars1->setBrush(Qt::red);
     ui->attention_hist->rescaleAxes();
-    ui->attention_hist->yAxis->setRange(0, max_bars_val+label_shift);
+    ui->attention_hist->yAxis->setRange(0, max_bars_val);
     ui->attention_hist->xAxis->setLabel("%");
     ui->attention_hist->replot();
 
@@ -151,7 +95,7 @@ void statistics::update_plots()
     bars2->setPen(Qt::NoPen);
     bars2->setBrush(Qt::green);
     ui->meditation_hist->rescaleAxes();
-    ui->meditation_hist->yAxis->setRange(0, max_bars_val+label_shift);
+    ui->meditation_hist->yAxis->setRange(0, max_bars_val);
     ui->meditation_hist->xAxis->setLabel("%");
     ui->meditation_hist->replot();
 
@@ -164,7 +108,7 @@ void statistics::update_plots()
     bars3->setPen(Qt::NoPen);
     bars3->setBrush(Qt::yellow);
     ui->delta_hist->rescaleAxes();
-    ui->delta_hist->yAxis->setRange(0, max_bars_val+label_shift*2);
+    ui->delta_hist->yAxis->setRange(0, max_bars_val);
     ui->delta_hist->xAxis->setLabel("%");
     ui->delta_hist->replot();
 
@@ -177,7 +121,7 @@ void statistics::update_plots()
     bars4->setPen(Qt::NoPen);
     bars4->setBrush(Qt::cyan);
     ui->theta_hist->rescaleAxes();
-    ui->theta_hist->yAxis->setRange(0, max_bars_val+label_shift);
+    ui->theta_hist->yAxis->setRange(0, max_bars_val);
     ui->theta_hist->xAxis->setLabel("%");
     ui->theta_hist->replot();
 
@@ -190,7 +134,7 @@ void statistics::update_plots()
     bars5->setPen(Qt::NoPen);
     bars5->setBrush(Qt::magenta);
     ui->alpha_hist->rescaleAxes();
-    ui->alpha_hist->yAxis->setRange(0, max_bars_val+label_shift);
+    ui->alpha_hist->yAxis->setRange(0, max_bars_val);
     ui->alpha_hist->xAxis->setLabel("%");
     ui->alpha_hist->replot();
 
@@ -203,7 +147,7 @@ void statistics::update_plots()
     bars6->setPen(Qt::NoPen);
     bars6->setBrush(Qt::blue);
     ui->beta_hist->rescaleAxes();
-    ui->beta_hist->yAxis->setRange(0, max_bars_val+label_shift);
+    ui->beta_hist->yAxis->setRange(0, max_bars_val);
     ui->beta_hist->xAxis->setLabel("%");
     ui->beta_hist->replot();
 
@@ -216,7 +160,7 @@ void statistics::update_plots()
     bars7->setPen(Qt::NoPen);
     bars7->setBrush(Qt::gray);
     ui->gamma_hist->rescaleAxes();
-    ui->gamma_hist->yAxis->setRange(0, max_bars_val+label_shift);
+    ui->gamma_hist->yAxis->setRange(0, max_bars_val);
     ui->gamma_hist->xAxis->setLabel("%");
     ui->gamma_hist->replot();
 
@@ -229,7 +173,7 @@ void statistics::update_plots()
     bars8->setPen(Qt::NoPen);
     bars8->setBrush(Qt::darkGray);
     ui->hgamma_hist->rescaleAxes();
-    ui->hgamma_hist->yAxis->setRange(0, max_bars_val+label_shift*2);
+    ui->hgamma_hist->yAxis->setRange(0, max_bars_val);
     ui->hgamma_hist->xAxis->setLabel("%");
     ui->hgamma_hist->replot();
 }

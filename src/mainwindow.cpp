@@ -86,6 +86,7 @@ bool estattention = false;  // if attention is streaming from MindWave device
 bool fullscr = false;
 bool mwconnected = false;
 bool rawplotshort = true;
+bool simulated_eeg = false;
 
 int elem1 = 255;  // HUE variable
 int elem2 = 255;  // Saturation
@@ -188,7 +189,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     statsWin = new statistics();
     statsWin->setWindowTitle("MindDrawPlay | Statistics");
-    statsWin->setFixedSize(974,444);
+    statsWin->setFixedSize(974,467);
 
     folderpath = "D:/PICS";       // default path for pictures
     plotw->folderpath = folderpath;
@@ -246,7 +247,7 @@ MainWindow::MainWindow(QWidget *parent) :
     currentel = 0; currentsimdata = 0;
     simulateEEG = new QTimer(this);
     simulateEEG->connect(simulateEEG,SIGNAL(timeout()), this, SLOT(simulateEEGUpdate()));
-    simulateEEG->setInterval(1);
+    simulateEEG->setInterval(1);    
     simeeg = false; plotw->simeeg = false;
     // ==== set of variables for simulated EEG data mode end ====
 
@@ -519,7 +520,7 @@ void Processing() // processing of HUE, Saturation, Value changes
 void ProcessingMix() // processing of overlay changes, alphaval - transparency
 {
     alphaval = (double) elem5 / 100;    
-    if (estattention)   // if MindWave connected and attention values are streaming
+    if ((estattention) || (simulated_eeg))  // if MindWave connected and attention values are streaming
     {               
         if (ocvform->color_overlay_flow)
         {
@@ -1935,14 +1936,14 @@ void MainWindow::mindwtUpdate() // processing data from MindWave device
                 if (paintw_started)
                 {
                     paintw->updateattentionplot(mw_atten);
-                    if (opencvstart)        // update attention by estimated value, but 1 per sec
+                    if (opencvstart)
                     {
                         if (ocvform->attent_modul)
                         {
-                            if (br_levels->attention_I)
-                                setattent(mw_atten);
-                            else
+                            if (br_levels->attention_I)     // update attention by estimated value
                                 setattent(paintw->getestattval());
+                            else
+                                setattent(mw_atten);       // update attention by value from device
                         }
                         else
                             setattent(mw_medit);
@@ -2049,19 +2050,44 @@ void MainWindow::simulateEEGUpdate() // simulated EEG data (in development)
     betaamp = zbetaamp + dist(gen)*24;
     gammaamp = zgammaamp + dist(gen)*20;
     hgammaamp = zhgammaamp + dist(gen)*8;
-    if (currentel>100)
+    if (currentel%250==0)       // change phase and base amplitude each 1/2 sec
     {
+        zdeltaamp = 2 + qrand() % 10;
+        zthetaamp = 8 + qrand() % 18;
+        zalphaamp = 9 + qrand() % 16;
+        zbetaamp = 13 + qrand() % 15;
+        zgammaamp = 10 + qrand() % 10;
+        zhgammaamp = 8 + qrand() % 10;
         deltaphs = qrand() % 20;
         thetaphs = qrand() % 20;
         alphaphs = qrand() % 20;
         betaphs = qrand() % 20;
-        gammaphs = qrand() % 20;
-        currentel = 0;
+        gammaphs = qrand() % 20;        
+    }
+    if (currentel==500)
+    {
+        currentel=0;
+        double estattt = paintw->getestattval();
+        if (plotw->start)
+            plotw->update_attention(estattt);
+        if ((opencvstart) && (canchangehue))
+        {
+            curhue=100+estattt*4;
+            canchangehue=false;
+        }
+        if (paintw_started)
+        {
+            paintw->updateattentionplot(estattt);
+            if (opencvstart)
+            {
+                setattent(estattt);
+                curoverl=elem4;
+            }
+        }
     }
     currentel++;
     currentsimdata = deltaamp*sin(deltafr*2*M_PI/srfr*(currentel+deltaphs)) + thetaamp*sin(thetafr*2*M_PI/srfr*(currentel+thetaphs)) + alphaamp*sin(alphafr*2*M_PI/srfr*(currentel+alphaphs)) + betaamp*sin(betafr*2*M_PI/srfr*(currentel+betaphs)) + gammaamp*sin(gammafr*2*M_PI/srfr*(currentel+gammaphs)) + hgammaamp*sin(hgammafr*2*M_PI/srfr*(currentel+gammaphs)) + noise;
-    //currentsimdata *= 2;
-    rs->show();
+    //currentsimdata *= 2;    
     rs->updatesignal(currentsimdata);
     if (plotw->start)
         plotw->getandprocess_eeg_data(currentsimdata);
@@ -2662,7 +2688,10 @@ void MainWindow::on_checkBox_2_clicked()
 void MainWindow::on_pushButton_8_clicked()
 {
     simeeg = true; plotw->simeeg = true;
+    simulated_eeg = true;
     ui->pushButton_5->setEnabled(false);
+    rs->show();
+    rs->starting();
     simulateEEG->start();
 }
 
