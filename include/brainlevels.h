@@ -25,12 +25,17 @@ public:
     void updatelevels(int att, int medit);
     void closeEvent(QCloseEvent *event);
     void show_attentionborder();
+    void settonesbordervisible(bool fl);
     ~brainlevels();
 
 private slots:
     void on_horizontalSlider_valueChanged(int value);
 
     void on_comboBox_currentIndexChanged(int index);
+
+    void on_horizontalSlider_2_valueChanged(int value);
+
+    void on_horizontalSlider_3_valueChanged(int value);
 
 private:
     Ui::brainlevels *ui;

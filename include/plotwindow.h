@@ -21,13 +21,6 @@
 #include "opencv2/opencv.hpp"
 #include "opencv2/imgproc.hpp"
 
-#include <dlib/opencv.h>
-#include <dlib/image_io.h>
-#include <dlib/gui_widgets.h>
-#include <dlib/image_processing.h>
-#include <dlib/image_processing/frontal_face_detector.h>
-#include <dlib/image_processing/render_face_detections.h>
-
 #define NMAX 15360 // max length of single EEG line, 15360: 30 sec for 512 sampling rate
 
 #define ADDRESS "127.0.0.1"     // OSC streamer parameters
@@ -76,9 +69,6 @@ public:
     ostringstream streamrec;
     QFile recordFile;
 
-    dlib::frontal_face_detector detector;
-    dlib::shape_predictor shape_model;
-
     QGraphicsBlurEffect *blurp;
     QGraphicsColorizeEffect *colorizep;
     QStringList imglist; QString folderpath; QDir fd;
@@ -109,14 +99,16 @@ public:
     int pushshift, psleep, camera_interval;
     int lcutoff, hcutoff, butterord;    
     int buffercount, nemehanika_bord;
+    int tonesets_border1, tonesets_border2;
 
     bool adaptivenumparts, backimageloaded, canbackchange, opencvstart;
     bool filteringback, blurback, hidebutt, attention_interval, fixback, colorizeback;
     bool attention_modulation, start, brainflow_on, estimation, updatewavesplot;
     bool usefiltering, musicmode_on, flowblinking, scalechange, adaptivepicsborder;
     bool spacemode, tank1mode, tank2mode, recordstarted, antirepeat, randmxt;       
-    bool mindwstart, fftfreqs, attention_volume, keys_emulated, simeeg, eyes_volume;
+    bool mindwstart, fftfreqs, attention_volume, keys_emulated, simeeg;
     bool tunemode, paintfstart, rawsignalabove, camerainp, oscstreaming, savewavestofile;
+    bool switchtonesset_by_att;
 
     QString tank1[10] = {"b","B","g","G","d","D","E","C","f#","a"};
     QString tank2[10] = {"c#","C#","b","B","f#","F#","g#","G#","d#","D#"};
@@ -210,7 +202,6 @@ public:
     void playtones();
     void process_eeg_data();
     void osc_streaming(int attent, int meditt, int delta, int theta, int alpha, int beta, int gamma, int hgamma);
-    void get_eyes_ar();
     void set_nemehanika_bord(int t);
 
 private slots:
@@ -361,6 +352,8 @@ private slots:
     void on_horizontalSlider_2_sliderPressed();
 
     void on_comboBox_2_currentIndexChanged(int index);
+
+    void on_checkBox_8_clicked();
 
 private:
     Ui::plot *ui;

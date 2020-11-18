@@ -23,7 +23,7 @@ public:
     QCPItemLine *curpos;
     explicit rawsignal(QWidget *parent = 0);
     ~rawsignal();
-    updatesignal(int t);
+    void updatesignal(int t);
     void starting();
     QTimer* updateplot;
     bool start;

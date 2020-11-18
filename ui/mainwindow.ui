@@ -138,7 +138,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Connect to MindWave </string>
+     <string>Connect to EEG device </string>
     </property>
    </widget>
    <widget class="QListView" name="listView">

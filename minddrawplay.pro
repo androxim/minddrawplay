@@ -77,8 +77,7 @@ FORMS    += ui\mainwindow.ui \
 
 LIBS += -lwsock32 -lws2_32 -lwinmm -mthreads -L$$PWD/./ -lthinkgear
 
-INCLUDEPATH += C:\OpenCV\OpenCV_bin\install\include \
-               C:\dlib\dlib-19.21\include \
+INCLUDEPATH += C:\OpenCV\OpenCV_bin\install\include \               
                $$PWD/include/. \
                $$PWD/oscpack/.
 
@@ -89,11 +88,11 @@ LIBS += C:\OpenCV\OpenCV_bin\bin\libopencv_core412.dll \
         C:\OpenCV\OpenCV_bin\bin\libopencv_calib3d412.dll \
         C:\OpenCV\OpenCV_bin\bin\libopencv_video412.dll \
         C:\OpenCV\OpenCV_bin\bin\libopencv_videoio412.dll \
-        C:\OpenCV\OpenCV_bin\bin\libopencv_features2d412.dll \
-        -L"C:\dlib\dlib-19.21\build" \
-        -ldlib
+        C:\OpenCV\OpenCV_bin\bin\libopencv_features2d412.dll
 
 DEPENDPATH += $$PWD/.
+
+RC_ICONS = mdp_icon.ico
 
 RESOURCES += \
     resf.qrc

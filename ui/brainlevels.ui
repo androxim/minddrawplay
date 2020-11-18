@@ -88,7 +88,10 @@
     <number>100</number>
    </property>
    <property name="value">
-    <number>64</number>
+    <number>88</number>
+   </property>
+   <property name="sliderPosition">
+    <number>88</number>
    </property>
    <property name="orientation">
     <enum>Qt::Horizontal</enum>
@@ -119,6 +122,44 @@
      <string>ATTENTION II</string>
     </property>
    </item>
+  </widget>
+  <widget class="QSlider" name="horizontalSlider_2">
+   <property name="geometry">
+    <rect>
+     <x>140</x>
+     <y>0</y>
+     <width>141</width>
+     <height>19</height>
+    </rect>
+   </property>
+   <property name="maximum">
+    <number>100</number>
+   </property>
+   <property name="value">
+    <number>30</number>
+   </property>
+   <property name="orientation">
+    <enum>Qt::Horizontal</enum>
+   </property>
+  </widget>
+  <widget class="QSlider" name="horizontalSlider_3">
+   <property name="geometry">
+    <rect>
+     <x>140</x>
+     <y>20</y>
+     <width>141</width>
+     <height>19</height>
+    </rect>
+   </property>
+   <property name="maximum">
+    <number>100</number>
+   </property>
+   <property name="value">
+    <number>70</number>
+   </property>
+   <property name="orientation">
+    <enum>Qt::Horizontal</enum>
+   </property>
   </widget>
  </widget>
  <resources/>

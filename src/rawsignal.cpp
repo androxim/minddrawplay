@@ -59,7 +59,7 @@ rawsignal::~rawsignal()
     delete ui;
 }
 
-rawsignal::updatesignal(int t)
+void rawsignal::updatesignal(int t)
 {
     signal[numsmp]=t*2;
     xc[numsmp]=numsmp;

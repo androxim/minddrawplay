@@ -9,11 +9,15 @@ brainlevels::brainlevels(QWidget *parent) :
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowStaysOnTopHint);
     //setAttribute(Qt::WA_TranslucentBackground,true);
-    setWindowOpacity(0.5);
+    setWindowOpacity(0.7);
     attention_I = true;
     attention = 0;
     meditation = 0;
     ui->horizontalSlider->setVisible(false);
+    ui->horizontalSlider_2->setVisible(false);
+    ui->horizontalSlider_3->setVisible(false);
+    ui->label_2->setStyleSheet("QLabel {color : green;}");
+    ui->comboBox->setStyleSheet("QComboBox {color : red;}");
 }
 
 void brainlevels::updatelevels(int att, int medit)
@@ -35,6 +39,12 @@ void brainlevels::show_attentionborder()
     ui->horizontalSlider->setVisible(true);
 }
 
+void brainlevels::settonesbordervisible(bool fl)
+{
+    ui->horizontalSlider_2->setVisible(fl);
+    ui->horizontalSlider_3->setVisible(fl);
+}
+
 brainlevels::~brainlevels()
 {
     delete ui;
@@ -52,4 +62,14 @@ void brainlevels::on_comboBox_currentIndexChanged(int index)
         attention_I = true;
     else
         attention_I = false;
+}
+
+void brainlevels::on_horizontalSlider_2_valueChanged(int value)
+{
+    plw->tonesets_border1 = value;
+}
+
+void brainlevels::on_horizontalSlider_3_valueChanged(int value)
+{
+    plw->tonesets_border2 = value;
 }

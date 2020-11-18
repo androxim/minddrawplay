@@ -41,6 +41,8 @@ ocvcontrols::ocvcontrols(QWidget *parent) :
 
     ui->comboBox->setEnabled(histFeaturesReady);
     connect(this,&ocvcontrols::flow_direction_available,this,&ocvcontrols::set_flow_direction_available);
+    ui->comboBox->setVisible(false);
+    ui->label_18->setVisible(false);
 
     updateformvals();
 

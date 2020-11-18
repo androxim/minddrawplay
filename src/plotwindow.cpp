@@ -59,6 +59,8 @@ plotwindow::plotwindow(QWidget *parent) :
     nemehanika_bord = 64; // border of color changes in neMehanika emulation
     eyes_volume_val = 77; // default value for modulation volume by eyes
     total_intervals = 0; // total number of processed intervals of data
+    tonesets_border1 = 30; // border1 for tones set switch by attention/meditation
+    tonesets_border2 = 70; // border2 for tones set switch by attention/meditation
 
     simeeg = false; // simulated EEG flow
     tunemode = true; // allow to change parameters of deviations from mean brain waves expressions    
@@ -83,8 +85,8 @@ plotwindow::plotwindow(QWidget *parent) :
     updatewavesplot = true; // plotting new EEG intervals
     oscstreaming = false;   // streaming attention, meditation and waves expression levels via OSC
     adaptivepicsborder = false; // adaptive border based on attention/meditation for background pics change
-    eyes_volume = false; // volume of tones by eyes state (open / close) ratio
     savewavestofile = true; // saving brain waves data to file
+    switchtonesset_by_att = false; // switch tones set by attention/meditation values intervals
 
     strLstM2 = new QStringListModel();      // list of determined tones
     strLstM2->setStringList(strLst2);
@@ -161,9 +163,6 @@ plotwindow::plotwindow(QWidget *parent) :
     sceneforfilt.addItem(&itemforfilt);
     resforfilt=QImage(QSize(1500, 800), QImage::Format_ARGB32);
     ptr = new QPainter(&resforfilt);
-
-    detector = dlib::get_frontal_face_detector();
-    dlib::deserialize("C:/dlib/dlib-19.21/shape_predictor_68_face_landmarks.dat") >> shape_model;
 
     splayer.init(); // initialization of sound player: tones and play slots in separate threads           
 }
@@ -274,6 +273,7 @@ void plotwindow::doplot() // configure ui elements
     ui->spinBox_2->setGeometry(280,950,40,21);
     ui->label_2->setGeometry(330,950,20,16);
     ui->spinBox_3->setGeometry(360,950,40,21);
+    ui->comboBox_2->setCurrentIndex(1);
 
     ui->label_4->setGeometry(415,950,25,20);
     ui->spinBox_4->setGeometry(440,950,40,21);
@@ -300,9 +300,9 @@ void plotwindow::doplot() // configure ui elements
     ui->label_25->setGeometry(1430,915,91,35);   
     ui->label_25->setVisible(false);
     ui->spinBox_22->setVisible(false);
-
     ui->checkBox_2->setGeometry(1055,920,155,25);
     ui->label_17->setGeometry(1220,922,87,21);
+    ui->checkBox_8->setGeometry(1365,922,160,21);
     ui->spinBox_16->setGeometry(1317,922,40,21);
     ui->spinBox_16->setValue(scaletimeout);
 
@@ -890,57 +890,10 @@ double euclidean_dist(int x1, int y1, int x2, int y2)
     return sqrt(pow(x1-x2,2)+pow(y1-y2,2));
 }
 
-void plotwindow::get_eyes_ar()
-{
-    frame.release();
-    frame = trp.clone();
-
-    int width = 400; // 320
-    int height = 240; // 180;
-    Size size(width, height);
-    cv::resize(frame, frame, size);
-
-    dlib::array2d<dlib::bgr_pixel> dlib_image;
-    dlib::assign_image(dlib_image, dlib::cv_image<dlib::bgr_pixel>(frame));
-
-    std::vector<dlib::rectangle> detected_faces = detector(dlib_image);
-
-    int number_of_detected_faces = detected_faces.size();
-
-    std::vector<dlib::full_object_detection> shapes;
-
-    double t1,t2,t3, l_eye_ar, r_eye_ar;
-
-    for (int i = 0; i < number_of_detected_faces; i++)
-    {
-        dlib::full_object_detection shape = shape_model(dlib_image, detected_faces[i]);
-
-        shapes.push_back(shape);
-
-        t1 = euclidean_dist(shape.part(37).x(),shape.part(37).y(),shape.part(41).x(),shape.part(41).y());
-        t2 = euclidean_dist(shape.part(38).x(),shape.part(38).y(),shape.part(40).x(),shape.part(40).y());
-        t3 = euclidean_dist(shape.part(36).x(),shape.part(36).y(),shape.part(39).x(),shape.part(39).y());
-
-        l_eye_ar = (t1+t2) / (2.0 * t3);
-
-        t1 = euclidean_dist(shape.part(43).x(),shape.part(43).y(),shape.part(47).x(),shape.part(47).y());
-        t2 = euclidean_dist(shape.part(44).x(),shape.part(44).y(),shape.part(46).x(),shape.part(46).y());
-        t3 = euclidean_dist(shape.part(42).x(),shape.part(42).y(),shape.part(45).x(),shape.part(45).y());
-
-        r_eye_ar = (t1+t2) / (2.0 * t3);
-
-        eyes_ar = (l_eye_ar + r_eye_ar) / 2;
-    }
-}
-
 void plotwindow::camerainput_Update() // processing camera input
 {
     camera >> trp;
     flip(trp,trp,1);        
-    get_eyes_ar();
-
-    if (eyes_volume)
-        eyes_volume_val = 500*(eyes_ar-0.1);
 
     QPixmap pm = QPixmap::fromImage(Mat2QImagRGB(trp));
     setbackimage(pm,false);
@@ -1013,6 +966,7 @@ void plotwindow::update_attention(int t)
         if (!canbackchange)
             canbackchange=true;
 
+    // attention modulated back pic change
     if ((!fixback) && (attention_modulation))
     {
         if (adaptivepicsborder)
@@ -1021,7 +975,7 @@ void plotwindow::update_attention(int t)
             if (mlevel>80)
                 picchangeborder = 10 + mlevel;
             else
-                picchangeborder = 20 + mlevel;
+                picchangeborder = 15 + mlevel;
             if (picchangeborder > 100)
                 picchangeborder = 100;
             ui->horizontalSlider_2->setValue(picchangeborder);
@@ -1031,6 +985,17 @@ void plotwindow::update_attention(int t)
             on_pushButton_6_clicked();
             canbackchange=false;
         }
+    }
+
+    // attention modulated switch of tones sets
+    if ((!brl->attention_I) && (attention_modulation) && (switchtonesset_by_att))
+    {
+        if (attent<tonesets_border1)
+            on_radioButton_clicked();   // play tank1
+        else if (attent<tonesets_border2)
+            on_radioButton_3_clicked(); // play space
+        else
+            on_radioButton_2_clicked(); // play tank2
     }
 }
 
@@ -1051,6 +1016,7 @@ void plotwindow::update_meditation(int t)
         if (!canbackchange)
             canbackchange=true;
 
+    // meditation modulated back pic change
     if ((!fixback) && (!attention_modulation))
     {
         if (adaptivepicsborder)
@@ -1059,7 +1025,7 @@ void plotwindow::update_meditation(int t)
             if (mlevel>80)
                 picchangeborder = 10 + mlevel;
             else
-                picchangeborder = 20 + mlevel;
+                picchangeborder = 15 + mlevel;
             if (picchangeborder > 100)
                 picchangeborder = 100;
             ui->horizontalSlider_2->setValue(picchangeborder);
@@ -1069,6 +1035,17 @@ void plotwindow::update_meditation(int t)
             on_pushButton_6_clicked();
             canbackchange=false;
         }
+    }
+
+    // meditation modulated switch of tones sets
+    if ((!attention_modulation) && (switchtonesset_by_att))
+    {
+        if (meditt<tonesets_border1)
+            on_radioButton_clicked();   // play tank1
+        else if (meditt<tonesets_border2)
+            on_radioButton_3_clicked(); // play space
+        else
+            on_radioButton_2_clicked(); // play tank2
     }
 }
 
@@ -1757,16 +1734,23 @@ void plotwindow::analyse_interval() // main function for processing intervals of
         total_intervals++;
 
     if (((filteringback) || (colorizeback) || (blurback)) && (!backimg.isNull()))
-        applyfilteronback();  // // filtering background image
+        applyfilteronback();  // filtering background image
 
-    if (eyes_volume)        // volume control by eyes openness ratio
-        on_horizontalSlider_3_valueChanged(eyes_volume_val);
+    if ((brl->attention_I) && (switchtonesset_by_att)) // attention modulated switch of tones sets
+    {
+        if (paintf->getestattval()<tonesets_border1)
+            on_radioButton_clicked();   // play tank1
+        else if (paintf->getestattval()<tonesets_border2)
+            on_radioButton_3_clicked(); // play space
+        else
+            on_radioButton_2_clicked(); // play tank2
+    }
 
     if (oscstreaming)       // streaming data through OSC
         osc_streaming(attent,meditt,delta,theta,alpha,beta,gamma,hgamma);
 
     if ((brainflow_on) && (savewavestofile))    // saving brain data to file
-        savewaves();
+        savewaves();    
 
     if (brl->attention_I)    // update mental activity values on brainlevels form
         brl->updatelevels(paintf->getestattval(),meditt);
@@ -1779,6 +1763,15 @@ void plotwindow::analyse_interval() // main function for processing intervals of
        // if (opencvstart)  // in case of using estimated attention from each interval
            // mw->setoverlay(paintf->getestattval());
            // mw->setattent(paintf->getestattval());
+    }
+
+    if (simeeg) // update attention and meditation values for simulated data
+    {
+        meditt = 100 * (double)alpha / beta; // emulate meditation estimation for simulated data
+        update_attention(paintf->getestattval());
+        update_meditation(meditt);
+        paintf->updatemeditation(meditt);
+        paintf->updateattentionplot(paintf->getestattval());
     }
 
     if ((paintfstart) && (paintf->bfiltmode) && (!paintf->game_findsame) && (!paintf->flowmode))
@@ -2913,11 +2906,9 @@ void plotwindow::on_radioButton_3_clicked() // spacedrum Dmin mode
     ui->pushButton_10->setText("A4");
     ui->pushButton_11->setText("D4");
     ui->pushButton_12->setText("E4");
-    ui->pushButton_13->setText("F3");
-    ui->pushButton_14->setText("");
+    ui->pushButton_13->setText("F3");  
     ui->pushButton_14->setVisible(false);
-    ui->pushButton_15->setText("F4");
-    ui->pushButton_16->setText("");
+    ui->pushButton_15->setText("F4");    
     ui->pushButton_16->setVisible(false);
     ui->spinBox_2->setVisible(false);
     ui->spinBox_4->setVisible(false);
@@ -3073,20 +3064,19 @@ void plotwindow::on_horizontalSlider_2_sliderPressed()
 void plotwindow::on_comboBox_2_currentIndexChanged(int index)
 {
     if (index == 0)
-    {
-        eyes_volume = false;
+    {       
         attention_volume = false;
         ui->spinBox_21->setStyleSheet("QSpinBox { background-color: white; }");
     } else
     if (index == 1)
     {
-        eyes_volume = false;
         attention_volume = true;
         ui->spinBox_21->setStyleSheet("QSpinBox { background-color: yellow; }");
-    } else
-    {
-        eyes_volume = true;
-        attention_volume = false;
-        ui->spinBox_21->setStyleSheet("QSpinBox { background-color: yellow; }");
     }
+}
+
+void plotwindow::on_checkBox_8_clicked()
+{
+    switchtonesset_by_att = !switchtonesset_by_att;
+    brl->settonesbordervisible(switchtonesset_by_att);
 }

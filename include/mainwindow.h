@@ -126,6 +126,8 @@ public:
     void fillpuzzle_withneighbours();
     void fillmaininpuzzle(int t);
     int getchi2distsize();
+    void loadFolderpath();
+    void saveFolderpath();
 
     QPoint getcellposition(int t, int cols);
     void fillcell(int t, int cols);

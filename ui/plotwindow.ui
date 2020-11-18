@@ -2115,7 +2115,7 @@
     </rect>
    </property>
    <property name="currentIndex">
-    <number>1</number>
+    <number>0</number>
    </property>
    <item>
     <property name="text">
@@ -2127,11 +2127,19 @@
      <string>by attention</string>
     </property>
    </item>
-   <item>
-    <property name="text">
-     <string>by eyes</string>
-    </property>
-   </item>
+  </widget>
+  <widget class="QCheckBox" name="checkBox_8">
+   <property name="geometry">
+    <rect>
+     <x>1070</x>
+     <y>680</y>
+     <width>160</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>tones sets by attention</string>
+   </property>
   </widget>
  </widget>
  <customwidgets>

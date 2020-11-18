@@ -138,7 +138,12 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {     
-    setWindowFlags(Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint);
+    setWindowFlags(Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint);  
+    QPalette pbackimg;
+    QPixmap pm;
+    pm.load(":/pics/pics/mainback.jpg");
+    pbackimg.setBrush(QPalette::Background,pm.scaled(this->size(),Qt::IgnoreAspectRatio,Qt::SmoothTransformation));
+    this->setPalette(pbackimg);
     ui->setupUi(this);
 
     plotw = new plotwindow();
@@ -185,23 +190,24 @@ MainWindow::MainWindow(QWidget *parent) :
     br_levels->mww = this;
     br_levels->plw = plotw;
     plotw->brl = br_levels;
-    br_levels->move(QPoint(1050,0));
+    br_levels->move(QPoint(1060,0));
 
     statsWin = new statistics();
     statsWin->setWindowTitle("MindDrawPlay | Statistics");
     statsWin->setFixedSize(974,467);
 
-    folderpath = "D:/PICS";       // default path for pictures
+    loadFolderpath();
     plotw->folderpath = folderpath;
     QDir fd(folderpath);
-    if (!fd.exists())
+    imglist = fd.entryList(QStringList() << "*.jpg" << "*.JPG",QDir::Files);
+    if (imglist.length()<1)
     {
         QMessageBox msgBox;
         msgBox.setText("Please choose a folder with .jpg files!");
         msgBox.exec();
+        on_pushButton_7_clicked();
     } else
-    {
-        imglist = fd.entryList(QStringList() << "*.jpg" << "*.JPG",QDir::Files);
+    {        
         leftpw->imgnumber = imglist.length()-2;     // -2 because excluding current main and overlay pics
         rightpw->imgnumber = imglist.length()-2;
         picsarr = vector<int>(imglist.length());
@@ -275,12 +281,13 @@ MainWindow::MainWindow(QWidget *parent) :
     streamflows->setInterval(streamflowrate);
 
     QTime time = QTime::currentTime();
-    qsrand((uint)time.msec());      
-
-    connect(this,&MainWindow::histFinished,this,&MainWindow::enablenewfolder);
+    qsrand((uint)time.msec());          
 
     // making icons of pics (via QtConcurrent), computing color histogram features (in separate thread)
     makeIconsAndHists();
+
+    // for histogram analysis and flow direction mode
+    // connect(this,&MainWindow::histFinished,this,&MainWindow::enablenewfolder);
 }
 
 void MainWindow::makeIconsAndHists()
@@ -307,12 +314,34 @@ void MainWindow::makeIconsAndHists()
         //  return image.scaled(QSize(imageSize, imageSize), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
     };
    // time_take.start();
+    ui->pushButton_7->setEnabled(false);
     imageScaling->setFuture(QtConcurrent::mapped(imglist, rescale));
 
-    histfinished = false; // computing color histogram features in a separate thread
-    enablenewfolder();
-    thr = std::thread(&MainWindow::makeHistFeatures,this);
-    thr.detach();
+   // histfinished = false; // computing color histogram features in a separate thread
+   // enablenewfolder();
+   // thr = std::thread(&MainWindow::makeHistFeatures,this);
+   // thr.detach();
+}
+
+// load folder path from settings, D:/PICS - default folder
+void MainWindow::loadFolderpath()
+{
+    QSettings setting("MindDrawPlay","app");
+    setting.beginGroup("MainSettings");
+    // QString defaultpath = QCoreApplication::applicationDirPath()+"/PICS";
+    folderpath = setting.value("picfolderpath").toString();
+    if (folderpath=="")
+        folderpath = QCoreApplication::applicationDirPath()+"/PICS";
+    setting.endGroup();
+}
+
+// save folder path to settings
+void MainWindow::saveFolderpath()
+{
+    QSettings setting("MindDrawPlay","app");
+    setting.beginGroup("MainSettings");
+    setting.setValue("picfolderpath",folderpath);
+    setting.endGroup();
 }
 
 // enable choice of new folder (if color histogram features are computed for current folder)
@@ -359,7 +388,7 @@ void applyfilt(int type, Rect rt)   // choice of filter type on area around mous
             dstt = mixfilt(rt);
             break;
         }
-        // case 6: puzzle gathering
+        // case 6:
         case 7:
         {
             dstt = ripples(rt);
@@ -1590,7 +1619,7 @@ void MainWindow::run_opencvform()   // MindOCV window run
     else
     {
         QMessageBox msgBox;
-        msgBox.setText("Choose a folder with .jpg files!");
+        msgBox.setText("Please choose a folder with .jpg files!");
         msgBox.exec();
     }
 }
@@ -1791,6 +1820,7 @@ void MainWindow::addScaledImage(int num) // add rescaled image
 void MainWindow::scalingFinished()  // when all rescaling through QtConcurrent is finished
 {
    // qDebug() << time_take.elapsed();
+    ui->pushButton_7->setEnabled(true);
     if (imglist.size()>7)
     {
         ui->pushButton_6->setEnabled(true);
@@ -1893,6 +1923,8 @@ void MainWindow::mindwaveconnect() // function to connect to MindWave device
         if (!estattention)
             estattention=true;
         rs->show();
+        ui->checkBox_2->setChecked(true);
+        on_checkBox_2_clicked();
         mwconnected=true;
     }
     else
@@ -2068,20 +2100,14 @@ void MainWindow::simulateEEGUpdate() // simulated EEG data (in development)
     {
         currentel=0;
         double estattt = paintw->getestattval();
-        if (plotw->start)
-            plotw->update_attention(estattt);
-        if ((opencvstart) && (canchangehue))
+        if (opencvstart)
         {
-            curhue=100+estattt*4;
-            canchangehue=false;
-        }
-        if (paintw_started)
-        {
-            paintw->updateattentionplot(estattt);
-            if (opencvstart)
+            setattent(estattt);
+            curoverl=elem4;
+            if (canchangehue)
             {
-                setattent(estattt);
-                curoverl=elem4;
+                curhue=100+estattt*4;
+                canchangehue=false;
             }
         }
     }
@@ -2501,15 +2527,26 @@ void MainWindow::on_pushButton_7_clicked()
 {
     // choose folder for pictures, make icons for new folder
     // define new main and overlay pics, fill vectors for left and right panels
-    QString fPath=QFileDialog::getExistingDirectory(this, "Get Any Folder", "D://");
-    if (fPath!="")
+    QString fPath=QFileDialog::getExistingDirectory(this, "Folder with .jpgs", "D://");
+    QDir fd(fPath);
+    imglist = fd.entryList(QStringList() << "*.jpg" << "*.JPG",QDir::Files);
+    if (imglist.length()<1)
+    {
+        QMessageBox msgBox;
+        msgBox.setText("Please choose a folder with .jpg files!");
+        msgBox.exec();
+        on_pushButton_7_clicked();
+    }
+    else
     {
         setfolderpath(fPath);
+        saveFolderpath();
         if (plotw->paintfstart)
             paintw->setpicfolder(folderpath);
 
         imgarray.clear();
 
+        ui->pushButton_7->setEnabled(false);
         ui->pushButton_6->setEnabled(false);
         ocvform->histFeaturesReady=false;
         if (opencvstart)
@@ -2690,8 +2727,13 @@ void MainWindow::on_pushButton_8_clicked()
     simeeg = true; plotw->simeeg = true;
     simulated_eeg = true;
     ui->pushButton_5->setEnabled(false);
+    ui->pushButton_8->setEnabled(false);
     rs->show();
     rs->starting();
+    printdata("Waves Generator mode is activated!");
+    ui->checkBox->setEnabled(true);
+    ui->checkBox_2->setChecked(true);
+    on_checkBox_2_clicked();    
     simulateEEG->start();
 }
 

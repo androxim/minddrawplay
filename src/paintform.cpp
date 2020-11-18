@@ -13,8 +13,6 @@
 #include <QtConcurrent>
 #include <myitem.h>
 
-// TO DO:
-// saving history of waves
 
 paintform::paintform(QWidget *parent) :
     QWidget(parent),
