@@ -25,7 +25,7 @@ public:
     void updatelevels(int att, int medit);
     void closeEvent(QCloseEvent *event);
     void show_attentionborder();
-    void settonesbordervisible(bool fl);
+    void settonesbordervisible(bool fl, bool fl2);
     ~brainlevels();
 
 private slots:
@@ -36,6 +36,10 @@ private slots:
     void on_horizontalSlider_2_valueChanged(int value);
 
     void on_horizontalSlider_3_valueChanged(int value);
+
+    void on_horizontalSlider_5_valueChanged(int value);
+
+    void on_horizontalSlider_4_valueChanged(int value);
 
 private:
     Ui::brainlevels *ui;

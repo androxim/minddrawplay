@@ -85,8 +85,8 @@ public:
     QVector<double> eegdata[20];
     QVector<int> delta_vals, theta_vals, alpha_vals, beta_vals, gamma_vals;
 
-    double** rawdata; int* indexes; int* tvals;
-    int srfr, numst, imlength, stlength, drawshift, graphcount, scaletimeout, tonedelay;
+    double** rawdata; int* indexes; int* tvals; int* tonedelays;
+    int srfr, numst, imlength, stlength, drawshift, graphcount, scaletimeout;
     int stepsPerPress, tonenumbers, maxtones, chorddelay, mxttimeout, curmodval, nums_waves_values;
     int counter, stims, recparts, chnums, sampleblock, sourcech, picchangeborder;
     int simsrfr, maxtonerepeats, memorylength, attent, minvolumebord, meditt;
@@ -107,7 +107,7 @@ public:
     bool usefiltering, musicmode_on, flowblinking, scalechange, adaptivepicsborder;
     bool spacemode, tank1mode, tank2mode, recordstarted, antirepeat, randmxt;       
     bool mindwstart, fftfreqs, attention_volume, keys_emulated, simeeg;
-    bool tunemode, paintfstart, rawsignalabove, camerainp, oscstreaming, savewavestofile;
+    bool paintfstart, rawsignalabove, camerainp, oscstreaming, savewavestofile;
     bool switchtonesset_by_att;
 
     QString tank1[10] = {"b","B","g","G","d","D","E","C","f#","a"};
@@ -183,6 +183,7 @@ public:
     void update_waves_meanvalues();
     void savewaves();
     void write_recfile_head();
+    void cameraoff();
 
     void update_attention(int t);
     void update_meditation(int t);
@@ -291,8 +292,6 @@ private slots:
 
     void on_spinBox_15_valueChanged(int arg1);
 
-    void on_checkBox_clicked();
-
     void on_pushButton_17_clicked();
 
     void on_pushButton_18_clicked();
@@ -354,6 +353,26 @@ private slots:
     void on_comboBox_2_currentIndexChanged(int index);
 
     void on_checkBox_8_clicked();
+
+    void on_spinBox_6_valueChanged(int arg1);
+
+    void on_spinBox_23_valueChanged(int arg1);
+
+    void on_spinBox_24_valueChanged(int arg1);
+
+    void on_spinBox_25_valueChanged(int arg1);
+
+    void on_spinBox_26_valueChanged(int arg1);
+
+    void on_spinBox_27_valueChanged(int arg1);
+
+    void on_spinBox_28_valueChanged(int arg1);
+
+    void on_spinBox_29_valueChanged(int arg1);
+
+    void on_spinBox_30_valueChanged(int arg1);
+
+    void on_spinBox_31_valueChanged(int arg1);
 
 private:
     Ui::plot *ui;

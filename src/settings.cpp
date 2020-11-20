@@ -29,7 +29,7 @@ void Settings::on_pushButton_3_clicked() // "Apply" button
     pwd->setpicfolder(ui->lineEdit->text());
     pwd->attention_volume=ui->checkBox_2->isChecked();
     pwd->adaptivenumparts=ui->checkBox->isChecked();
-    pwd->enable_num_intervals(!ui->checkBox->isChecked());
+    pwd->enable_num_intervals(!ui->checkBox->isChecked());    
     close();
 }
 

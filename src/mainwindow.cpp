@@ -162,7 +162,7 @@ MainWindow::MainWindow(QWidget *parent) :
     plotw->paintf = paintw;
 
     rs = new rawsignal();           // raw signal form
-    rs->setGeometry(0,0,1600,80);
+    rs->setGeometry(0,0,1600,75);
     rs->move(158,0);
     // rs->starting();
     plotw->rws=rs;
@@ -1310,7 +1310,7 @@ void MainWindow::updatemainpic(int num)
     }
     if (!ocvform->color_overlay_flow)
         ocvform->setcurrdream(currmainpic);
-    if ((plotw->start) && !((plotw->filteringback) && (!plotw->colorizeback)))
+    if ((plotw->start) && !((plotw->filteringback) && (!plotw->colorizeback)) && (!plotw->camerainp))
         plotw->setbackimg_fromleftpanel(ocvpic);
     if (paintw_started)
         paintw->setbackimageocv(ocvpic);     
@@ -1364,8 +1364,9 @@ void MainWindow::on_pushButton_clicked() // close the App
             plotw->streamrec << "Session ended: " << (QDateTime::currentDateTime().toString("ddMMyyyy-hhmmss")).toStdString();
             plotw->recordFile.write(plotw->streamrec.str().data(), plotw->streamrec.str().length());
             plotw->recordFile.close();
-        }
+        }        
     }
+    plotw->cameraoff();
     cv::destroyAllWindows();
     QApplication::quit();
 }
@@ -2459,13 +2460,13 @@ void MainWindow::keys_processing()      // processing keys pressing
     {
         if (rawplotshort)
         {
-            rs->setGeometry(0,0,1940,80);
+            rs->setGeometry(0,0,1940,75);
             rs->move(0,0);
             rawplotshort = false;
         }
         else
         {
-            rs->setGeometry(0,0,1600,80);
+            rs->setGeometry(0,0,1600,75);
             rs->move(158,0);
             rawplotshort = true;
         }

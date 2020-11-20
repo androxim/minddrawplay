@@ -62,8 +62,7 @@ plotwindow::plotwindow(QWidget *parent) :
     tonesets_border1 = 30; // border1 for tones set switch by attention/meditation
     tonesets_border2 = 70; // border2 for tones set switch by attention/meditation
 
-    simeeg = false; // simulated EEG flow
-    tunemode = true; // allow to change parameters of deviations from mean brain waves expressions    
+    simeeg = false; // simulated EEG flow    
     rawsignalabove = true; // flag for position of raw signal plot
     backimageloaded = false; // background image loaded
     colorizeback = false; // colorization effect of background image
@@ -158,6 +157,11 @@ plotwindow::plotwindow(QWidget *parent) :
     tvals[0]=tv1; tvals[1]=tv2; tvals[2]=tv3; tvals[3]=tv4; tvals[4]=tv5;
     tvals[5]=tv6; tvals[6]=tv7; tvals[7]=tv8; tvals[8]=tv9; tvals[9]=tv10;
 
+    // array of additional delays for each tone (pauses after tone is played)
+    tonedelays = new int[10];
+    for (int i=0; i<10; i++)
+        tonedelays[i] = 0;
+
     // pointers on QPixmap and QPainter for filtering, allocated and deleted each filtering time
     pmvr = new QPixmap();
     sceneforfilt.addItem(&itemforfilt);
@@ -176,58 +180,69 @@ void plotwindow::doplot() // configure ui elements
 {
     ui->widget->setGeometry(30,50,1500,750);
 
-    ui->label_11->setGeometry(127,874,50,25);
-    ui->progressBar_2->setGeometry(177,880,120,18);
-    ui->label_26->setGeometry(317,874,50,25);
-    ui->progressBar_3->setGeometry(367,880,120,18);
-    ui->label_27->setGeometry(507,874,50,25);
-    ui->progressBar_4->setGeometry(557,880,120,18);
-    ui->label_28->setGeometry(697,874,50,25);
-    ui->progressBar_5->setGeometry(747,880,120,18);
-    ui->label_29->setGeometry(877,874,60,25);
-    ui->progressBar_6->setGeometry(937,880,120,18);
-    ui->label_32->setGeometry(117,904,50,25);
-    ui->progressBar_10->setGeometry(177,910,120,18);
-    ui->label_33->setGeometry(307,904,55,25);
-    ui->progressBar_11->setGeometry(367,910,120,18);
-    ui->label_31->setGeometry(497,904,55,25);
-    ui->progressBar_9->setGeometry(557,910,120,18);
-    ui->label_34->setGeometry(687,904,50,25);
-    ui->progressBar_7->setGeometry(747,910,120,18);
-    ui->label_30->setGeometry(866,904,68,25);
-    ui->progressBar_8->setGeometry(937,910,120,18);
+    ui->label_11->setGeometry(127,869,50,25);
+    ui->progressBar_2->setGeometry(177,875,120,18);
+    ui->label_26->setGeometry(317,869,50,25);
+    ui->progressBar_3->setGeometry(367,875,120,18);
+    ui->label_27->setGeometry(507,869,50,25);
+    ui->progressBar_4->setGeometry(557,875,120,18);
+    ui->label_28->setGeometry(697,869,50,25);
+    ui->progressBar_5->setGeometry(747,875,120,18);
+    ui->label_29->setGeometry(877,869,60,25);
+    ui->progressBar_6->setGeometry(937,875,120,18);
+
+    ui->label_32->setGeometry(117,894,50,25);
+    ui->progressBar_10->setGeometry(177,900,120,18);
+    ui->label_33->setGeometry(307,894,55,25);
+    ui->progressBar_11->setGeometry(367,900,120,18);
+    ui->label_31->setGeometry(497,894,55,25);
+    ui->progressBar_9->setGeometry(557,900,120,18);
+    ui->label_34->setGeometry(687,894,50,25);
+    ui->progressBar_7->setGeometry(747,900,120,18);
+    ui->label_30->setGeometry(866,894,68,25);
+    ui->progressBar_8->setGeometry(937,900,120,18);
 
     QPalette* palette1 = new QPalette();
     palette1->setColor(QPalette::ButtonText,Qt::blue);
     ui->pushButton_7->setPalette(*palette1);
+    ui->pushButton_7->setStyleSheet("background-color: rgba(255, 255, 255, 80);");
     QPalette* palette2 = new QPalette();
     palette2->setColor(QPalette::ButtonText,Qt::darkGreen);
     ui->pushButton_8->setPalette(*palette2);
+    ui->pushButton_8->setStyleSheet("background-color: rgba(255, 255, 255, 80);");
     QPalette* palette3 = new QPalette();
     palette3->setColor(QPalette::ButtonText,Qt::red);
     ui->pushButton_9->setPalette(*palette3);
+    ui->pushButton_9->setStyleSheet("background-color: rgba(255, 255, 255, 80);");
     QPalette* palette4 = new QPalette();
     palette4->setColor(QPalette::ButtonText,Qt::darkBlue);
     ui->pushButton_10->setPalette(*palette4);
+    ui->pushButton_10->setStyleSheet("background-color: rgba(255, 255, 255, 80);");
     QPalette* palette5 = new QPalette();
     palette5->setColor(QPalette::ButtonText,Qt::yellow);
     ui->pushButton_11->setPalette(*palette5);
+    ui->pushButton_11->setStyleSheet("background-color: rgba(255, 255, 255, 80);");
     QColor orangeColor(255,165,0);
     QPalette* palette6 = new QPalette();
     palette6->setColor(QPalette::ButtonText,orangeColor);
     ui->pushButton_12->setPalette(*palette6);
+    ui->pushButton_12->setStyleSheet("background-color: rgba(255, 255, 255, 80);");
     QPalette* palette7 = new QPalette();
     palette7->setColor(QPalette::ButtonText,orangeColor);
     ui->pushButton_13->setPalette(*palette7);
+    ui->pushButton_13->setStyleSheet("background-color: rgba(255, 255, 255, 80);");
     QPalette* palette8 = new QPalette();
     palette8->setColor(QPalette::ButtonText,Qt::darkMagenta);
     ui->pushButton_14->setPalette(*palette8);
+    ui->pushButton_14->setStyleSheet("background-color: rgba(255, 255, 255, 80);");
     QPalette* palette9 = new QPalette();
     palette9->setColor(QPalette::ButtonText,Qt::darkMagenta);
     ui->pushButton_15->setPalette(*palette9);
+    ui->pushButton_15->setStyleSheet("background-color: rgba(255, 255, 255, 80);");
     QPalette* palette10 = new QPalette();
     palette10->setColor(QPalette::ButtonText,Qt::blue);
     ui->pushButton_16->setPalette(*palette10);
+    ui->pushButton_16->setStyleSheet("background-color: rgba(255, 255, 255, 80);");
 
     sp1.setColor(QPalette::Window, Qt::white);
     sp1.setColor(QPalette::WindowText, Qt::red);
@@ -267,30 +282,49 @@ void plotwindow::doplot() // configure ui elements
     ui->horizontalSlider_2->setVisible(false);
     ui->progressBar->setPalette(sp1);
 
-    ui->checkBox->setGeometry(100,950,131,20);
-    ui->checkBox->setChecked(tunemode);
-    ui->label->setGeometry(250,950,20,16);
-    ui->spinBox_2->setGeometry(280,950,40,21);
-    ui->label_2->setGeometry(330,950,20,16);
-    ui->spinBox_3->setGeometry(360,950,40,21);
     ui->comboBox_2->setCurrentIndex(1);
+    ui->label_35->setGeometry(161,928,95,20);
+    ui->label_10->setGeometry(165,949,80,20);
 
-    ui->label_4->setGeometry(415,950,25,20);
-    ui->spinBox_4->setGeometry(440,950,40,21);
-    ui->label_3->setGeometry(490,950,23,16);
-    ui->spinBox_9->setGeometry(520,950,40,21);
-    ui->label_8->setGeometry(570,950,20,16);
-    ui->spinBox_10->setGeometry(600,950,40,21);
-    ui->label_5->setGeometry(650,950,20,16);
-    ui->spinBox_11->setGeometry(680,950,40,21);
-    ui->label_14->setGeometry(730,950,23,16);
-    ui->spinBox_12->setGeometry(760,950,40,21);
-    ui->label_13->setGeometry(810,950,23,16);
-    ui->spinBox_13->setGeometry(840,950,40,21);
-    ui->label_16->setGeometry(890,950,23,16);
-    ui->spinBox_14->setGeometry(920,950,40,21);
-    ui->label_15->setGeometry(970,950,23,16);
-    ui->spinBox_15->setGeometry(1000,950,40,21);
+    ui->label->setGeometry(250,938,25,21);
+    ui->spinBox_6->setGeometry(280,928,40,21);
+    ui->spinBox_2->setGeometry(280,950,40,21);
+
+    ui->label_2->setGeometry(333,938,25,21);
+    ui->spinBox_23->setGeometry(360,928,40,21);
+    ui->spinBox_3->setGeometry(360,950,40,21);
+
+    ui->label_4->setGeometry(415,938,25,21);
+    ui->spinBox_24->setGeometry(440,928,40,21);
+    ui->spinBox_4->setGeometry(440,950,40,21);    
+
+    ui->label_3->setGeometry(490,938,25,21);
+    ui->spinBox_25->setGeometry(520,928,40,21);
+    ui->spinBox_9->setGeometry(520,950,40,21);    
+
+    ui->label_8->setGeometry(570,938,25,21);
+    ui->spinBox_26->setGeometry(600,928,40,21);
+    ui->spinBox_10->setGeometry(600,950,40,21);    
+
+    ui->label_5->setGeometry(650,938,25,21);
+    ui->spinBox_27->setGeometry(680,928,40,21);
+    ui->spinBox_11->setGeometry(680,950,40,21);    
+
+    ui->label_14->setGeometry(730,938,25,21);
+    ui->spinBox_28->setGeometry(760,928,40,21);
+    ui->spinBox_12->setGeometry(760,950,40,21);    
+
+    ui->label_13->setGeometry(810,938,25,21);
+    ui->spinBox_29->setGeometry(840,928,40,21);
+    ui->spinBox_13->setGeometry(840,950,40,21);    
+
+    ui->label_16->setGeometry(890,938,25,21);
+    ui->spinBox_30->setGeometry(920,928,40,21);
+    ui->spinBox_14->setGeometry(920,950,40,21);    
+
+    ui->label_15->setGeometry(970,938,25,21);
+    ui->spinBox_31->setGeometry(1000,928,40,21);
+    ui->spinBox_15->setGeometry(1000,950,40,21);    
 
     ui->pushButton_18->setGeometry(1050,950,71,22);
     ui->pushButton_19->setGeometry(1129,950,71,22);
@@ -300,9 +334,9 @@ void plotwindow::doplot() // configure ui elements
     ui->label_25->setGeometry(1430,915,91,35);   
     ui->label_25->setVisible(false);
     ui->spinBox_22->setVisible(false);
-    ui->checkBox_2->setGeometry(1055,920,155,25);
+    ui->checkBox_2->setGeometry(1050,920,164,25);
     ui->label_17->setGeometry(1220,922,87,21);
-    ui->checkBox_8->setGeometry(1365,922,160,21);
+    ui->checkBox_8->setGeometry(1365,922,165,21);
     ui->spinBox_16->setGeometry(1317,922,40,21);
     ui->spinBox_16->setValue(scaletimeout);
 
@@ -356,6 +390,7 @@ void plotwindow::doplot() // configure ui elements
     ui->spinBox_17->setGeometry(195,838,45,25);
     ui->label_12->setGeometry(285,810,92,25);
     ui->spinBox_7->setGeometry(385,810,40,25);
+    ui->spinBox_7->setStyleSheet("QSpinBox { background-color: yellow; }");
     ui->label_22->setGeometry(460,805,50,25);
     ui->horizontalSlider_3->setGeometry(460,827,50,12);
     ui->spinBox_21->setGeometry(520,810,45,20);
@@ -505,7 +540,7 @@ void plotwindow::init_timersinthread()  // initialize timers and move to separat
 }
 
 bool plotwindow::eventFilter(QObject *target, QEvent *event)
-{    
+{
     if ((target == ui->widget) && (event->type() == QEvent::MouseButtonPress))
     {
         // adjust interval length for sampling rate from EEG device or simulated EEG generator
@@ -518,20 +553,20 @@ bool plotwindow::eventFilter(QObject *target, QEvent *event)
             imlength=ui->spinBox_5->value()/2;
         }
 
-        QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event); 
+        QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
 
-        if (mouseEvent->button() == Qt::LeftButton)     // setfocus on plot,
-        {           
+        if (mouseEvent->button() == Qt::LeftButton)     // setfocus on plot
+        {
             ui->widget->setFocus();
-            numst=ui->spinBox_7->value();            
+            numst=ui->spinBox_7->value();
         }
         if (mouseEvent->button() == Qt::MiddleButton)   // turn on / off music mode
-        {      
+        {
             musicmode_on=!musicmode_on;
             ui->checkBox_4->setChecked(musicmode_on);
             ui->checkBox_5->setChecked(!musicmode_on);
             on_checkBox_5_clicked();
-            numst=ui->spinBox_7->value();           
+            numst=ui->spinBox_7->value();
         }
         // start / stop processing brain waves flow
         if ((mouseEvent->button() == Qt::RightButton) && ((appcn->ready) || (mindwstart) || (simeeg)))
@@ -546,8 +581,8 @@ bool plotwindow::eventFilter(QObject *target, QEvent *event)
             else
             if (!brainflow_on)
             {
-                recparts=0;               
-                numst=ui->spinBox_7->value();                                                        
+                recparts=0;
+                numst=ui->spinBox_7->value();
                 brainflow_on=true;
                 if (ui->checkBox_4->isChecked())
                     musicmode_on=true;
@@ -885,6 +920,16 @@ void plotwindow::camerainp_on_off() // turn on-off camera input
     }
 }
 
+void plotwindow::cameraoff() // turn off camera (if it was on) when exit the app
+{
+    if (camerainp)
+    {
+        camera.release();
+        camerainp = false;
+        camerainput->stop();
+    }
+}
+
 double euclidean_dist(int x1, int y1, int x2, int y2)
 {
     return sqrt(pow(x1-x2,2)+pow(y1-y2,2));
@@ -1070,6 +1115,10 @@ void plotwindow::radiobut3()    // switch on spacedrum tones from MindDraw windo
 void plotwindow::enable_num_intervals(bool fl) // enable manual setting of intervals in line
 {
     ui->spinBox_7->setEnabled(fl);
+    if (fl)
+        ui->spinBox_7->setStyleSheet("QSpinBox { background-color: white; }");
+    else
+        ui->spinBox_7->setStyleSheet("QSpinBox { background-color: yellow; }");
 }
 
 void plotwindow::enablehue()    // enable grab MindOCV flow if colorize effect turned off
@@ -1736,7 +1785,7 @@ void plotwindow::analyse_interval() // main function for processing intervals of
     if (((filteringback) || (colorizeback) || (blurback)) && (!backimg.isNull()))
         applyfilteronback();  // filtering background image
 
-    if ((brl->attention_I) && (switchtonesset_by_att)) // attention modulated switch of tones sets
+    if ((brl->attention_I) && (attention_modulation) && (switchtonesset_by_att)) // attention modulated switch of tones sets
     {
         if (paintf->getestattval()<tonesets_border1)
             on_radioButton_clicked();   // play tank1
@@ -1890,6 +1939,7 @@ void plotwindow::plot_interval()    // plotting of each EEG interval, shifting f
                     numst = qrand() % 6 + 4;
                 else if (attent>80)
                     numst = qrand() % 4 + 4;
+                ui->spinBox_7->setValue(numst);
             }
 
            // numst = qrand() % 16; // completely random case
@@ -1942,16 +1992,26 @@ void plotwindow::process_eeg_data() // processing EEG data
 void plotwindow::setrandomscale()
 // random scale (deviation parameters which determines how often which tone plays)
 {
-    tvals[0] = 3 + qrand() % 5; // > mdelta + []
-    tvals[1] = 3 + qrand() % 5; // < mdelta - []
-    tvals[2] = 4 + qrand() % 5; // > mtheta + []
-    tvals[3] = 4 + qrand() % 5; // < mtheta - []
-    tvals[4] = 4 + qrand() % 5; // > malpha + []
-    tvals[5] = 4 + qrand() % 5; // < malpha - []
-    tvals[6] = 5 + qrand() % 6; // > mbeta + []
-    tvals[7] = 5 + qrand() % 6; // < mbeta - []
-    tvals[8] = 5 + qrand() % 6; // > gamma + []
-    tvals[9] = 5 + qrand() % 6; // < gamma + []
+    if (tvals[0]>0)
+        tvals[0] = 3 + qrand() % 5; // > mdelta + []
+    if (tvals[1]>0)
+        tvals[1] = 3 + qrand() % 5; // < mdelta - []
+    if (tvals[2]>0)
+        tvals[2] = 4 + qrand() % 5; // > mtheta + []
+    if (tvals[3]>0)
+        tvals[3] = 4 + qrand() % 5; // < mtheta - []
+    if (tvals[4]>0)
+        tvals[4] = 4 + qrand() % 5; // > malpha + []
+    if (tvals[5]>0)
+        tvals[5] = 4 + qrand() % 5; // < malpha - []
+    if (tvals[6]>0)
+        tvals[6] = 5 + qrand() % 6; // > mbeta + []
+    if (tvals[7]>0)
+        tvals[7] = 5 + qrand() % 6; // < mbeta - []
+    if (tvals[8]>0)
+        tvals[8] = 5 + qrand() % 6; // > gamma + []
+    if (tvals[9]>0)
+        tvals[9] = 5 + qrand() % 6; // < gamma + []
     ui->spinBox_2->setValue(tvals[0]);
     ui->spinBox_3->setValue(tvals[1]);
     ui->spinBox_4->setValue(tvals[2]);
@@ -2033,60 +2093,70 @@ void plotwindow::playtank1(QString tonesset) // playing of tankdrum1 (Gmaj) tone
     if (tonesset.contains("b"))
     {
         play_b();
+        delay(tonedelays[0]);
         if (chorddelay>0)
             delay(chorddelay);
     }
     if (tonesset.contains("B"))
     {
         play_Blow();
+        delay(tonedelays[1]);
         if (chorddelay>0)
             delay(chorddelay);
     }
     if (tonesset.contains("g"))
     {
         play_g();
+        delay(tonedelays[2]);
         if (chorddelay>0)
             delay(chorddelay);
     }
     if (tonesset.contains("G"))
     {
         play_Glow();
+        delay(tonedelays[3]);
         if (chorddelay>0)
             delay(chorddelay);
     }
     if (tonesset.contains("d"))
     {
         play_d();
+        delay(tonedelays[4]);
         if (chorddelay>0)
             delay(chorddelay);
     }
     if (tonesset.contains("D"))
     {
         play_Dlow();
+        delay(tonedelays[5]);
         if (chorddelay>0)
             delay(chorddelay);
     }
     if (tonesset.contains("f#"))
     {
         play_fdiez();
+        delay(tonedelays[6]);
         if (chorddelay>0)
             delay(chorddelay);
     }
     if (tonesset.contains("E"))
     {
         play_Elow();
+        delay(tonedelays[7]);
         if (chorddelay>0)
             delay(chorddelay);
     }
     if (tonesset.contains("C"))
     {
         play_Clow();
+        delay(tonedelays[8]);
         if (chorddelay>0)
             delay(chorddelay);
     }
     if (tonesset.contains("a"))
     {
         play_a();
+        delay(tonedelays[9]);
         if (chorddelay>0)
             delay(chorddelay);
     }
@@ -2097,60 +2167,70 @@ void plotwindow::playtank2(QString tonesset) // playing of tankdrum2 (Bmaj) tone
     if (tonesset.contains("c#"))
     {
         play_b();
+        delay(tonedelays[0]);
         if (chorddelay>0)
             delay(chorddelay);
     }
     if (tonesset.contains("B"))
     {
         play_Blow();
+        delay(tonedelays[1]);
         if (chorddelay>0)
             delay(chorddelay);
     }
     if (tonesset.contains("b"))
     {
         play_g();
+        delay(tonedelays[2]);
         if (chorddelay>0)
             delay(chorddelay);
     }
     if (tonesset.contains("D#"))
     {
         play_Glow();
+        delay(tonedelays[3]);
         if (chorddelay>0)
             delay(chorddelay);
     }
     if (tonesset.contains("f#"))
     {
         play_d();
+        delay(tonedelays[4]);
         if (chorddelay>0)
             delay(chorddelay);
     }
     if (tonesset.contains("C#"))
     {
         play_Dlow();
+        delay(tonedelays[5]);
         if (chorddelay>0)
             delay(chorddelay);
     }
     if (tonesset.contains("d"))
     {
         play_fdiez();
+        delay(tonedelays[6]);
         if (chorddelay>0)
             delay(chorddelay);
     }
     if (tonesset.contains("F#"))
     {
         play_Elow();
+        delay(tonedelays[7]);
         if (chorddelay>0)
             delay(chorddelay);
     }
     if (tonesset.contains("G#"))
     {
         play_Clow();
+        delay(tonedelays[8]);
         if (chorddelay>0)
             delay(chorddelay);
     }
     if (tonesset.contains("g#"))
     {
         play_a();
+        delay(tonedelays[9]);
         if (chorddelay>0)
             delay(chorddelay);
     }
@@ -2161,48 +2241,56 @@ void plotwindow::playspace(QString tonesset) // playing of space drum Dmin tones
     if (tonesset.contains("F4"))
     {
         play_Blow();
+        delay(tonedelays[1]);
         if (chorddelay>0)
             delay(chorddelay);
     }
     if (tonesset.contains("D3"))
     {
         play_Glow();
+        delay(tonedelays[3]);
         if (chorddelay>0)
             delay(chorddelay);
     }
     if (tonesset.contains("E4"))
     {
         play_d();
+        delay(tonedelays[4]);
         if (chorddelay>0)
             delay(chorddelay);
     }
     if (tonesset.contains("F3"))
     {
         play_Dlow();
+        delay(tonedelays[5]);
         if (chorddelay>0)
             delay(chorddelay);
     }
     if (tonesset.contains("A3"))
     {
         play_fdiez();
+        delay(tonedelays[6]);
         if (chorddelay>0)
             delay(chorddelay);
     }
     if (tonesset.contains("D4"))
     {
         play_Elow();
+        delay(tonedelays[7]);
         if (chorddelay>0)
             delay(chorddelay);
     }
     if (tonesset.contains("C4"))
     {
         play_Clow();
+        delay(tonedelays[8]);
         if (chorddelay>0)
             delay(chorddelay);
     }
     if (tonesset.contains("A4"))
     {
         play_a();
+        delay(tonedelays[9]);
         if (chorddelay>0)
             delay(chorddelay);
     }
@@ -2578,81 +2666,160 @@ void plotwindow::on_horizontalSlider_valueChanged(int value) // length of interv
 void plotwindow::on_spinBox_2_valueChanged(int arg1)
 {
     tvals[0]=arg1;
+    if (arg1 == 0)
+    {
+        ui->spinBox_2->setStyleSheet("QSpinBox {background-color : gray;}");
+        ui->label->setStyleSheet("QLabel {color : green;}");
+        ui->pushButton_14->setStyleSheet("background-color: rgba(255, 255, 255, 150);");
+    } else
+    {
+        ui->spinBox_2->setStyleSheet("QSpinBox {background-color : white;}");
+        ui->label->setStyleSheet("QLabel {color : black;}");
+        ui->pushButton_14->setStyleSheet("background-color: rgba(255, 255, 255, 80);");
+    }
 }
 
 void plotwindow::on_spinBox_3_valueChanged(int arg1)
 {
     tvals[1]=arg1;
+    if (arg1 == 0)
+    {
+        ui->spinBox_3->setStyleSheet("QSpinBox {background-color : gray;}");
+        ui->label_2->setStyleSheet("QLabel {color : green;}");
+        ui->pushButton_15->setStyleSheet("background-color: rgba(255, 255, 255, 150);");
+    } else
+    {
+        ui->spinBox_3->setStyleSheet("QSpinBox {background-color : white;}");
+        ui->label_2->setStyleSheet("QLabel {color : black;}");
+        ui->pushButton_15->setStyleSheet("background-color: rgba(255, 255, 255, 80);");
+    }
 }
 
 void plotwindow::on_spinBox_4_valueChanged(int arg1)
 {
     tvals[2]=arg1;
+    if (arg1 == 0)
+    {
+        ui->spinBox_4->setStyleSheet("QSpinBox {background-color : gray;}");
+        ui->label_4->setStyleSheet("QLabel {color : green;}");
+        ui->pushButton_16->setStyleSheet("background-color: rgba(255, 255, 255, 150);");
+    } else
+    {
+        ui->spinBox_4->setStyleSheet("QSpinBox {background-color : white;}");
+        ui->label_4->setStyleSheet("QLabel {color : black;}");
+        ui->pushButton_16->setStyleSheet("background-color: rgba(255, 255, 255, 80);");
+    }
 }
 
 void plotwindow::on_spinBox_9_valueChanged(int arg1)
 {
     tvals[3]=arg1;
+    if (arg1 == 0)
+    {
+        ui->spinBox_9->setStyleSheet("QSpinBox {background-color : gray;}");
+        ui->label_3->setStyleSheet("QLabel {color : green;}");
+        ui->pushButton_7->setStyleSheet("background-color: rgba(255, 255, 255, 150);");
+    } else
+    {
+        ui->spinBox_9->setStyleSheet("QSpinBox {background-color : white;}");
+        ui->label_3->setStyleSheet("QLabel {color : black;}");
+        ui->pushButton_7->setStyleSheet("background-color: rgba(255, 255, 255, 80);");
+    }
 }
 
 void plotwindow::on_spinBox_10_valueChanged(int arg1)
 {
     tvals[4]=arg1;
+    if (arg1 == 0)
+    {
+        ui->spinBox_10->setStyleSheet("QSpinBox {background-color : gray;}");
+        ui->label_8->setStyleSheet("QLabel {color : green;}");
+        ui->pushButton_12->setStyleSheet("background-color: rgba(255, 255, 255, 150);");
+    } else
+    {
+        ui->spinBox_10->setStyleSheet("QSpinBox {background-color : white;}");
+        ui->label_8->setStyleSheet("QLabel {color : black;}");
+        ui->pushButton_12->setStyleSheet("background-color: rgba(255, 255, 255, 80);");
+    }
 }
 
 void plotwindow::on_spinBox_11_valueChanged(int arg1)
 {
     tvals[5]=arg1;
+    if (arg1 == 0)
+    {
+        ui->spinBox_11->setStyleSheet("QSpinBox {background-color : gray;}");
+        ui->label_5->setStyleSheet("QLabel {color : green;}");
+        ui->pushButton_13->setStyleSheet("background-color: rgba(255, 255, 255, 150);");
+    } else
+    {
+        ui->spinBox_11->setStyleSheet("QSpinBox {background-color : white;}");
+        ui->label_5->setStyleSheet("QLabel {color : black;}");
+        ui->pushButton_13->setStyleSheet("background-color: rgba(255, 255, 255, 80);");
+    }
 }
 
 void plotwindow::on_spinBox_12_valueChanged(int arg1)
 {
     tvals[6]=arg1;
+    if (arg1 == 0)
+    {
+        ui->spinBox_12->setStyleSheet("QSpinBox {background-color : gray;}");
+        ui->label_14->setStyleSheet("QLabel {color : green;}");
+        ui->pushButton_8->setStyleSheet("background-color: rgba(255, 255, 255, 150);");
+    } else
+    {
+        ui->spinBox_12->setStyleSheet("QSpinBox {background-color : white;}");
+        ui->label_14->setStyleSheet("QLabel {color : black;}");
+        ui->pushButton_8->setStyleSheet("background-color: rgba(255, 255, 255, 80);");
+    }
 }
 
 void plotwindow::on_spinBox_13_valueChanged(int arg1)
 {
     tvals[7]=arg1;
+    if (arg1 == 0)
+    {
+        ui->spinBox_13->setStyleSheet("QSpinBox {background-color : gray;}");
+        ui->label_13->setStyleSheet("QLabel {color : green;}");
+        ui->pushButton_11->setStyleSheet("background-color: rgba(255, 255, 255, 150);");
+    } else
+    {
+        ui->spinBox_13->setStyleSheet("QSpinBox {background-color : white;}");
+        ui->label_13->setStyleSheet("QLabel {color : black;}");
+        ui->pushButton_11->setStyleSheet("background-color: rgba(255, 255, 255, 80);");
+    }
 }
 
 void plotwindow::on_spinBox_14_valueChanged(int arg1)
 {
     tvals[8]=arg1;
+    if (arg1 == 0)
+    {
+        ui->spinBox_14->setStyleSheet("QSpinBox {background-color : gray;}");
+        ui->label_16->setStyleSheet("QLabel {color : green;}");
+        ui->pushButton_9->setStyleSheet("background-color: rgba(255, 255, 255, 150);");
+    } else
+    {
+        ui->spinBox_14->setStyleSheet("QSpinBox {background-color : white;}");
+        ui->label_16->setStyleSheet("QLabel {color : black;}");
+        ui->pushButton_9->setStyleSheet("background-color: rgba(255, 255, 255, 80);");
+    }
 }
 
 void plotwindow::on_spinBox_15_valueChanged(int arg1)
 {
     tvals[9]=arg1;
-}
-
-void plotwindow::on_checkBox_clicked() // adjust of scale (deviation parameters) on / off
-{
-    if (!ui->checkBox->isChecked())
+    if (arg1 == 0)
     {
-        tunemode=false;
-        ui->spinBox_2->setDisabled(true);
-        ui->spinBox_3->setDisabled(true);
-        ui->spinBox_4->setDisabled(true);
-        ui->spinBox_9->setDisabled(true);
-        ui->spinBox_10->setDisabled(true);
-        ui->spinBox_11->setDisabled(true);
-        ui->spinBox_12->setDisabled(true);
-        ui->spinBox_13->setDisabled(true);
-        ui->spinBox_14->setDisabled(true);
-        ui->spinBox_15->setDisabled(true);
+        ui->spinBox_15->setStyleSheet("QSpinBox {background-color : gray;}");
+        ui->label_15->setStyleSheet("QLabel {color : green;}");
+        ui->pushButton_10->setStyleSheet("background-color: rgba(255, 255, 255, 150);");
     } else
     {
-        tunemode=true;
-        ui->spinBox_2->setDisabled(false);
-        ui->spinBox_3->setDisabled(false);
-        ui->spinBox_4->setDisabled(false);
-        ui->spinBox_9->setDisabled(false);
-        ui->spinBox_10->setDisabled(false);
-        ui->spinBox_11->setDisabled(false);
-        ui->spinBox_12->setDisabled(false);
-        ui->spinBox_13->setDisabled(false);
-        ui->spinBox_14->setDisabled(false);
-        ui->spinBox_15->setDisabled(false);
+        ui->spinBox_15->setStyleSheet("QSpinBox {background-color : white;}");
+        ui->label_15->setStyleSheet("QLabel {color : black;}");
+        ui->pushButton_10->setStyleSheet("background-color: rgba(255, 255, 255, 80);");
     }
 }
 
@@ -2803,6 +2970,8 @@ void plotwindow::on_radioButton_clicked() // tankdrum1 (Gmaj) mode
     ui->pushButton_16->setText("g");
     ui->spinBox_2->setVisible(true);
     ui->spinBox_4->setVisible(true);
+    ui->spinBox_6->setVisible(true);
+    ui->spinBox_24->setVisible(true);
   //  if ((!backimageloaded) && (mindplay) && (!hidebutt))
     if ((!hidebutt) && ((musicmode_on) || (delta_vals.size()==0)))
     {
@@ -2860,6 +3029,8 @@ void plotwindow::on_radioButton_2_clicked()  // tankdrum2 (Bmaj) mode
     ui->pushButton_16->setText("b");
     ui->spinBox_2->setVisible(true);
     ui->spinBox_4->setVisible(true);
+    ui->spinBox_6->setVisible(true);
+    ui->spinBox_24->setVisible(true);
   //  if ((!backimageloaded) && (mindplay) && (!hidebutt))
     if ((!hidebutt) && ((musicmode_on) || (delta_vals.size()==0)))
     {
@@ -2912,6 +3083,8 @@ void plotwindow::on_radioButton_3_clicked() // spacedrum Dmin mode
     ui->pushButton_16->setVisible(false);
     ui->spinBox_2->setVisible(false);
     ui->spinBox_4->setVisible(false);
+    ui->spinBox_6->setVisible(false);
+    ui->spinBox_24->setVisible(false);
     if ((ui->checkBox_6->isChecked()) && (!backimageloaded))
     {
         backimg.load(":/pics/pics/empty.jpg");
@@ -2966,7 +3139,9 @@ void plotwindow::on_comboBox_currentIndexChanged(int index) // attention / medit
         attention_modulation=true;
         ui->progressBar->setPalette(sp1);
         ui->checkBox_12->setText("attention modulation");   
+        ui->checkBox_8->setText("tones sets by attention");
         ui->comboBox_2->setItemText(1,"by attention");
+        brl->settonesbordervisible(switchtonesset_by_att,true);
        // ui->label_23->setVisible(true);
        // ui->label_24->setVisible(false);
     }
@@ -2975,7 +3150,9 @@ void plotwindow::on_comboBox_currentIndexChanged(int index) // attention / medit
         attention_modulation=false;
         ui->progressBar->setPalette(sp2);
         ui->checkBox_12->setText("meditation modulation");
+        ui->checkBox_8->setText("tones sets by meditation");
         ui->comboBox_2->setItemText(1,"by meditation");
+        brl->settonesbordervisible(switchtonesset_by_att,false);
        // ui->label_23->setVisible(false);
        // ui->label_24->setVisible(true);
     }
@@ -3078,5 +3255,63 @@ void plotwindow::on_comboBox_2_currentIndexChanged(int index)
 void plotwindow::on_checkBox_8_clicked()
 {
     switchtonesset_by_att = !switchtonesset_by_att;
-    brl->settonesbordervisible(switchtonesset_by_att);
+    if (!switchtonesset_by_att)
+        brl->settonesbordervisible(switchtonesset_by_att,true);
+    else
+    {
+        if (attention_modulation)
+            brl->settonesbordervisible(switchtonesset_by_att,true);
+        else
+            brl->settonesbordervisible(switchtonesset_by_att,false);
+    }
+}
+
+void plotwindow::on_spinBox_6_valueChanged(int arg1)
+{
+    tonedelays[0] = arg1;
+}
+
+void plotwindow::on_spinBox_23_valueChanged(int arg1)
+{
+    tonedelays[1] = arg1;
+}
+
+void plotwindow::on_spinBox_24_valueChanged(int arg1)
+{
+    tonedelays[2] = arg1;
+}
+
+void plotwindow::on_spinBox_25_valueChanged(int arg1)
+{
+    tonedelays[3] = arg1;
+}
+
+void plotwindow::on_spinBox_26_valueChanged(int arg1)
+{
+    tonedelays[4] = arg1;
+}
+
+void plotwindow::on_spinBox_27_valueChanged(int arg1)
+{
+    tonedelays[5] = arg1;
+}
+
+void plotwindow::on_spinBox_28_valueChanged(int arg1)
+{
+    tonedelays[6] = arg1;
+}
+
+void plotwindow::on_spinBox_29_valueChanged(int arg1)
+{
+    tonedelays[7] = arg1;
+}
+
+void plotwindow::on_spinBox_30_valueChanged(int arg1)
+{
+    tonedelays[8] = arg1;
+}
+
+void plotwindow::on_spinBox_31_valueChanged(int arg1)
+{
+    tonedelays[9] = arg1;
 }
