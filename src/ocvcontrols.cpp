@@ -303,23 +303,11 @@ void ocvcontrols::on_spinBox_12_valueChanged(int arg1)
 void ocvcontrols::on_radioButton_4_clicked()
 {
     mixtype = 1;
-    ui->checkBox_2->setEnabled(false);
-    ui->checkBox_4->setEnabled(false);
-    ui->checkBox_5->setEnabled(false);
-    ui->checkBox_8->setEnabled(false);
-    ui->checkBox_9->setEnabled(false);
-    ui->spinBox_14->setEnabled(false);
 }
 
 void ocvcontrols::on_radioButton_5_clicked()
 {
     mixtype = 2;
-    ui->checkBox_2->setEnabled(false);
-    ui->checkBox_4->setEnabled(false);    
-    ui->checkBox_5->setEnabled(false);
-    ui->checkBox_8->setEnabled(false);
-    ui->checkBox_9->setEnabled(false);
-    ui->spinBox_14->setEnabled(false);
 }
 
 void ocvcontrols::randmixer_mode_on()
@@ -327,11 +315,6 @@ void ocvcontrols::randmixer_mode_on()
     mixtype = 3;
     //if (!drops_by_click_mode)
     //    changerandpic();
-    ui->checkBox_2->setEnabled(true);
-    ui->checkBox_4->setEnabled(true);
-    ui->checkBox_5->setEnabled(true);
-    ui->checkBox_9->setEnabled(true);
-    ui->spinBox_14->setEnabled(true);
 }
 
 void ocvcontrols::on_radioButton_6_clicked()

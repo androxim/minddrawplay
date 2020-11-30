@@ -13,7 +13,16 @@ class soundplayer : public QObject
     Q_OBJECT
 public:
     void setvolume(qreal volume);
+    void setvolumesample1(qreal volume);
+    void setvolumesample2(qreal volume);
+    void setvolumesample7(qreal volume);
+    void setvolumesample8(qreal volume);
     void init();
+    bool sweetArpPlaying();    
+    bool stringsample1Playing();
+    bool stringsample2Playing();
+    bool stringsample7Playing();
+    bool stringsample8Playing();
     explicit soundplayer(QObject *parent = 0);
 
 signals:
@@ -47,6 +56,20 @@ signals:
     void playtone_Clowsh();
     void playtone_csh();
 
+    void playSweetArp();
+    void playstringsample1();
+    void playstringsample2();
+    void playstringsample7();
+    void playstringsample8();
+
+    void stopSweetArp();    
+    void stopstringsample1();
+    void stopstringsample2();
+    void stopstringsample7();
+    void stopstringsample8();
+
+    void stopThread();
+
 private:
 
     QThread m_thread;
@@ -77,7 +100,12 @@ private:
     QSoundEffect tone_Flowsh;
     QSoundEffect tone_fsh;
     QSoundEffect tone_Clowsh;
-    QSoundEffect tone_csh;
+    QSoundEffect tone_csh;    
+    QSoundEffect SweetArp;    
+    QSoundEffect stringsample1;
+    QSoundEffect stringsample2;
+    QSoundEffect stringsample7;
+    QSoundEffect stringsample8;
 
 };
 

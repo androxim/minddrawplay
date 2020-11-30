@@ -156,6 +156,7 @@ private slots:
     void dreamflow_Update();
     void streamflows_Update();
     void puzzleflow_Update();
+    void openAboutFile();
 
     void on_pushButton_clicked();
 

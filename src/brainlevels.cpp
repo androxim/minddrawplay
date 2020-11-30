@@ -10,7 +10,7 @@ brainlevels::brainlevels(QWidget *parent) :
     setWindowFlags(Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowStaysOnTopHint);
     //setAttribute(Qt::WA_TranslucentBackground,true);
     setWindowOpacity(0.7);
-    attention_I = true;
+    attention_2nd = true;
     attention = 0;
     meditation = 0;
     ui->horizontalSlider->setVisible(false);
@@ -72,9 +72,9 @@ void brainlevels::on_horizontalSlider_valueChanged(int value)
 void brainlevels::on_comboBox_currentIndexChanged(int index)
 {
     if (index == 0)
-        attention_I = true;
+        attention_2nd = true;
     else
-        attention_I = false;
+        attention_2nd = false;
 }
 
 void brainlevels::on_horizontalSlider_2_valueChanged(int value)

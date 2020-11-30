@@ -307,17 +307,9 @@
    </attribute>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
-  <action name="actionOpen_Data_File">
-   <property name="text">
-    <string>Open Data File</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+D</string>
-   </property>
-  </action>
   <action name="actionInstructions">
    <property name="text">
-    <string>Instructions</string>
+    <string>User's manual (soon)</string>
    </property>
   </action>
   <action name="actionAbout">

@@ -114,12 +114,12 @@
    </property>
    <item>
     <property name="text">
-     <string>ATTENTION I</string>
+     <string>ATTENTION II</string>
     </property>
    </item>
    <item>
     <property name="text">
-     <string>ATTENTION II</string>
+     <string>ATTENTION I</string>
     </property>
    </item>
   </widget>

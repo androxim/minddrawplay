@@ -29,7 +29,7 @@
     <enum>QTabWidget::Triangular</enum>
    </property>
    <property name="currentIndex">
-    <number>5</number>
+    <number>4</number>
    </property>
    <widget class="QWidget" name="Dilate">
     <attribute name="title">
@@ -569,7 +569,7 @@
     </widget>
     <widget class="QCheckBox" name="checkBox_2">
      <property name="enabled">
-      <bool>false</bool>
+      <bool>true</bool>
      </property>
      <property name="geometry">
       <rect>
@@ -585,7 +585,7 @@
     </widget>
     <widget class="QCheckBox" name="checkBox_4">
      <property name="enabled">
-      <bool>false</bool>
+      <bool>true</bool>
      </property>
      <property name="geometry">
       <rect>
@@ -601,7 +601,7 @@
     </widget>
     <widget class="QCheckBox" name="checkBox_5">
      <property name="enabled">
-      <bool>false</bool>
+      <bool>true</bool>
      </property>
      <property name="geometry">
       <rect>
@@ -675,7 +675,7 @@
     </widget>
     <widget class="QCheckBox" name="checkBox_9">
      <property name="enabled">
-      <bool>false</bool>
+      <bool>true</bool>
      </property>
      <property name="geometry">
       <rect>

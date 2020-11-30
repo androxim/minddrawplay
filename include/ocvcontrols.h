@@ -44,13 +44,13 @@ public:
     int cell_size = 200; int cols = 10; int rows = 5; unsigned int cellnums = 50;      // puzzle params
     bool corrcells_by_att = true, puzzlerate_by_att = true, cellsize_by_att = true;    // puzzle params
 
-    int mixtype = 3, transp = 80, multi_set_size = 2, randpicn;                        // mixer params
+    int mixtype = 3, transp = 88, multi_set_size = 2, randpicn, drflow_area;           // mixer params
     bool changerandpic_byclick = false; bool changebyattention = false;                // mixer params
     bool dreamflow = false; int dreamflowrate = 77; bool polygonmask = false;          // mixer params
     bool changepic_bytime = false; int changepic_interval = 3; QTimer* pichngT;        // mixer params
     QPoint seed; int x_left, x_right, y_top, y_bottom, drops_interval = 50;            // mixer params
     bool dropsmode = true; QTimer* dropsT; int dropsgrow_step = 24; Scalar wcolor;     // mixer params
-    int firstdrop_size = 30; bool plotdroprect = true; bool drops_by_att = false;      // mixer params
+    int firstdrop_size = 50; bool plotdroprect = true; bool drops_by_att = false;      // mixer params
     bool poly_by_att = true; int pointsinpoly = 3; bool drops_from_mousepos = false;   // mixer params
 
     bool attmodul_area = false; bool attent_modulated_dreams = false;    // attention modulated filter area and rate of dreamflow

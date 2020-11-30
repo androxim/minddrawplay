@@ -73,7 +73,7 @@ Mat ripples(Rect srcRect);              // ripples effect filter
 // srccopy - overlay pic, chosen from right panel, more clear when attention low
 // dst - resulting overlay pic for area filtering
 Mat src, srccopy, dst, dstcopy, prev_dst, clear_dst, img, image, dstg;
-Mat edges, mask, trp, randpic, stinp, blob, stpic;
+Mat edges, mask, trp, randpic, stinp, blob, tempmat, stpic;
 Mat tempimg, dstemp, dst0, dst1, srg, srct, srwt, dstt, svd_img, gray_element;
 Mat element, dream0, imghist, pichist, label_area, menu_area;
 vector<Mat> channels;
@@ -288,8 +288,18 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // for histogram analysis and flow direction mode
     // connect(this,&MainWindow::histFinished,this,&MainWindow::enablenewfolder);
+
+    connect(ui->actionAbout, SIGNAL(triggered()), this, SLOT(openAboutFile()));
 }
 
+// open file with application description
+void MainWindow::openAboutFile()
+{
+    QDesktopServices::openUrl(QUrl::fromLocalFile(QCoreApplication::applicationDirPath() + "/MDP_about.pdf"));
+}
+
+
+// making icons of pics (via QtConcurrent), computing color histogram features (in separate thread)
 void MainWindow::makeIconsAndHists()
 {
     int imageSize = 138;
@@ -610,6 +620,46 @@ Mat adaptivemask(Rect rt)
     return gray_element;
 }
 
+void smoothtransp(Rect srcDstRect, bool indreamflow)
+{
+    blob.release();
+    blob = dst(srcDstRect).clone();
+    int n = 30; int step = dstt.cols/n;
+    double alpha = 1 - (double)ocvform->transp/100;
+    double incstep = alpha / n;
+    for (int i=0; i<n; i++)
+    {
+        Rect droprect(i*step/2, i*step/2, dstt.cols - step*i, dstt.cols - step*i);
+        addWeighted(dstt(droprect), (i+1)*incstep, blob(droprect), 1 - (i+1)*incstep, 0, blob(droprect));
+    }
+    if ((ocvform->circle_brush) || (ocvform->polygonmask))
+    {
+        Mat mask_image(dstt.size(), CV_8U, Scalar(0)); // mask for region
+
+        if (indreamflow)
+        {
+            if (!ocvform->polygonmask)
+            {
+                if (ocvform->circle_brush)
+                {
+                    if (!ocvform->dropsmode)
+                        circle(mask_image, Point(mask_image.rows / 2, mask_image.cols / 2), ocvform->currfilterarea/2, CV_RGB(255, 255, 255),-1,LINE_AA);
+                    else
+                        circle(mask_image, Point(mask_image.rows / 2, mask_image.cols / 2), ocvform->drflow_area/2, CV_RGB(255, 255, 255),-1,LINE_AA);
+                }
+            }
+            else
+                fillpolygon(mask_image);
+        }
+        else
+            circle(mask_image, Point(mask_image.rows / 2, mask_image.cols / 2), ocvform->currfilterarea/2, CV_RGB(255, 255, 255),-1,LINE_AA);
+
+        blob.copyTo(dst(srcDstRect),mask_image);
+    }
+    else
+        blob.copyTo(dst(srcDstRect));
+}
+
 void onMouse( int event, int x, int y, int flags, void* )   // Mouse clicks and moves processing
 {
     // !dofiltering - mode when flow is not started / paused and region filtering is available
@@ -643,16 +693,7 @@ void onMouse( int event, int x, int y, int flags, void* )   // Mouse clicks and 
             applyfilt(ocvform->currfilttype,srcDstRect);           
 
             if (ocvform->currfilttype==5)
-                addWeighted(dst(srcDstRect), (double)ocvform->transp / 100, dstt, 1 - (double)ocvform->transp / 100, 0, dstt);
-
-            if (ocvform->circle_brush)
-            {
-                Mat mask_image(dstt.size(), CV_8U, Scalar(0)); // mask to have only circle of region
-                circle(mask_image, Point(mask_image.rows / 2, mask_image.cols / 2), ocvform->currfilterarea/2, CV_RGB(255, 255, 255),-1,LINE_AA);
-                dstt.copyTo(dst(srcDstRect),mask_image);
-            }
-            else
-                dstt.copyTo(dst(srcDstRect));
+                smoothtransp(srcDstRect,false);
 
             menu_area = dst(Rect(ocvform->l_menu_posx-5,ocvform->l_menu_posy-30,ocvform->lmenuw,ocvform->lmenuh)).clone();
 
@@ -666,24 +707,15 @@ void onMouse( int event, int x, int y, int flags, void* )   // Mouse clicks and 
         Rect srcDstRect(x-ocvform->currfilterarea/2, y-ocvform->currfilterarea/2, ocvform->currfilterarea, ocvform->currfilterarea);
         dstt = dst(srcDstRect); // dst - full resulting overlay pic of main (src) and overlay (srccopy)
 
-        if ((ocvform->currfilttype==5) && (ocvform->mixtype==3) && (ocvform->changerandpic_byclick))
+        if ((ocvform->currfilttype==5) && (ocvform->changerandpic_byclick))
             ocvform->changerandpic();
 
         applyfilt(ocvform->currfilttype,srcDstRect);
 
         prev_dst = dst.clone(); // for keeping state before last action (using in "cancel last")
 
-        if (ocvform->currfilttype==5)
-            addWeighted(dst(srcDstRect), (double)ocvform->transp / 100, dstt, 1 - (double)ocvform->transp / 100, 0, dstt);
-
-        if (ocvform->circle_brush)
-        {
-            Mat mask_image(dstt.size(), CV_8U, Scalar(0)); // mask to have only circle of region
-            circle(mask_image, Point(mask_image.rows / 2, mask_image.cols / 2), ocvform->currfilterarea/2, CV_RGB(255, 255, 255),-1,LINE_AA);
-            dstt.copyTo(dst(srcDstRect),mask_image);
-        }
-        else
-            dstt.copyTo(dst(srcDstRect));
+        if (ocvform->currfilttype==5)            
+            smoothtransp(srcDstRect,false);
 
         menu_area = dst(Rect(ocvform->l_menu_posx-5,ocvform->l_menu_posy-30,ocvform->lmenuw,ocvform->lmenuh)).clone();
 
@@ -1134,12 +1166,11 @@ void MainWindow::cancelall()    // cancel all filtering actions
 
 void MainWindow::dreamflow_Update() // timer for dreamflow mode, when new pic appears by random fragment over old
 {
-    int x, y, area = 50;
+    int x, y;
+    ocvform->drflow_area = 40;
     Rect srcDstRect; 
     if (ocvform->showmenu)
-    {
-       // label_area.copyTo(dst(Rect(ocvform->l_posx-5,ocvform->l_posy-60,ocvform->lw,ocvform->lh)));
-       // label_area.copyTo(dream0(Rect(ocvform->l_posx-5,ocvform->l_posy-60,ocvform->lw,ocvform->lh)));
+    {      
         menu_area.copyTo(dst(Rect(ocvform->l_menu_posx-5,ocvform->l_menu_posy-30,ocvform->lmenuw,ocvform->lmenuh)));
         menu_area.copyTo(dream0(Rect(ocvform->l_menu_posx-5,ocvform->l_menu_posy-30,ocvform->lmenuw,ocvform->lmenuh)));
     }
@@ -1153,12 +1184,13 @@ void MainWindow::dreamflow_Update() // timer for dreamflow mode, when new pic ap
     {
         // define area inside current expanding window
         if (ocvform->drops_by_att)
-            area = (((ocvform->x_right-ocvform->x_left)/2-5)*elem4)/100+3;
+            ocvform->drflow_area = (((ocvform->x_right-ocvform->x_left)/2-5)*elem4)/100+3;
         else
-            area = qrand()%((ocvform->x_right-ocvform->x_left)/2-5)+3;
-        x = ocvform->x_left + area/2 + qrand() % (ocvform->x_right - ocvform->x_left - area); // define rect based on area size (inside expanding window)
-        y = ocvform->y_top + area/2 + qrand() % (ocvform->y_bottom - ocvform->y_top - area);
-        srcDstRect = Rect(x-area/2, y-area/2, area, area);
+            ocvform->drflow_area = qrand()%((ocvform->x_right-ocvform->x_left)/2-5)+3;
+
+        x = ocvform->x_left + ocvform->drflow_area/2 + qrand() % (ocvform->x_right - ocvform->x_left - ocvform->drflow_area); // define rect based on area size (inside expanding window)
+        y = ocvform->y_top + ocvform->drflow_area/2 + qrand() % (ocvform->y_bottom - ocvform->y_top - ocvform->drflow_area);
+        srcDstRect = Rect(x-ocvform->drflow_area/2, y-ocvform->drflow_area/2, ocvform->drflow_area, ocvform->drflow_area);
     }
 
     if (ocvform->multi_img_dflow)
@@ -1167,34 +1199,12 @@ void MainWindow::dreamflow_Update() // timer for dreamflow mode, when new pic ap
         ocvform->randpic = curr_img_set[t];       
     }
 
-    dstt = mixfilt(srcDstRect);
-    Mat mask_image(dstt.size(), CV_8U, Scalar(0));
-    if (!ocvform->polygonmask)
-    {
-        if (ocvform->circle_brush)
-        {
-            if (!ocvform->dropsmode)
-                circle(mask_image, Point(mask_image.rows / 2, mask_image.cols / 2), ocvform->currfilterarea/2, CV_RGB(255, 255, 255),-1,LINE_AA);
-            else
-                circle(mask_image, Point(mask_image.rows / 2, mask_image.cols / 2), area/2, CV_RGB(255, 255, 255),-1,LINE_AA);
-        }
-    }
-    else
-        fillpolygon(mask_image);
-    addWeighted(dst(srcDstRect), (double)ocvform->transp / 100, dstt, 1 - (double)ocvform->transp / 100, 0, dstt);
-
-    if ((ocvform->polygonmask) || (ocvform->circle_brush))
-        dstt.copyTo(dst(srcDstRect),mask_image);
-    else
-        dstt.copyTo(dst(srcDstRect));
+    dstt = ocvform->randpic(srcDstRect).clone();
+    smoothtransp(srcDstRect,true);
 
     if (ocvform->showmenu)
-    {
-       // label_area = dst(Rect(ocvform->l_posx-5,ocvform->l_posy-60,ocvform->lw,ocvform->lh)).clone();
-        menu_area = dst(Rect(ocvform->l_menu_posx-5,ocvform->l_menu_posy-30,ocvform->lmenuw,ocvform->lmenuh)).clone();
-       // sprintf(ocvform->l_str,"Attention: %d",elem4);
-       // putText(dst, ocvform->l_str, Point2f(ocvform->l_posx,ocvform->l_posy), FONT_HERSHEY_PLAIN, ocvform->lfont_scale, Scalar(0,0,255,255), ocvform->lfont_size);
-       // putText(dream0, ocvform->l_str, Point2f(ocvform->l_posx,ocvform->l_posy), FONT_HERSHEY_PLAIN, ocvform->lfont_scale, Scalar(0,0,255,255), ocvform->lfont_size);
+    {       
+        menu_area = dst(Rect(ocvform->l_menu_posx-5,ocvform->l_menu_posy-30,ocvform->lmenuw,ocvform->lmenuh)).clone();       
         drawcontrolmenu(dst,2);
         drawcontrolmenu(dream0,2);
     }
@@ -1541,7 +1551,7 @@ void MainWindow::setattent(int i)
         if ((!canchangepic) && (elem4<elem6))
             canchangepic = true;
     }
-    if ((!ocvform->color_overlay_flow) && (ocvform->currfilttype==5) && (ocvform->mixtype==3) && (ocvform->dreamflow))
+    if ((!ocvform->color_overlay_flow) && (ocvform->currfilttype==5) && (ocvform->dreamflow))
     {
         if (ocvform->attent_modulated_dreams)
         {
@@ -1973,7 +1983,7 @@ void MainWindow::mindwtUpdate() // processing data from MindWave device
                     {
                         if (ocvform->attent_modul)
                         {
-                            if (br_levels->attention_I)     // update attention by estimated value
+                            if (br_levels->attention_2nd)     // update attention by estimated value
                                 setattent(paintw->getestattval());
                             else
                                 setattent(mw_atten);       // update attention by value from device
@@ -2726,6 +2736,7 @@ void MainWindow::on_checkBox_2_clicked()
 void MainWindow::on_pushButton_8_clicked()
 {
     simeeg = true; plotw->simeeg = true;
+    plotw->imlength = 250;
     simulated_eeg = true;
     ui->pushButton_5->setEnabled(false);
     ui->pushButton_8->setEnabled(false);

@@ -27,7 +27,6 @@
 #include "OscOutboundPacketStream.h"
 #include "UdpSocket.h"
 
-
 const complex<double> I(0.0,1.0);
 typedef std::complex<double> Complex;
 
@@ -86,6 +85,10 @@ plotwindow::plotwindow(QWidget *parent) :
     adaptivepicsborder = false; // adaptive border based on attention/meditation for background pics change
     savewavestofile = true; // saving brain waves data to file
     switchtonesset_by_att = false; // switch tones set by attention/meditation values intervals
+    playthetavibe = false;  // play sound sample for theta wave expression, stringsample8
+    playalphavibe = false;  // play sound sample for alpha wave expression, stringsample1
+    playbetavibe = false;   // play sound sample for beta wave expression, stringsample7
+    playgammavibe = false;  // play sound sample for gamma wave expression, stringsample2
 
     strLstM2 = new QStringListModel();      // list of determined tones
     strLstM2->setStringList(strLst2);
@@ -168,7 +171,11 @@ plotwindow::plotwindow(QWidget *parent) :
     resforfilt=QImage(QSize(1500, 800), QImage::Format_ARGB32);
     ptr = new QPainter(&resforfilt);
 
-    splayer.init(); // initialization of sound player: tones and play slots in separate threads           
+    splayer = new soundplayer();    // sound player for tones playing
+    splayer2 = new soundplayer();   // sound player for waves vibes playing
+
+    splayer->init(); // initialization of sound player: tones and play slots in separate threads
+    splayer2->init(); splayer2->setvolume(0.2f);  
 }
 
 plotwindow::~plotwindow()
@@ -363,6 +370,10 @@ void plotwindow::doplot() // configure ui elements
     ui->pushButton_25->setGeometry(1150,810,120,25);
     ui->pushButton_6->setGeometry(1290,810,75,25);
     ui->pushButton_23->setGeometry(1375,810,75,25);
+    ui->spinBox->setGeometry(1460,810,40,25);
+    ui->verticalSlider->setGeometry(1500,800,20,40);
+    ui->spinBox->setVisible(false);
+    ui->verticalSlider->setVisible(false);
     ui->spinBox_7->setEnabled(false);
 
     ui->checkBox_6->setChecked(false);
@@ -370,6 +381,11 @@ void plotwindow::doplot() // configure ui elements
     ui->checkBox_6->setGeometry(1210,860,125,25);
     ui->checkBox_7->setGeometry(1210,880,125,25);
     ui->checkBox_5->setGeometry(1210,900,125,25);
+
+    ui->checkBox->setGeometry(1435,840,125,25);
+    ui->checkBox_16->setGeometry(1435,860,125,25);
+    ui->checkBox_17->setGeometry(1435,880,125,25);
+    ui->checkBox_18->setGeometry(1435,900,125,25);
 
     ui->radioButton->setGeometry(1330,846,95,20);
     ui->comboBox->setGeometry(585,26,105,20);
@@ -955,6 +971,8 @@ void plotwindow::print_tones(QString str)  // update list of played tones
 void plotwindow::quitthreads()  // quit thread with timers for tones determination
 {
     tr1->quit();
+    emit splayer->stopThread();
+    emit splayer2->stopThread();
 }
 
 void plotwindow::update_brainexp_levels(int d, int md, int t, int mt, int a, int ma, int b, int mb, int g, int mg)
@@ -996,14 +1014,14 @@ void plotwindow::update_attention(int t)
 {
     // updated attention value, check condition on back image change
     attent=t;
-    ui->label_23->setText("ATTENTION: "+QString::number(t)+"%");
+    ui->label_23->setText("ATTENTION: "+QString::number(t)+"%");  
 
     if (attention_modulation)
     {
         if ((attention_volume) && (t>minvolumebord))
             on_horizontalSlider_3_valueChanged(t);
         ui->progressBar->setValue(t);
-    }
+    }   
 
     // canbackchange - flag to prevent constant change of back image when attention > border:
     // change only when attention becomes > border after it was less
@@ -1033,7 +1051,7 @@ void plotwindow::update_attention(int t)
     }
 
     // attention modulated switch of tones sets
-    if ((!brl->attention_I) && (attention_modulation) && (switchtonesset_by_att))
+    if ((!brl->attention_2nd) && (attention_modulation) && (switchtonesset_by_att))
     {
         if (attent<tonesets_border1)
             on_radioButton_clicked();   // play tank1
@@ -1223,7 +1241,7 @@ void plotwindow::applyfilteronback()    // apply blurring or/and colorize effect
 
 void plotwindow::settonesvolume() // set tones volume for soundplayer
 {
-   splayer.setvolume(volume);
+    splayer->setvolume(volume);
 }
 
 // playing tones from soundplayer
@@ -1231,33 +1249,33 @@ void plotwindow::play_Glow()
 {
     ui->pushButton_7->setDown(true);
     if (spacemode)
-        emit splayer.playD3();
-    else if (tank1mode)
-        emit splayer.playGlow();
+        emit splayer->playD3();
+    else if (tank1mode)    
+        emit splayer->playGlow();
     else
-        emit splayer.playtone_Dlowsh();
+        emit splayer->playtone_Dlowsh();
 }
 
 void plotwindow::play_fdiez()
 {
     ui->pushButton_8->setDown(true);
     if (spacemode)
-        emit splayer.playA3();
+        emit splayer->playA3();
     else if (tank1mode)
-        emit splayer.playfdiez();
+        emit splayer->playfdiez();
     else
-        emit splayer.playtone_dsh();
+        emit splayer->playtone_dsh();
 }
 
 void plotwindow::play_Clow()
 {
     ui->pushButton_9->setDown(true);
     if (spacemode)
-        emit splayer.playC4();
+        emit splayer->playC4();
     else if (tank1mode)
-        emit splayer.playClow();
+        emit splayer->playClow();
     else
-        emit splayer.playtone_Glowsh();
+        emit splayer->playtone_Glowsh();
 
 }
 
@@ -1265,44 +1283,44 @@ void plotwindow::play_a()
 {
     ui->pushButton_10->setDown(true);
     if (spacemode)
-        emit splayer.playA4();
+        emit splayer->playA4();
     else if (tank1mode)
-        emit splayer.playatone();
+        emit splayer->playatone();
     else
-        emit splayer.playtone_gsh();
+        emit splayer->playtone_gsh();
 }
 
 void plotwindow::play_Elow()
 {
     ui->pushButton_11->setDown(true);
     if (spacemode)
-        emit splayer.playD4();
+        emit splayer->playD4();
     else if (tank1mode)
-        emit splayer.playElow();
+        emit splayer->playElow();
     else
-        emit splayer.playtone_Flowsh();
+        emit splayer->playtone_Flowsh();
 }
 
 void plotwindow::play_d()
 {
     ui->pushButton_12->setDown(true);
     if (spacemode)
-        emit splayer.playE4();
+        emit splayer->playE4();
     else if (tank1mode)
-        emit splayer.playdtone();
+        emit splayer->playdtone();
     else
-        emit splayer.playtone_fsh();
+        emit splayer->playtone_fsh();
 }
 
 void plotwindow::play_Dlow()
 {
     ui->pushButton_13->setDown(true);
     if (spacemode)
-        emit splayer.playF3();
+        emit splayer->playF3();
     else if (tank1mode)
-        emit splayer.playDlow();
+        emit splayer->playDlow();
     else
-        emit splayer.playtone_Clowsh();
+        emit splayer->playtone_Clowsh();
 }
 
 void plotwindow::play_b()
@@ -1310,12 +1328,12 @@ void plotwindow::play_b()
     if (tank1mode)            
     {
         ui->pushButton_14->setDown(true);
-        emit splayer.playbtone();
+        emit splayer->playbtone();
     }
     else if (tank2mode)
     {
         ui->pushButton_14->setDown(true);
-        emit splayer.playtone_csh();
+        emit splayer->playtone_csh();
     }
 }
 
@@ -1323,11 +1341,11 @@ void plotwindow::play_Blow()
 {
     ui->pushButton_15->setDown(true);
     if (spacemode)
-        emit splayer.playF4();
+        emit splayer->playF4();
     else if (tank1mode)
-        emit splayer.playBlow();
+        emit splayer->playBlow();
     else    
-        emit splayer.playtone_Blow();
+        emit splayer->playtone_Blow();
 }
 
 void plotwindow::play_g()
@@ -1335,12 +1353,12 @@ void plotwindow::play_g()
     if (tank1mode)
     {
         ui->pushButton_16->setDown(true); 
-        emit splayer.playgtone();
+        emit splayer->playgtone();
     } else
     if (tank2mode)
     {
         ui->pushButton_16->setDown(true); 
-        emit splayer.playtone_b();
+        emit splayer->playtone_b();
     }
 }
 
@@ -1777,15 +1795,15 @@ void plotwindow::analyse_interval() // main function for processing intervals of
 {  
     determine_brainwaves_expression();
 
-    update_waves_meanvalues();
+    update_waves_meanvalues();   
 
     if (brainflow_on)
-        total_intervals++;
+        total_intervals++;    
 
     if (((filteringback) || (colorizeback) || (blurback)) && (!backimg.isNull()))
         applyfilteronback();  // filtering background image
 
-    if ((brl->attention_I) && (attention_modulation) && (switchtonesset_by_att)) // attention modulated switch of tones sets
+    if ((brl->attention_2nd) && (attention_modulation) && (switchtonesset_by_att)) // attention modulated switch of tones sets
     {
         if (paintf->getestattval()<tonesets_border1)
             on_radioButton_clicked();   // play tank1
@@ -1801,7 +1819,7 @@ void plotwindow::analyse_interval() // main function for processing intervals of
     if ((brainflow_on) && (savewavestofile))    // saving brain data to file
         savewaves();    
 
-    if (brl->attention_I)    // update mental activity values on brainlevels form
+    if (brl->attention_2nd)    // update mental activity values on brainlevels form
         brl->updatelevels(paintf->getestattval(),meditt);
     else
         brl->updatelevels(attent,meditt);
@@ -1851,8 +1869,8 @@ void plotwindow::analyse_interval() // main function for processing intervals of
     // update progress bars of brain waves expression
     update_brainexp_levels(delta, meandelta, theta, meantheta, alpha, meanalpha, beta, meanbeta, gamma, meangamma);
 
-    if (musicmode_on)
-        playtones();  // playing of tones
+    if (musicmode_on)    
+        playtones();  // playing of tones    
 
     if (flowblinking) // change of brain flow lines colors
     {
@@ -2466,8 +2484,8 @@ void plotwindow::osc_streaming(int attent, int meditt, int delta, int theta, int
 
     p.Clear();
     p << osc::BeginBundleImmediate
-        << osc::BeginMessage("/attention1") << (int)estatt << osc::EndMessage
-        << osc::BeginMessage("/attention2") << (int)attent << osc::EndMessage
+        << osc::BeginMessage("/attention1") << (int)attent << osc::EndMessage
+        << osc::BeginMessage("/attention2") << (int)estatt << osc::EndMessage
         << osc::BeginMessage("/meditation") << (int)meditt << osc::EndMessage
         << osc::BeginMessage("/delta") << (int)delta << osc::EndMessage
         << osc::BeginMessage("/theta") << (int)theta << osc::EndMessage
@@ -2532,15 +2550,15 @@ void plotwindow::on_spinBox_8_valueChanged(int arg1) // max tones number
 
 void plotwindow::on_pushButton_6_clicked()  // load random back image
 { 
-    backimageloaded=true;
+    backimageloaded = true;
     int rimg = rand() % imglist.length();
-    QString filename=folderpath+"/"+imglist.at(rimg);  
-    backimg.load(filename);
+    currpicfilename = folderpath+"/"+imglist.at(rimg);
+    backimg.load(currpicfilename);
     ui->widget->setBackground(backimg,true,Qt::IgnoreAspectRatio);
     ui->widget->xAxis->grid()->setVisible(false);
     ui->widget->yAxis->grid()->setVisible(false);
-    ui->widget->replot();
-//    ui->checkBox_6->setChecked(false);  
+    ui->widget->replot();    
+    ui->checkBox_6->setChecked(false);
 }
 
 void plotwindow::on_pushButton_16_clicked()
@@ -2628,25 +2646,22 @@ void plotwindow::on_checkBox_5_clicked()    // hide buttons
 }
 
 void plotwindow::on_checkBox_6_clicked() // hide / show background image, white space with coordinates grids
-{
-    if (!backimageloaded)
-    {
-        if (ui->checkBox_6->isChecked())
-        {
-            backimg.load(":/pics/pics.jpg");
-        } else
-        if (tank1mode)
-            backimg.load(":/pics/pics/oriongmaj.jpg");
-        else
-        if (tank2mode)
-            backimg.load(":/pics/pics/zodiac0.jpg");
-        else
-            backimg.load(":/pics/pics/spacedmin.jpg");
-        ui->widget->setBackground(backimg,true,Qt::IgnoreAspectRatio);
-        ui->widget->xAxis->grid()->setVisible(ui->checkBox_6->isChecked());
-        ui->widget->yAxis->grid()->setVisible(ui->checkBox_6->isChecked());
-        ui->widget->replot();
-    }
+{   
+    if (ui->checkBox_6->isChecked())
+        backimg.load(":/pics/pics.jpg");
+    else if (backimageloaded)
+        backimg.load(currpicfilename);
+    else if ((!backimageloaded) && (tank1mode))
+        backimg.load(":/pics/pics/oriongmaj.jpg");
+    else if ((!backimageloaded) && (tank2mode))
+        backimg.load(":/pics/pics/zodiac0.jpg");
+    else if (!backimageloaded)
+        backimg.load(":/pics/pics/spacedmin.jpg");
+
+    ui->widget->setBackground(backimg,true,Qt::IgnoreAspectRatio);
+    ui->widget->xAxis->grid()->setVisible(ui->checkBox_6->isChecked());
+    ui->widget->yAxis->grid()->setVisible(ui->checkBox_6->isChecked());
+    ui->widget->replot();
 }
 
 void plotwindow::on_checkBox_7_clicked() // color change of brain waves flow lines
@@ -2934,8 +2949,8 @@ void plotwindow::on_horizontalSlider_3_valueChanged(int value)
 {
     if (value>100)
         value = 100;
-    if (value<5)
-        value = 55;
+    // if (value<5)
+    //    value = 5;
     volume = (qreal) (value) / 100;    
     settonesvolume();
     ui->spinBox_21->setValue(value);
@@ -3314,4 +3329,45 @@ void plotwindow::on_spinBox_30_valueChanged(int arg1)
 void plotwindow::on_spinBox_31_valueChanged(int arg1)
 {
     tonedelays[9] = arg1;
+}
+
+void plotwindow::on_checkBox_clicked()
+{
+    playthetavibe = !playthetavibe;
+    if (playthetavibe)
+        emit splayer2->playstringsample8();
+    else
+        emit splayer2->stopstringsample8();
+}
+
+void plotwindow::on_checkBox_16_clicked()
+{
+    playalphavibe = !playalphavibe;
+    if (playalphavibe)
+        emit splayer2->playstringsample1();
+    else
+        emit splayer2->stopstringsample1();
+}
+
+void plotwindow::on_checkBox_17_clicked()
+{
+    playbetavibe = !playbetavibe;
+    if (playbetavibe)
+        emit splayer2->playstringsample7();
+    else
+        emit splayer2->stopstringsample7();
+}
+
+void plotwindow::on_checkBox_18_clicked()
+{
+    playgammavibe = !playgammavibe;
+    if (playgammavibe)
+        emit splayer2->playstringsample2();
+    else
+        emit splayer2->stopstringsample2();
+}
+
+void plotwindow::on_spinBox_valueChanged(int arg1)
+{
+    splayer2->setvolume((double)arg1/100);
 }

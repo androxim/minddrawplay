@@ -62,9 +62,10 @@ public:
     filters* filtercl;      // pointer on object with standard signal filters
     brainlevels* brl;       // pointer on BrainLevels window object
 
-    soundplayer splayer;    // sound player object with sound samples and timers associated with own thread
+    soundplayer* splayer; // sound player objects with sound samples associated with own thread
+    soundplayer* splayer2;
     QStringList strLst2; QStringListModel *strLstM2;  // list of playing tones
-    QString tones, lasttones;
+    QString tones, lasttones, currpicfilename;
     QString recfilename, start_sessiom_time;
     ostringstream streamrec;
     QFile recordFile;
@@ -108,7 +109,7 @@ public:
     bool spacemode, tank1mode, tank2mode, recordstarted, antirepeat, randmxt;       
     bool mindwstart, fftfreqs, attention_volume, keys_emulated, simeeg;
     bool paintfstart, rawsignalabove, camerainp, oscstreaming, savewavestofile;
-    bool switchtonesset_by_att;
+    bool switchtonesset_by_att, playthetavibe, playalphavibe, playbetavibe, playgammavibe;
 
     QString tank1[10] = {"b","B","g","G","d","D","E","C","f#","a"};
     QString tank2[10] = {"c#","C#","b","B","f#","F#","g#","G#","d#","D#"};
@@ -373,6 +374,16 @@ private slots:
     void on_spinBox_30_valueChanged(int arg1);
 
     void on_spinBox_31_valueChanged(int arg1);
+
+    void on_checkBox_clicked();
+
+    void on_checkBox_16_clicked();
+
+    void on_checkBox_17_clicked();
+
+    void on_checkBox_18_clicked();
+
+    void on_spinBox_valueChanged(int arg1);
 
 private:
     Ui::plot *ui;

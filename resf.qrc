@@ -28,6 +28,11 @@
         <file>sounds/tone_fsh_.wav</file>
         <file>sounds/tone_Gsh.wav</file>
         <file>sounds/tone_gsh_.wav</file>
+        <file>sounds/sweet-arp.wav</file>
+        <file>sounds/strings-sample-1.wav</file>
+        <file>sounds/strings-sample-2.wav</file>
+        <file>sounds/strings-sample-7.wav</file>
+        <file>sounds/strings-sample-8.wav</file>
     </qresource>
     <qresource prefix="/pics">
         <file>pics/empty.jpg</file>
