@@ -1112,7 +1112,10 @@ int paintform::getaverage_mentallevel(int interval, bool attention)
     if (attention)
     {
         for (int i=0; i<interval; i++)
-            t+=attent_arr[numsamples-i];
+            if (!pw->est_attention_modulation)
+                t+=attent_arr[numsamples-i];
+            else
+                t+=estatt_arr[numfrsamples-i-1];
     }
     else
     {

@@ -40,7 +40,7 @@ plotwindow::plotwindow(QWidget *parent) :
     hidebutt = false; antirepeat = true; // hiding tones buttons, flag for tones antirepeat
 
     numst = 8; // number of intervals in one EEG flow line
-    points_for_mean = 60; // number of intervals for estimation of mean brain waves expressions
+    points_for_mean = 30; // number of intervals for estimation of mean brain waves expressions
     imlength = 256; srfr = 512; // length of single EEG interval, sampling rate
     maxtonerepeats = 0; memorylength = 2; // max number of tones repeat in last [memorylength] tones
     drawshift = -150; graphcount = 0; // shift of brain waves flow lines, number of brain waves lines
@@ -60,6 +60,9 @@ plotwindow::plotwindow(QWidget *parent) :
     total_intervals = 0; // total number of processed intervals of data
     tonesets_border1 = 30; // border1 for tones set switch by attention/meditation
     tonesets_border2 = 70; // border2 for tones set switch by attention/meditation
+    prev_att = curr_att = 0;        // previous and current values of attention (from EEG device)
+    prev_medit = curr_medit = 0;    // previous and current values of meditation (from EEG device)
+    prev_estatt = curr_estatt = 0;  // previous and current values of attention (from FFT relative power)
 
     simeeg = false; // simulated EEG flow    
     rawsignalabove = true; // flag for position of raw signal plot
@@ -70,6 +73,7 @@ plotwindow::plotwindow(QWidget *parent) :
     // flag to prevent constant change of background image when attention > border:
     // change only when attention becomes > border after it was less
     attention_modulation = true; // attention / meditation modulation
+    est_attention_modulation = false; // modulation by estimated attention from FFT relative powers
     attention_interval = false; // attention / meditation modulated length of acquired EEG intervals
     attention_volume = true; // attention / meditation modulated volume of tones
     minvolumebord = 20; // min value of volume if attention modulated
@@ -118,18 +122,28 @@ plotwindow::plotwindow(QWidget *parent) :
     ui->setupUi(this);
     ui->widget->installEventFilter(this);
 
-    scaletimeout = 5;
+    recordwaves_rate = 200; // ms
+    record_waves_tofile = new QTimer(this); // timer for saving brain waves expression and mental activity to file
+    record_waves_tofile->connect(record_waves_tofile, SIGNAL(timeout()), this, SLOT(recordwaves_tofile_Update()));
+    record_waves_tofile->setInterval(recordwaves_rate);
+
+    mactivation_timeout = 20; // ms
+    mental_activations = new QTimer(this); // timer for smoothing mental activity levels
+    mental_activations->connect(mental_activations, SIGNAL(timeout()), this, SLOT(mental_activations_Update()));
+    mental_activations->setInterval(mactivation_timeout);
+
+    scaletimeout = 5; // s
     scaletim = new QTimer(this); // timer for changing tones scale
     scaletim->connect(scaletim, SIGNAL(timeout()), this, SLOT(scaletimerUpdate()));
     scaletim->setInterval(scaletimeout*1000);
 
     randmxt = false; // flag for random max tones mode
-    maxtones = 1; mxttimeout = 5; // max tones in one moment, interval for timer
+    maxtones = 1; mxttimeout = 5; // max tones in one moment, interval for timer (s)
     mxttim = new QTimer(this);  // timer for changing max tones number
     mxttim->connect(mxttim, SIGNAL(timeout()), this, SLOT(mxttimerUpdate()));
     mxttim->setInterval(mxttimeout*1000);
 
-    camera_interval = 50;
+    camera_interval = 50; // ms
     camerainput = new QTimer(this); // timer for camera input
     camerainput->connect(camerainput,SIGNAL(timeout()), this, SLOT(camerainput_Update()));
     camerainput->setInterval(camera_interval);
@@ -388,7 +402,7 @@ void plotwindow::doplot() // configure ui elements
     ui->checkBox_18->setGeometry(1435,900,125,25);
 
     ui->radioButton->setGeometry(1330,846,95,20);
-    ui->comboBox->setGeometry(585,26,105,20);
+    ui->comboBox->setGeometry(580,26,110,20);
     ui->radioButton_2->setGeometry(1330,866,95,20);
     ui->radioButton_3->setGeometry(1330,886,95,20);
 
@@ -593,13 +607,17 @@ bool plotwindow::eventFilter(QObject *target, QEvent *event)
             numst=ui->spinBox_7->value();
 
             if (brainflow_on)
+            {
                 brainflow_on=false;
+                record_waves_tofile->stop();
+            }
             else
             if (!brainflow_on)
             {
                 recparts=0;
                 numst=ui->spinBox_7->value();
                 brainflow_on=true;
+                record_waves_tofile->start();
                 if (ui->checkBox_4->isChecked())
                     musicmode_on=true;
             }
@@ -1010,35 +1028,79 @@ void plotwindow::updatedata(int start) // update EEG data array with new interva
         eegdata[graphcount][start+i]=drawshift+arrc.amp0[buffercount-imlength+i];
 }
 
+void plotwindow::mental_activations_Update()
+{
+    if (abs(curr_att-prev_att)>0)
+    {
+        if (curr_att<prev_att)
+            prev_att-=1;
+        else
+            prev_att+=1;
+        if (!est_attention_modulation)
+        {
+            attent = prev_att;
+            if (attention_modulation)
+                update_attention(prev_att);
+        }
+    }
+
+    if (abs(curr_estatt-prev_estatt)>0)
+    {
+        if (curr_estatt<prev_estatt)
+            prev_estatt-=1;
+        else
+            prev_estatt+=1;
+        if ((est_attention_modulation) || (simeeg))
+        {
+            attent = prev_estatt;
+            if (attention_modulation)
+                update_attention(prev_estatt);
+        }
+    }
+
+    if (abs(curr_medit-prev_medit)>1)
+    {
+        if (curr_medit<prev_medit)
+            prev_medit-=1;
+        else
+            prev_medit+=1;
+        meditt = prev_medit;
+        if (!attention_modulation)
+            update_meditation(prev_medit);
+    }   
+
+    if ((brl->attention_2nd) || (simeeg))    // update mental activity values on brainlevels form
+        brl->updatelevels(prev_estatt,prev_medit);
+    else
+        brl->updatelevels(prev_att,prev_medit);
+}
+
+void plotwindow::update_curr_attention(int t)
+{
+    curr_att = t;
+}
+
+// updated attention value, check conditions on volume, back image and tones change
 void plotwindow::update_attention(int t)
 {
-    // updated attention value, check condition on back image change
-    attent=t;
-    ui->label_23->setText("ATTENTION: "+QString::number(t)+"%");  
-
-    if (attention_modulation)
-    {
-        if ((attention_volume) && (t>minvolumebord))
-            on_horizontalSlider_3_valueChanged(t);
-        ui->progressBar->setValue(t);
-    }   
+    // tones volume modulation
+    if ((attention_volume) && (t>minvolumebord))
+        on_horizontalSlider_3_valueChanged(t);
+    ui->progressBar->setValue(t);
 
     // canbackchange - flag to prevent constant change of back image when attention > border:
     // change only when attention becomes > border after it was less
-    if ((!fixback) && (attention_modulation) && (backimageloaded) && (t<picchangeborder))
+    if ((!fixback) && (backimageloaded) && (t<picchangeborder))
         if (!canbackchange)
             canbackchange=true;
 
-    // attention modulated back pic change
-    if ((!fixback) && (attention_modulation))
+    // back pic change modulation
+    if (!fixback)
     {
         if (adaptivepicsborder)
         {
             int mlevel = paintf->getaverage_mentallevel(3,true);
-            if (mlevel>80)
-                picchangeborder = 10 + mlevel;
-            else
-                picchangeborder = 15 + mlevel;
+            picchangeborder = 8 + mlevel;
             if (picchangeborder > 100)
                 picchangeborder = 100;
             ui->horizontalSlider_2->setValue(picchangeborder);
@@ -1050,8 +1112,8 @@ void plotwindow::update_attention(int t)
         }
     }
 
-    // attention modulated switch of tones sets
-    if ((!brl->attention_2nd) && (attention_modulation) && (switchtonesset_by_att))
+    // switch of tones sets modulation
+    if ((!brl->attention_2nd) && (switchtonesset_by_att))
     {
         if (attent<tonesets_border1)
             on_radioButton_clicked();   // play tank1
@@ -1062,33 +1124,32 @@ void plotwindow::update_attention(int t)
     }
 }
 
-void plotwindow::update_meditation(int t)
+void plotwindow::update_curr_meditation(int t)
 {
-    // updated meditation value, check condition on back image change
-    meditt = t;
-    ui->label_24->setText("MEDITATION: "+QString::number(t)+"%");
+    curr_medit = t;
+}
 
-    if (!attention_modulation)
-    {
-        if ((attention_volume) && (t>minvolumebord))
-            on_horizontalSlider_3_valueChanged(t);
-        ui->progressBar->setValue(t);
-    }
+// updated meditation value, check conditions on volume, back image and tones change
+void plotwindow::update_meditation(int t)
+{    
+    // tones volume modulation
+    if ((attention_volume) && (t>minvolumebord))
+        on_horizontalSlider_3_valueChanged(t);
+    ui->progressBar->setValue(t);
 
-    if ((!fixback) && (!attention_modulation) && (backimageloaded) && (t<picchangeborder))
+    // canbackchange - flag to prevent constant change of back image when attention > border:
+    // change only when attention becomes > border after it was less
+    if ((!fixback) && (backimageloaded) && (t<picchangeborder))
         if (!canbackchange)
             canbackchange=true;
 
-    // meditation modulated back pic change
-    if ((!fixback) && (!attention_modulation))
+    // back pic change modulation
+    if (!fixback)
     {
         if (adaptivepicsborder)
         {
             int mlevel = paintf->getaverage_mentallevel(3,false);
-            if (mlevel>80)
-                picchangeborder = 10 + mlevel;
-            else
-                picchangeborder = 15 + mlevel;
+            picchangeborder = 8 + mlevel;
             if (picchangeborder > 100)
                 picchangeborder = 100;
             ui->horizontalSlider_2->setValue(picchangeborder);
@@ -1100,8 +1161,8 @@ void plotwindow::update_meditation(int t)
         }
     }
 
-    // meditation modulated switch of tones sets
-    if ((!attention_modulation) && (switchtonesset_by_att))
+    // switch of tones sets modulation
+    if (switchtonesset_by_att)
     {
         if (meditt<tonesets_border1)
             on_radioButton_clicked();   // play tank1
@@ -1779,7 +1840,7 @@ void plotwindow::update_waves_meanvalues() // update mean values of brain waves 
     }
 }
 
-void plotwindow::savewaves()
+void plotwindow::savewaves() // saving brain waves expressions and mental activity to file
 {            
     streamrec.str(std::string());
     streamrec << (int)paintf->getestattval() << "," <<
@@ -1789,6 +1850,12 @@ void plotwindow::savewaves()
                  gamma << "," << hgamma << "\n";
     recordFile.write(streamrec.str().data(), streamrec.str().length());
     recordFile.flush();
+}
+
+void plotwindow::recordwaves_tofile_Update() // timer for recording data to file
+{
+    if ((savewavestofile) && (nums_waves_values>0))
+        savewaves();
 }
 
 void plotwindow::analyse_interval() // main function for processing intervals of EEG data
@@ -1816,14 +1883,6 @@ void plotwindow::analyse_interval() // main function for processing intervals of
     if (oscstreaming)       // streaming data through OSC
         osc_streaming(attent,meditt,delta,theta,alpha,beta,gamma,hgamma);
 
-    if ((brainflow_on) && (savewavestofile))    // saving brain data to file
-        savewaves();    
-
-    if (brl->attention_2nd)    // update mental activity values on brainlevels form
-        brl->updatelevels(paintf->getestattval(),meditt);
-    else
-        brl->updatelevels(attent,meditt);
-
     if (paintfstart) // update brain waves expression arrays and plot in MindDraw
     {        
         paintf->updatefreqarrs(delta,theta,alpha,beta,gamma,hgamma);
@@ -1832,13 +1891,13 @@ void plotwindow::analyse_interval() // main function for processing intervals of
            // mw->setattent(paintf->getestattval());
     }
 
+    curr_estatt = paintf->getestattval(); // update current estimated attention value
+
     if (simeeg) // update attention and meditation values for simulated data
     {
-        meditt = 100 * (double)alpha / beta; // emulate meditation estimation for simulated data
-        update_attention(paintf->getestattval());
-        update_meditation(meditt);
-        paintf->updatemeditation(meditt);
-        paintf->updateattentionplot(paintf->getestattval());
+        curr_medit = 100 * (double)alpha / beta; // emulate meditation estimation for simulated data
+        paintf->updatemeditation(curr_medit);
+        paintf->updateattentionplot(curr_estatt);
     }
 
     if ((paintfstart) && (paintf->bfiltmode) && (!paintf->game_findsame) && (!paintf->flowmode))
@@ -2530,7 +2589,7 @@ void plotwindow::on_spinBox_7_valueChanged(int arg1) // number of intervals in l
 
 void plotwindow::on_spinBox_5_valueChanged(int arg1) // length of interval
 {
-    if (mindwstart)
+    if ((mindwstart) || (simeeg))
     {
         imlength=arg1/1.953125;        
         ui->horizontalSlider->setValue(arg1);
@@ -3149,9 +3208,13 @@ void plotwindow::on_checkBox_11_clicked()  // grab MindOCV flow
 
 void plotwindow::on_comboBox_currentIndexChanged(int index) // attention / meditation modulation
 {
-    if (index==0)
+    if ((index==0) || (index==1))
     {
         attention_modulation=true;
+        if (index==1)
+            est_attention_modulation=true;
+        else
+            est_attention_modulation=false;
         ui->progressBar->setPalette(sp1);
         ui->checkBox_12->setText("attention modulation");   
         ui->checkBox_8->setText("tones sets by attention");

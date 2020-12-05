@@ -11,10 +11,12 @@ ocvcontrols::ocvcontrols(QWidget *parent) :
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint);
     setWindowFlags(Qt::FramelessWindowHint|Qt::WindowStaysOnTopHint);    
+    setWindowOpacity(0.9);
 
     pichngT = new QTimer(this);     // timer for auto dreamflow mode, when new picture appears by fragments
     pichngT->connect(pichngT,SIGNAL(timeout()), this, SLOT(randpicchange_Update()));
     pichngT->setInterval(changepic_interval*1000);
+    ui->spinBox_14->setValue(changepic_interval);
 
     dropsT = new QTimer(this);     // timer for expanding window in dreamflow mode
     dropsT->connect(dropsT,SIGNAL(timeout()), this, SLOT(windowsize_Update()));
@@ -70,7 +72,7 @@ void ocvcontrols::updateformvals()
         randmixer_mode_on();
     ui->checkBox_7->setChecked(hueonly);
     ui->checkBox_8->setChecked(polygonmask);
-    ui->spinBox_13->setValue(dreamflowrate);
+    ui->spinBox_13->setValue(dreamflowrate);    
     ui->spinBox_15->setValue(drops_interval);
     ui->spinBox_16->setValue(pointsinpoly);
     ui->spinBox_17->setValue(multi_set_size);
@@ -102,6 +104,14 @@ void ocvcontrols::updateformvals()
         ui->pushButton_6->setText("Stop");
     else
         ui->pushButton_6->setText("Start");
+}
+
+void ocvcontrols::updatelevels(int hue, int overlay, int attent, int bord)
+{
+    ui->horizontalSlider->setValue(hue);
+    ui->horizontalSlider_2->setValue(overlay);
+    ui->horizontalSlider_3->setValue(attent);
+    ui->horizontalSlider_4->setValue(bord);
 }
 
 ocvcontrols::~ocvcontrols()
@@ -193,6 +203,12 @@ void ocvcontrols::windowsize_Update()
         mww->drawwindow(x_left,y_top,x_right-x_left,y_bottom-y_top);
     mww->setprevdfrect(x_left+3,y_top+3,x_right-x_left-3,y_bottom-y_top-3);
 
+}
+
+void ocvcontrols::setfilterarea(int t)
+{
+    currfilterarea = t;
+    ui->spinBox->setValue(t);
 }
 
 void ocvcontrols::on_spinBox_valueChanged(int arg1)
@@ -447,7 +463,9 @@ void ocvcontrols::on_checkBox_5_clicked()
 
 void ocvcontrols::on_spinBox_13_valueChanged(int arg1)
 {
-    dreamflowrate=arg1;
+    dreamflowrate = arg1;
+    if (opencvstart)
+        mww->set_dreamflow_interval(dreamflowrate);
 }
 
 void ocvcontrols::on_checkBox_6_clicked()
@@ -483,6 +501,8 @@ void ocvcontrols::on_checkBox_9_clicked()
 void ocvcontrols::on_spinBox_14_valueChanged(int arg1)
 {
     changepic_interval=arg1*1000;
+    if (opencvstart)
+        pichngT->setInterval(changepic_interval);
 }
 
 void ocvcontrols::on_checkBox_10_clicked()
@@ -735,4 +755,19 @@ void ocvcontrols::on_comboBox_3_currentIndexChanged(int index)
 void ocvcontrols::on_checkBox_24_clicked()
 {
     doublepicsmode = !doublepicsmode;
+}
+
+void ocvcontrols::on_horizontalSlider_valueChanged(int value)
+{
+    mww->processingcolor(value);
+}
+
+void ocvcontrols::on_horizontalSlider_2_valueChanged(int value)
+{
+    mww->processingoverlay(value);
+}
+
+void ocvcontrols::on_horizontalSlider_4_valueChanged(int value)
+{
+    mww->setborder(value);
 }

@@ -77,18 +77,18 @@ FORMS    += ui\mainwindow.ui \
 
 LIBS += -lwsock32 -lws2_32 -lwinmm -mthreads -L$$PWD/./ -lthinkgear
 
-INCLUDEPATH += C:\OpenCV\OpenCV_bin\install\include \               
+INCLUDEPATH += C:\opencv\build\include \
                $$PWD/include/. \
                $$PWD/oscpack/.
 
-LIBS += C:\OpenCV\OpenCV_bin\bin\libopencv_core412.dll \
-        C:\OpenCV\OpenCV_bin\bin\libopencv_highgui412.dll \
-        C:\OpenCV\OpenCV_bin\bin\libopencv_imgcodecs412.dll \
-        C:\OpenCV\OpenCV_bin\bin\libopencv_imgproc412.dll \
-        C:\OpenCV\OpenCV_bin\bin\libopencv_calib3d412.dll \
-        C:\OpenCV\OpenCV_bin\bin\libopencv_video412.dll \
-        C:\OpenCV\OpenCV_bin\bin\libopencv_videoio412.dll \
-        C:\OpenCV\OpenCV_bin\bin\libopencv_features2d412.dll
+LIBS += C:\opencv\build\bin\libopencv_core412.dll \
+        C:\opencv\build\bin\libopencv_highgui412.dll \
+        C:\opencv\build\bin\libopencv_imgcodecs412.dll \
+        C:\opencv\build\bin\libopencv_imgproc412.dll \
+        C:\opencv\build\bin\libopencv_calib3d412.dll \
+        C:\opencv\build\bin\libopencv_video412.dll \
+        C:\opencv\build\bin\libopencv_videoio412.dll \
+        C:\opencv\build\bin\libopencv_features2d412.dll
 
 DEPENDPATH += $$PWD/.
 

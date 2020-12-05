@@ -27,7 +27,7 @@ public:
     std::mt19937 gen; std::uniform_int_distribution<int> dist;
     bool formshown = true, camerainp = false, attent_modul = true;
     bool drawbrushcontour = true; bool drops_by_click_mode = false;
-    bool circle_brush = true; bool histFeaturesReady = false;
+    bool circle_brush = true; bool histFeaturesReady = false; bool opencvstart = false;
     bool multi_img_dflow = false; bool multi_img_by_att = false;
     int picwidth = 2000, picheight = 1125; bool color_overlay_flow = false;
     int currfilterarea = 250, currfilterrate = 12, currfilttype = 5, totalfilts = 6;
@@ -67,6 +67,7 @@ public:
     leftpanel* leftpan;
     MainWindow* mww;
     void updateformvals();
+    void updatelevels(int hue, int overlay, int attent, int bord);
     void changerandpic();
     void randmixer_mode_on();
     void setcurrdream(int t);
@@ -75,11 +76,12 @@ public:
     void drop_center_from_mousepos();
     void setcameracheckbox(bool fl);
     void blocktabs(int i);
+    void setfilterarea(int t);
     explicit ocvcontrols(QWidget *parent = 0);
     ~ocvcontrols();
 
 signals:
-    flow_direction_available();
+    void flow_direction_available();
 
 public slots:
     void set_flow_direction_available();
@@ -217,6 +219,12 @@ private slots:
     void on_comboBox_3_currentIndexChanged(int index);
 
     void on_checkBox_24_clicked();
+
+    void on_horizontalSlider_valueChanged(int value);
+
+    void on_horizontalSlider_2_valueChanged(int value);
+
+    void on_horizontalSlider_4_valueChanged(int value);
 
 private:
     Ui::ocvcontrols *ui;

@@ -64,6 +64,7 @@ public:
     QTimer* dreamflow_timer;
     QTimer* streamflows;
     QTimer* puzzleflow;
+    QTimer* keyprocess;
     QTime time_take;
 
     QPixmap bkgnd, transferpm;
@@ -89,11 +90,11 @@ public:
     void getfreqval(float dw, float tw, float aw, float bw, float gw);
     void setsourceimg(QString fpath);
     void setsourceimgd(QImage qp);
-    void sethue(int i);
     void setopencvt(int i);
     void setattent(int i);
     void setoverlay(int i);
     void setborder(int i);
+    void set_dreamflow_interval(int t);
     void checkoverlay();
     void swap_main_overlay();
     void makeHistFeatures();
@@ -107,8 +108,7 @@ public:
     void updateoverpic(int num);
     void setfolderpath(QString fp);   
     void cancellast();    
-    void cancelall();    
-    void keys_processing();
+    void cancelall();      
     void setdstfromplay(QImage qm);
     void save_and_add_overlaypic();
     void run_opencvform();
@@ -128,6 +128,8 @@ public:
     int getchi2distsize();
     void loadFolderpath();
     void saveFolderpath();
+    void processingcolor(int hue_val);
+    void processingoverlay(int overlay_val);
 
     QPoint getcellposition(int t, int cols);
     void fillcell(int t, int cols);
@@ -156,6 +158,7 @@ private slots:
     void dreamflow_Update();
     void streamflows_Update();
     void puzzleflow_Update();
+    void keys_processing();
     void openAboutFile();
 
     void on_pushButton_clicked();

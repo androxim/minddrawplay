@@ -1320,7 +1320,7 @@
     <rect>
      <x>570</x>
      <y>620</y>
-     <width>101</width>
+     <width>111</width>
      <height>22</height>
     </rect>
    </property>
@@ -1333,7 +1333,12 @@
    </property>
    <item>
     <property name="text">
-     <string>attention</string>
+     <string>attention I</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>attention II</string>
     </property>
    </item>
    <item>

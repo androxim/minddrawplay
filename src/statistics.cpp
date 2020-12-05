@@ -204,7 +204,7 @@ void statistics::update_filenames()
     {
         ui->comboBox->addItems(filenames);
         readdata_fromfile(QCoreApplication::applicationDirPath() + "/"+ui->comboBox->itemText(0));
-        ui->label_2->setText(transform(ui->comboBox->itemText(0))+"   intervals: "+QString::number(num_samples));
+        ui->label_2->setText(transform(ui->comboBox->itemText(0))+"   seconds: "+QString::number((double)num_samples/5,'f',1));
         recordsfound = true;
     }
 }
@@ -217,7 +217,7 @@ void statistics::on_pushButton_clicked()
 void statistics::on_comboBox_currentIndexChanged(int index)
 {
     readdata_fromfile(QCoreApplication::applicationDirPath() + "/"+ui->comboBox->itemText(index));
-    ui->label_2->setText(transform(ui->comboBox->itemText(index))+"   intervals: "+QString::number(num_samples));
+    ui->label_2->setText(transform(ui->comboBox->itemText(index))+"   seconds: "+QString::number((double)num_samples/5,'f',1));
     ui->attention_hist->clearPlottables();
     ui->meditation_hist->clearPlottables();
     ui->delta_hist->clearPlottables();

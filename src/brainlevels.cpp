@@ -7,7 +7,8 @@ brainlevels::brainlevels(QWidget *parent) :
     ui(new Ui::brainlevels)
 {
     ui->setupUi(this);
-    setWindowFlags(Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowStaysOnTopHint);
+    setWindowFlags(Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint);
+    setWindowFlags(Qt::WindowStaysOnTopHint);
     //setAttribute(Qt::WA_TranslucentBackground,true);
     setWindowOpacity(0.7);
     attention_2nd = true;

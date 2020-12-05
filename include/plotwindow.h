@@ -94,20 +94,21 @@ public:
     int maxshown_eeglines, xraw, delta, theta, alpha, beta, gamma, hgamma;
     double meandelta, meantheta, meanalpha, meanbeta, meangamma, meanhgamma;
     double eyes_ar, eyes_volume_val;
-    int sdelta, stheta, salpha, sbeta, sgamma, shgamma, points_for_mean;
+    int sdelta, stheta, salpha, sbeta, sgamma, shgamma, points_for_mean, recordwaves_rate;
     int tv1, tv2, tv3, tv4, tv5, tv6, tv7, tv8, tv9, tv10;
     int nextdrawshift, tonescheck, total_intervals;
     int pushshift, psleep, camera_interval;
     int lcutoff, hcutoff, butterord;    
     int buffercount, nemehanika_bord;
     int tonesets_border1, tonesets_border2;
+    int prev_att, curr_att, prev_estatt, curr_estatt, prev_medit, curr_medit, mactivation_timeout;
 
     bool adaptivenumparts, backimageloaded, canbackchange, opencvstart;
     bool filteringback, blurback, hidebutt, attention_interval, fixback, colorizeback;
     bool attention_modulation, start, brainflow_on, estimation, updatewavesplot;
     bool usefiltering, musicmode_on, flowblinking, scalechange, adaptivepicsborder;
     bool spacemode, tank1mode, tank2mode, recordstarted, antirepeat, randmxt;       
-    bool mindwstart, fftfreqs, attention_volume, keys_emulated, simeeg;
+    bool mindwstart, fftfreqs, attention_volume, keys_emulated, simeeg, est_attention_modulation;
     bool paintfstart, rawsignalabove, camerainp, oscstreaming, savewavestofile;
     bool switchtonesset_by_att, playthetavibe, playalphavibe, playbetavibe, playgammavibe;
 
@@ -121,6 +122,8 @@ public:
     QElapsedTimer timer;
     QTimer* scaletim;
     QTimer* mxttim;   
+    QTimer* record_waves_tofile;
+    QTimer* mental_activations;
     QTimer* neuro_neMehanika_camera;
     QTimer* neuro_neMehanika_colors;    
     QTimer* camerainput; cv::VideoCapture camera; cv::Mat trp;
@@ -186,8 +189,11 @@ public:
     void write_recfile_head();
     void cameraoff();
 
+
     void update_attention(int t);
+    void update_curr_attention(int t);
     void update_meditation(int t);
+    void update_curr_meditation(int t);
 
     void radiobut1();
     void radiobut2();
@@ -207,6 +213,10 @@ public:
     void set_nemehanika_bord(int t);
 
 private slots:
+
+    void recordwaves_tofile_Update();
+
+    void mental_activations_Update();
 
     void scaletimerUpdate();
 
