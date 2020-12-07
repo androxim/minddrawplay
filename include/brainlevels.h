@@ -1,3 +1,6 @@
+/* header file for brainlevels class -
+   responsible for showing attention/meditation values and set borders */
+
 #ifndef BRAINLEVELS_H
 #define BRAINLEVELS_H
 

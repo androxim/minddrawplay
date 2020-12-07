@@ -185,7 +185,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     statsWin = new statistics();
     statsWin->setWindowTitle("MindDrawPlay | Statistics");
-    statsWin->setFixedSize(974,467);
+    statsWin->setFixedSize(1113,685);
+    statsWin->recordrate = (double)plotw->recordwaves_rate/1000;
 
     loadFolderpath();
     plotw->folderpath = folderpath;
@@ -255,9 +256,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     keyprocess = new QTimer(this); // timer for keys press processing in MindOCV
     keyprocess->connect(keyprocess, SIGNAL(timeout()), this, SLOT(keys_processing()));
-    keyprocess->setInterval(5);
+    keyprocess->setInterval(10);
 
-    opencvinterval = 50;      // timer for color-overlay flow
+    opencvinterval = 40;      // timer for color-overlay flow
     picfilt = new QTimer(this);
     picfilt->connect(picfilt, SIGNAL(timeout()), this, SLOT(picfiltUpdate()));
     picfilt->setInterval(opencvinterval);    
@@ -1464,7 +1465,7 @@ void MainWindow::setsourceimgd(QImage qp) // set openCV main image from QImage (
 void MainWindow::setattent(int i)
 {
     elem4=i;  
-
+    ocvform->updatelevels(elem1,elem5,elem4,elem6);
     // opencvinterval = 25;// + (100 - elem4)/2;
     // picfilt->setInterval(opencvinterval);
 
@@ -1702,7 +1703,6 @@ void MainWindow::startopencv() // MindOCV initialization function
             plotw->enablehue();
         ocvform->updatelevels(elem1,elem5,elem4,elem6);
 
-        picfilt->start();
         keyprocess->start();
     }
     else
@@ -2092,22 +2092,22 @@ void MainWindow::mindwtUpdate() // processing data from MindWave device
 void MainWindow::simulateEEGUpdate() // simulated EEG data (in development)
 {
     const double mean = 0.0;
-    const double stddev = 0.5;
+    const double stddev = 0.7;
     static std::mt19937 gen(chrono::system_clock::now().time_since_epoch().count());
     std::normal_distribution<double> dist(mean, stddev);
     double noise = 20*dist(gen);
     deltaamp = zdeltaamp + dist(gen)*10;
     thetaamp = zthetaamp + dist(gen)*24;
     alphaamp = zalphaamp + dist(gen)*26;
-    betaamp = zbetaamp + dist(gen)*30;
+    betaamp = zbetaamp + dist(gen)*25;
     gammaamp = zgammaamp + dist(gen)*20;
     hgammaamp = zhgammaamp + dist(gen)*8;
     if (currentel%250==0)       // change phase and base amplitude each 1/2 sec
     {
         zdeltaamp = 2 + qrand() % 10;
-        zthetaamp = 8 + qrand() % 18;
+        zthetaamp = 8 + qrand() % 26;
         zalphaamp = 9 + qrand() % 16;
-        zbetaamp = 12 + qrand() % 25;
+        zbetaamp = 8 + qrand() % 25;
         zgammaamp = 10 + qrand() % 10;
         zhgammaamp = 8 + qrand() % 10;
         deltaphs = qrand() % 20;
@@ -2300,7 +2300,7 @@ void MainWindow::stop_all_flows()  // stop all flows
 
 void MainWindow::keys_processing()      // processing keys pressing
 {
-    char key = cv::waitKey(0) % 256;
+    char key = cv::waitKey(5) % 256;
     if (key == 't') // test stuff button    
     {                
       //  neurostyle();
@@ -2363,6 +2363,7 @@ void MainWindow::keys_processing()      // processing keys pressing
     {
         stop_all_flows();
         ocvform->color_overlay_flow = true;
+        picfilt->start();
         keepfiltering = false;
         ocvform->setcameracheckbox(true);
         drawcontrolmenu(dst,1);
@@ -2372,6 +2373,7 @@ void MainWindow::keys_processing()      // processing keys pressing
     else if ((key == '2') && (!ocvform->dreamflow)) // start dreamflow
     {
         stop_all_flows();
+        picfilt->stop();
         drawcontrolmenu(dst,2);
         ocvform->drawbrushcontour = false;
         ocvform->updateformvals();
@@ -2381,6 +2383,7 @@ void MainWindow::keys_processing()      // processing keys pressing
     else if ((key == '3') && (!ocvform->puzzleflow_on)) // start puzzle gathering flow
     {
         stop_all_flows();
+        picfilt->stop();
         ocvform->drawbrushcontour = false;
         ocvform->updateformvals();
         ocvform->start_stop_puzzleflow(true);
@@ -2743,6 +2746,6 @@ void MainWindow::on_pushButton_9_clicked()
 {
     statsWin->update_filenames();
     if (statsWin->recordsfound)
-        statsWin->update_plots();
+        statsWin->update_plots(0,0);
     statsWin->show();
 }

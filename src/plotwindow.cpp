@@ -125,7 +125,7 @@ plotwindow::plotwindow(QWidget *parent) :
     recordwaves_rate = 200; // ms
     record_waves_tofile = new QTimer(this); // timer for saving brain waves expression and mental activity to file
     record_waves_tofile->connect(record_waves_tofile, SIGNAL(timeout()), this, SLOT(recordwaves_tofile_Update()));
-    record_waves_tofile->setInterval(recordwaves_rate);
+    record_waves_tofile->setInterval(recordwaves_rate);    
 
     mactivation_timeout = 20; // ms
     mental_activations = new QTimer(this); // timer for smoothing mental activity levels
@@ -923,7 +923,12 @@ void plotwindow::write_recfile_head()
     recfilename  = QCoreApplication::applicationDirPath() + "/mdp_" + start_sessiom_time + ".dat";
     recordFile.setFileName(recfilename);
     recordFile.open(QIODevice::WriteOnly);
-    streamrec << "Session started: " << start_sessiom_time.toStdString() << "\n";
+    std::string session_type;
+    if (simeeg)
+        session_type = "simulated";
+    else
+        session_type = "recorded";
+    streamrec << "Session started: " << start_sessiom_time.toStdString() << " " << session_type << "\n";
     streamrec << "est_attention, attention, meditation, delta, theta, alpha, beta, gamma, hgamma" << endl;
     recordFile.write(streamrec.str().data(), streamrec.str().length());
     recordFile.flush();

@@ -16,6 +16,7 @@
 #include "paintscene.h"
 #include "rawsignal.h"
 #include "soundplayer.h"
+#include "statistics.h"
 #include "filters.h"
 #include "opencv2/core.hpp"
 #include "opencv2/opencv.hpp"

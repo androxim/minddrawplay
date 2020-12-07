@@ -322,7 +322,7 @@ void paintform::configure_ui() // configure ui elements
     ui->widget_2->legend->setFont(legendFont);
 
     ui->widget_2->addGraph();
-    ui->widget_2->graph(0)->setPen(QPen(Qt::yellow));
+    ui->widget_2->graph(0)->setPen(QPen(Qt::gray));
     ui->widget_2->graph(0)->setName("Delta");
     ui->widget_2->graph(0)->setData(fxc, delta_arr);
 
@@ -346,12 +346,12 @@ void paintform::configure_ui() // configure ui elements
     ui->widget_2->graph(3)->setData(fxc, beta_arr);
 
     ui->widget_2->addGraph();
-    ui->widget_2->graph(4)->setPen(QPen(Qt::gray));
+    ui->widget_2->graph(4)->setPen(QPen(QColor(255,165,0)));
     ui->widget_2->graph(4)->setName("Gamma");
     ui->widget_2->graph(4)->setData(fxc, gamma_arr);
 
     ui->widget_2->addGraph();
-    ui->widget_2->graph(5)->setPen(QPen(Qt::darkGray));
+    ui->widget_2->graph(5)->setPen(QPen(Qt::darkYellow));
     ui->widget_2->graph(5)->setName("H-Gamma");
     ui->widget_2->graph(5)->setData(fxc, hgamma_arr);
 

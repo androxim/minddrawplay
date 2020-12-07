@@ -1,3 +1,6 @@
+/* source file for brainlevels class -
+   responsible for showing attention/meditation values and set borders */
+
 #include "brainlevels.h"
 #include "ui_brainlevels.h"
 #include <QCloseEvent>
