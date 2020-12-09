@@ -670,6 +670,17 @@ void onMouse( int event, int x, int y, int flags, void* )   // Mouse clicks and 
 
             if (ocvform->currfilttype==5)
                 smoothtransp(srcDstRect,false);
+            else
+            {
+                if (ocvform->circle_brush)
+                {
+                    Mat mask_image(dstt.size(), CV_8U, Scalar(0)); // mask to have only circle of region
+                    circle(mask_image, Point(mask_image.rows / 2, mask_image.cols / 2), ocvform->currfilterarea/2, CV_RGB(255, 255, 255),-1,LINE_AA);
+                    dstt.copyTo(dst(srcDstRect),mask_image);
+                }
+                else
+                    dstt.copyTo(dst(srcDstRect));
+            }
 
             menu_area = dst(Rect(ocvform->l_menu_posx-5,ocvform->l_menu_posy-30,ocvform->lmenuw,ocvform->lmenuh)).clone();
 
@@ -692,6 +703,17 @@ void onMouse( int event, int x, int y, int flags, void* )   // Mouse clicks and 
 
         if (ocvform->currfilttype==5)            
             smoothtransp(srcDstRect,false);
+        else
+        {
+            if (ocvform->circle_brush)
+            {
+                Mat mask_image(dstt.size(), CV_8U, Scalar(0)); // mask to have only circle of region
+                circle(mask_image, Point(mask_image.rows / 2, mask_image.cols / 2), ocvform->currfilterarea/2, CV_RGB(255, 255, 255),-1,LINE_AA);
+                dstt.copyTo(dst(srcDstRect),mask_image);
+            }
+            else
+                dstt.copyTo(dst(srcDstRect));
+        }
 
         menu_area = dst(Rect(ocvform->l_menu_posx-5,ocvform->l_menu_posy-30,ocvform->lmenuw,ocvform->lmenuh)).clone();
 
@@ -2400,11 +2422,8 @@ void MainWindow::keys_processing()      // processing keys pressing
         ocvform->plotdroprect=!ocvform->plotdroprect;
         ocvform->updateformvals();
     }
-    else if (key == '-')                        // hide / show label of attention
-    {
-       // label_area = dst(Rect(ocvform->l_posx-5,ocvform->l_posy-60,ocvform->lw,ocvform->lh)).clone();
-        ocvform->showmenu = !ocvform->showmenu;
-    }
+    else if (key == '-')                        // hide / show menu
+        ocvform->showmenu = !ocvform->showmenu;        
     else if ((key == 'z') && (!ocvform->color_overlay_flow))     // change filter on the left one
     {
         if (ocvform->currfilttype==1)

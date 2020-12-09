@@ -17,7 +17,8 @@ statistics::statistics(QWidget *parent) :
         filtbraindata[i] = QVector<double>(); // vectors for smoothed plots
     }
 
-    smoothplots = false;
+    smoothplots = true;
+    ui->checkBox_9->setChecked(smoothplots);
     show_theta = show_delta = show_alpha = show_beta = show_gamma = show_hgamma = show_att = show_medit = true;
 
     bars_x = QVector<double>();

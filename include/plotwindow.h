@@ -21,6 +21,8 @@
 #include "opencv2/core.hpp"
 #include "opencv2/opencv.hpp"
 #include "opencv2/imgproc.hpp"
+#include <SFML/Audio.hpp>
+#include <SFML/Audio/Sound.hpp>
 
 #define NMAX 15360 // max length of single EEG line, 15360: 30 sec for 512 sampling rate
 
@@ -64,10 +66,9 @@ public:
     brainlevels* brl;       // pointer on BrainLevels window object
 
     soundplayer* splayer; // sound player objects with sound samples associated with own thread
-    soundplayer* splayer2;
     QStringList strLst2; QStringListModel *strLstM2;  // list of playing tones
     QString tones, lasttones, currpicfilename;
-    QString recfilename, start_sessiom_time;
+    QString recfilename, start_sessiom_time, st_stylesheet;
     ostringstream streamrec;
     QFile recordFile;
 
@@ -88,13 +89,12 @@ public:
     QVector<int> delta_vals, theta_vals, alpha_vals, beta_vals, gamma_vals;
 
     double** rawdata; int* indexes; int* tvals; int* tonedelays;
-    int srfr, numst, imlength, stlength, drawshift, graphcount, scaletimeout;
+    int srfr, numst, imlength, stlength, drawshift, graphcount, scaletimeout, wavessound_volume;
     int stepsPerPress, tonenumbers, maxtones, chorddelay, mxttimeout, curmodval, nums_waves_values;
     int counter, stims, recparts, chnums, sampleblock, sourcech, picchangeborder;
     int simsrfr, maxtonerepeats, memorylength, attent, minvolumebord, meditt;
     int maxshown_eeglines, xraw, delta, theta, alpha, beta, gamma, hgamma;
-    double meandelta, meantheta, meanalpha, meanbeta, meangamma, meanhgamma;
-    double eyes_ar, eyes_volume_val;
+    double meandelta, meantheta, meanalpha, meanbeta, meangamma, meanhgamma;    
     int sdelta, stheta, salpha, sbeta, sgamma, shgamma, points_for_mean, recordwaves_rate;
     int tv1, tv2, tv3, tv4, tv5, tv6, tv7, tv8, tv9, tv10;
     int nextdrawshift, tonescheck, total_intervals;
@@ -108,7 +108,7 @@ public:
     bool filteringback, blurback, hidebutt, attention_interval, fixback, colorizeback;
     bool attention_modulation, start, brainflow_on, estimation, updatewavesplot;
     bool usefiltering, musicmode_on, flowblinking, scalechange, adaptivepicsborder;
-    bool spacemode, tank1mode, tank2mode, recordstarted, antirepeat, randmxt;       
+    bool spacemode, tank1mode, tank2mode, recordstarted, antirepeat, randmxt, waves_sound_modul;
     bool mindwstart, fftfreqs, attention_volume, keys_emulated, simeeg, est_attention_modulation;
     bool paintfstart, rawsignalabove, camerainp, oscstreaming, savewavestofile;
     bool switchtonesset_by_att, playthetavibe, playalphavibe, playbetavibe, playgammavibe;
@@ -139,6 +139,8 @@ public:
     void plot(QCustomPlot *customPlot);
     void doplot();   
 
+    void initbacksounds();
+    void set_backsounds_mode(int val);
     void updatedata(int start);
     void getandprocess_eeg_data(double d1);
     void get_multichan_rawdata(int chn, double val);
@@ -395,6 +397,8 @@ private slots:
     void on_checkBox_18_clicked();
 
     void on_spinBox_valueChanged(int arg1);
+
+    void on_checkBox_19_clicked();
 
 private:
     Ui::plot *ui;

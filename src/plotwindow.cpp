@@ -30,6 +30,9 @@
 const complex<double> I(0.0,1.0);
 typedef std::complex<double> Complex;
 
+sf::SoundBuffer buf1, buf2, buf3, buf4;
+sf::Sound thetasound, alphasound, betasound, gammasound;
+
 plotwindow::plotwindow(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::plot)
@@ -55,8 +58,8 @@ plotwindow::plotwindow(QWidget *parent) :
     simsrfr = 500; // frequency of simulated EEG flow
     picchangeborder = 70; // border for changing back image by attention>border
     buffercount = 0; // number of points in data buffer
-    nemehanika_bord = 64; // border of color changes in neMehanika emulation
-    eyes_volume_val = 77; // default value for modulation volume by eyes
+    nemehanika_bord = 64; // border of color changes in neMehanika emulation    
+    wavessound_volume = 30; // volume value for additional background 4 sounds
     total_intervals = 0; // total number of processed intervals of data
     tonesets_border1 = 30; // border1 for tones set switch by attention/meditation
     tonesets_border2 = 70; // border2 for tones set switch by attention/meditation
@@ -89,10 +92,11 @@ plotwindow::plotwindow(QWidget *parent) :
     adaptivepicsborder = false; // adaptive border based on attention/meditation for background pics change
     savewavestofile = true; // saving brain waves data to file
     switchtonesset_by_att = false; // switch tones set by attention/meditation values intervals
-    playthetavibe = false;  // play sound sample for theta wave expression, stringsample8
-    playalphavibe = false;  // play sound sample for alpha wave expression, stringsample1
-    playbetavibe = false;   // play sound sample for beta wave expression, stringsample7
-    playgammavibe = false;  // play sound sample for gamma wave expression, stringsample2
+    playthetavibe = false;      // play sound sample for theta wave expression, stringsample8
+    playalphavibe = false;      // play sound sample for alpha wave expression, stringsample1
+    playbetavibe = false;       // play sound sample for beta wave expression, stringsample7
+    playgammavibe = false;      // play sound sample for gamma wave expression, stringsample2
+    waves_sound_modul = false;  // waves background sound modulation by attention / meditation
 
     strLstM2 = new QStringListModel();      // list of determined tones
     strLstM2->setStringList(strLst2);
@@ -182,19 +186,43 @@ plotwindow::plotwindow(QWidget *parent) :
     // pointers on QPixmap and QPainter for filtering, allocated and deleted each filtering time
     pmvr = new QPixmap();
     sceneforfilt.addItem(&itemforfilt);
-    resforfilt=QImage(QSize(1500, 800), QImage::Format_ARGB32);
+    resforfilt = QImage(QSize(1500, 800), QImage::Format_ARGB32);
     ptr = new QPainter(&resforfilt);
 
     splayer = new soundplayer();    // sound player for tones playing
-    splayer2 = new soundplayer();   // sound player for waves vibes playing
+    splayer->init(); // initialization of sound player: tones and play slots in separate threads  
 
-    splayer->init(); // initialization of sound player: tones and play slots in separate threads
-    splayer2->init(); splayer2->setvolume(0.2f);  
+    // initialization of brain waves background sounds
+    initbacksounds();
 }
 
 plotwindow::~plotwindow()
-{
+{    
     delete ui;
+}
+
+void plotwindow::initbacksounds() // initialization of brain waves background sounds
+{
+    QResource thetaSound(":/sounds/sounds/strings-sample-8.wav");
+    buf1.loadFromMemory(thetaSound.data(), thetaSound.size());
+    thetasound.setBuffer(buf1);
+    thetasound.setLoop(true);
+    thetasound.setVolume(wavessound_volume);
+    QResource alphaSound(":/sounds/sounds/strings-sample-1.wav");
+    buf2.loadFromMemory(alphaSound.data(), alphaSound.size());
+    alphasound.setBuffer(buf2);
+    alphasound.setLoop(true);
+    alphasound.setVolume(wavessound_volume);
+    QResource betaSound(":/sounds/sounds/strings-sample-7.wav");
+    buf3.loadFromMemory(betaSound.data(), betaSound.size());
+    betasound.setBuffer(buf3);
+    betasound.setLoop(true);
+    betasound.setVolume(wavessound_volume);
+    QResource gammaSound(":/sounds/sounds/strings-sample-2.wav");
+    buf4.loadFromMemory(gammaSound.data(), gammaSound.size());
+    gammasound.setBuffer(buf4);
+    gammasound.setLoop(true);
+    gammasound.setVolume(wavessound_volume);
 }
 
 void plotwindow::doplot() // configure ui elements
@@ -356,9 +384,8 @@ void plotwindow::doplot() // configure ui elements
     ui->label_25->setVisible(false);
     ui->spinBox_22->setVisible(false);
     ui->checkBox_2->setGeometry(1050,920,164,25);
-    ui->label_17->setGeometry(1220,922,87,21);
-    ui->checkBox_8->setGeometry(1365,922,165,21);
-    ui->spinBox_16->setGeometry(1317,922,40,21);
+    ui->label_17->setGeometry(1212,922,61,20);
+    ui->spinBox_16->setGeometry(1282,922,35,20);
     ui->spinBox_16->setValue(scaletimeout);
 
     ui->spinBox_2->setValue(tvals[0]);
@@ -385,9 +412,8 @@ void plotwindow::doplot() // configure ui elements
     ui->pushButton_6->setGeometry(1290,810,75,25);
     ui->pushButton_23->setGeometry(1375,810,75,25);
     ui->spinBox->setGeometry(1460,810,40,25);
-    ui->verticalSlider->setGeometry(1500,800,20,40);
-    ui->spinBox->setVisible(false);
-    ui->verticalSlider->setVisible(false);
+    ui->spinBox->setValue(wavessound_volume);
+    ui->verticalSlider->setGeometry(1500,800,20,40);        
     ui->spinBox_7->setEnabled(false);
 
     ui->checkBox_6->setChecked(false);
@@ -397,14 +423,16 @@ void plotwindow::doplot() // configure ui elements
     ui->checkBox_5->setGeometry(1210,900,125,25);
 
     ui->checkBox->setGeometry(1435,840,125,25);
-    ui->checkBox_16->setGeometry(1435,860,125,25);
-    ui->checkBox_17->setGeometry(1435,880,125,25);
-    ui->checkBox_18->setGeometry(1435,900,125,25);
+    ui->checkBox_16->setGeometry(1435,860,81,25);
+    ui->checkBox_17->setGeometry(1435,880,81,25);
+    ui->checkBox_18->setGeometry(1435,900,81,25);
+    ui->checkBox_19->setGeometry(1435,920,91,25);
 
-    ui->radioButton->setGeometry(1330,846,95,20);
     ui->comboBox->setGeometry(580,26,110,20);
+    ui->radioButton->setGeometry(1330,846,95,20);    
     ui->radioButton_2->setGeometry(1330,866,95,20);
     ui->radioButton_3->setGeometry(1330,886,95,20);
+    ui->checkBox_8->setGeometry(1330,906,100,20);
 
     ui->pushButton->setGeometry(1200,880,70,25);
     ui->pushButton_6->setVisible(true);
@@ -447,6 +475,8 @@ void plotwindow::doplot() // configure ui elements
     ui->spinBox_5->setGeometry(260,28,50,20);
     ui->checkBox_12->setGeometry(330,28,190,20);
 
+    st_stylesheet = ui->checkBox_12->styleSheet();
+
     if (mindwstart)
         ui->horizontalSlider->setValue(imlength*1.953125);
     else if (simeeg)
@@ -469,6 +499,10 @@ void plotwindow::doplot() // configure ui elements
     imglist = fd.entryList(QStringList() << "*.jpg" << "*.JPG", QDir::Files);
 
     plot(ui->widget);
+
+    playthetavibe = true;
+    ui->checkBox->setChecked(playthetavibe);
+    thetasound.play();
 }
 
 void plotwindow::plot(QCustomPlot *customPlot) // configure plot for brain waves flow
@@ -620,6 +654,12 @@ bool plotwindow::eventFilter(QObject *target, QEvent *event)
                 record_waves_tofile->start();
                 if (ui->checkBox_4->isChecked())
                     musicmode_on=true;
+                alphasound.setVolume(0);
+                alphasound.play();
+                betasound.setVolume(0);
+                betasound.play();
+                gammasound.setVolume(0);
+                gammasound.play();
             }
         }        
     }
@@ -995,7 +1035,6 @@ void plotwindow::quitthreads()  // quit thread with timers for tones determinati
 {
     tr1->quit();
     emit splayer->stopThread();
-    emit splayer2->stopThread();
 }
 
 void plotwindow::update_brainexp_levels(int d, int md, int t, int mt, int a, int ma, int b, int mb, int g, int mg)
@@ -1085,6 +1124,41 @@ void plotwindow::update_curr_attention(int t)
     curr_att = t;
 }
 
+// set background sounds playing by attention / meditation value changes
+void plotwindow::set_backsounds_mode(int val)
+{
+    if (val>50)
+    {
+        alphasound.setVolume(attent);
+        ui->checkBox_16->setChecked(true);
+    }
+    else
+    {
+        alphasound.setVolume(0);
+        ui->checkBox_16->setChecked(false);
+    }
+    if (val>65)
+    {
+        betasound.setVolume(attent);
+        ui->checkBox_17->setChecked(true);
+    }
+    else
+    {
+        betasound.setVolume(0);
+        ui->checkBox_17->setChecked(false);
+    }
+    if (val>85)
+    {
+        gammasound.setVolume(attent);
+        ui->checkBox_18->setChecked(true);
+    }
+    else
+    {
+        gammasound.setVolume(0);
+        ui->checkBox_18->setChecked(false);
+    }
+}
+
 // updated attention value, check conditions on volume, back image and tones change
 void plotwindow::update_attention(int t)
 {
@@ -1127,6 +1201,10 @@ void plotwindow::update_attention(int t)
         else
             on_radioButton_2_clicked(); // play tank2
     }
+
+    // waves background sound modulation
+    if (waves_sound_modul)
+        set_backsounds_mode(attent);
 }
 
 void plotwindow::update_curr_meditation(int t)
@@ -1176,6 +1254,10 @@ void plotwindow::update_meditation(int t)
         else
             on_radioButton_2_clicked(); // play tank2
     }
+
+    // waves background sound modulation
+    if (waves_sound_modul)
+        set_backsounds_mode(meditt);
 }
 
 void plotwindow::radiobut1()    // switch on tankdrum1 tones from MindDraw window
@@ -3222,7 +3304,8 @@ void plotwindow::on_comboBox_currentIndexChanged(int index) // attention / medit
             est_attention_modulation=false;
         ui->progressBar->setPalette(sp1);
         ui->checkBox_12->setText("attention modulation");   
-        ui->checkBox_8->setText("tones sets by attention");
+        ui->checkBox_8->setText("by attention");
+        ui->checkBox_19->setText("by attention");
         ui->comboBox_2->setItemText(1,"by attention");
         brl->settonesbordervisible(switchtonesset_by_att,true);
        // ui->label_23->setVisible(true);
@@ -3233,7 +3316,8 @@ void plotwindow::on_comboBox_currentIndexChanged(int index) // attention / medit
         attention_modulation=false;
         ui->progressBar->setPalette(sp2);
         ui->checkBox_12->setText("meditation modulation");
-        ui->checkBox_8->setText("tones sets by meditation");
+        ui->checkBox_8->setText("by meditation");
+        ui->checkBox_19->setText("by meditation");
         ui->comboBox_2->setItemText(1,"by meditation");
         brl->settonesbordervisible(switchtonesset_by_att,false);
        // ui->label_23->setVisible(false);
@@ -3339,13 +3423,27 @@ void plotwindow::on_checkBox_8_clicked()
 {
     switchtonesset_by_att = !switchtonesset_by_att;
     if (!switchtonesset_by_att)
+    {
         brl->settonesbordervisible(switchtonesset_by_att,true);
+        ui->radioButton->setEnabled(true);
+        ui->radioButton_2->setEnabled(true);
+        ui->radioButton_3->setEnabled(true);
+        ui->radioButton->setStyleSheet(st_stylesheet);
+        ui->radioButton_2->setStyleSheet(st_stylesheet);
+        ui->radioButton_3->setStyleSheet(st_stylesheet);
+    }
     else
     {
         if (attention_modulation)
             brl->settonesbordervisible(switchtonesset_by_att,true);
         else
             brl->settonesbordervisible(switchtonesset_by_att,false);
+        ui->radioButton->setEnabled(false);
+        ui->radioButton_2->setEnabled(false);
+        ui->radioButton_3->setEnabled(false);
+        ui->radioButton->setStyleSheet("QRadioButton { background-color: yellow; }");
+        ui->radioButton_2->setStyleSheet("QRadioButton { background-color: yellow; }");
+        ui->radioButton_3->setStyleSheet("QRadioButton { background-color: yellow; }");
     }
 }
 
@@ -3403,39 +3501,78 @@ void plotwindow::on_checkBox_clicked()
 {
     playthetavibe = !playthetavibe;
     if (playthetavibe)
-        emit splayer2->playstringsample8();
+        thetasound.play();
     else
-        emit splayer2->stopstringsample8();
+        thetasound.stop();
 }
 
 void plotwindow::on_checkBox_16_clicked()
 {
     playalphavibe = !playalphavibe;
     if (playalphavibe)
-        emit splayer2->playstringsample1();
+       alphasound.play();
     else
-        emit splayer2->stopstringsample1();
+       alphasound.stop();
 }
 
 void plotwindow::on_checkBox_17_clicked()
 {
     playbetavibe = !playbetavibe;
     if (playbetavibe)
-        emit splayer2->playstringsample7();
+        betasound.play();
     else
-        emit splayer2->stopstringsample7();
+        betasound.stop();
 }
 
 void plotwindow::on_checkBox_18_clicked()
 {
     playgammavibe = !playgammavibe;
     if (playgammavibe)
-        emit splayer2->playstringsample2();
+        gammasound.play();
     else
-        emit splayer2->stopstringsample2();
+        gammasound.stop();
 }
 
 void plotwindow::on_spinBox_valueChanged(int arg1)
 {
-    splayer2->setvolume((double)arg1/100);
+    wavessound_volume = arg1;
+    thetasound.setVolume(wavessound_volume);
+    if (!waves_sound_modul)
+    {
+        alphasound.setVolume(wavessound_volume);
+        betasound.setVolume(wavessound_volume);
+        gammasound.setVolume(wavessound_volume);
+    }
+}
+
+void plotwindow::on_checkBox_19_clicked()
+{
+    waves_sound_modul = !waves_sound_modul;
+    if (waves_sound_modul)
+    {
+        alphasound.play();
+        betasound.play();
+        gammasound.play();
+        ui->checkBox_16->setEnabled(false);
+        ui->checkBox_17->setEnabled(false);
+        ui->checkBox_18->setEnabled(false);
+        ui->checkBox_16->setStyleSheet("QCheckBox { background-color: yellow; }");
+        ui->checkBox_17->setStyleSheet("QCheckBox { background-color: yellow; }");
+        ui->checkBox_18->setStyleSheet("QCheckBox { background-color: yellow; }");
+    }
+    else
+    {
+        alphasound.stop();
+        betasound.stop();
+        gammasound.stop();
+        ui->checkBox_16->setChecked(false);
+        ui->checkBox_17->setChecked(false);
+        ui->checkBox_18->setChecked(false);
+        ui->checkBox_16->setEnabled(true);
+        ui->checkBox_17->setEnabled(true);
+        ui->checkBox_18->setEnabled(true);
+        ui->checkBox_16->setStyleSheet(st_stylesheet);
+        ui->checkBox_17->setStyleSheet(st_stylesheet);
+        ui->checkBox_18->setStyleSheet(st_stylesheet);
+    }
 }

@@ -1,7 +1,8 @@
 QT += core gui \
       widgets  \
       multimedia \
-      concurrent
+      concurrent \
+      charts
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
 
@@ -75,11 +76,13 @@ FORMS    += ui\mainwindow.ui \
     ui\brainlevels.ui \
     ui\statistics.ui
 
-LIBS += -lwsock32 -lws2_32 -lwinmm -mthreads -L$$PWD/./ -lthinkgear
+LIBS += -lwsock32 -lws2_32 -lwinmm -mthreads -L$$PWD/./ -lthinkgear \
+        -LC:\SFML-2.5.1\build\lib -lsfml-audio
 
 INCLUDEPATH += C:\opencv\build\include \
                $$PWD/include/. \
-               $$PWD/oscpack/.
+               $$PWD/oscpack/. \
+               C:\SFML-2.5.1\include
 
 LIBS += C:\opencv\build\bin\libopencv_core412.dll \
         C:\opencv\build\bin\libopencv_highgui412.dll \
@@ -90,7 +93,7 @@ LIBS += C:\opencv\build\bin\libopencv_core412.dll \
         C:\opencv\build\bin\libopencv_videoio412.dll \
         C:\opencv\build\bin\libopencv_features2d412.dll
 
-DEPENDPATH += $$PWD/.
+DEPENDPATH += $$PWD/. C:\SFML-2.5.1\include
 
 RC_ICONS = mdp_icon.ico
 

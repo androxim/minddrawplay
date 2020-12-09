@@ -37,9 +37,9 @@ ocvcontrols::ocvcontrols(QWidget *parent) :
     ui->spinBox_20->setStyleSheet("QSpinBox { background-color: yellow; }");
 
     sprintf(l_menu_item1,"ESC - stop flow");
-    sprintf(l_menu_item2,"1: color-overlay flow");
+    sprintf(l_menu_item2,"1: color-overlay");
     sprintf(l_menu_item3,"2: dreamflow");
-    sprintf(l_menu_item4,"3: puzzle gathering flow");
+    sprintf(l_menu_item4,"3: puzzle gathering");
 
     ui->comboBox->setEnabled(histFeaturesReady);
     connect(this,&ocvcontrols::flow_direction_available,this,&ocvcontrols::set_flow_direction_available);

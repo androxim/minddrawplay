@@ -33,30 +33,6 @@ void soundplayer::setvolume(qreal volume)
     tone_fsh.setVolume(volume);
     tone_Clowsh.setVolume(volume);
     tone_csh.setVolume(volume);
-    stringsample1.setVolume(volume);
-    stringsample2.setVolume(volume);
-    stringsample7.setVolume(volume);
-    stringsample8.setVolume(volume);
-}
-
-void soundplayer::setvolumesample1(qreal volume)
-{
-    stringsample1.setVolume((volume+stringsample1.volume())/2);
-}
-
-void soundplayer::setvolumesample2(qreal volume)
-{
-    stringsample2.setVolume((volume+stringsample2.volume())/2);
-}
-
-void soundplayer::setvolumesample7(qreal volume)
-{
-    stringsample7.setVolume((volume+stringsample7.volume())/2);
-}
-
-void soundplayer::setvolumesample8(qreal volume)
-{
-    stringsample8.setVolume((volume+stringsample8.volume())/2);
 }
 
 void soundplayer::init()
@@ -91,17 +67,6 @@ void soundplayer::init()
     tone_Clowsh.moveToThread(&m_thread);
     tone_csh.moveToThread(&m_thread);
 
-    stringsample1.setLoopCount(QSoundEffect::Infinite);
-    stringsample2.setLoopCount(QSoundEffect::Infinite);
-    stringsample7.setLoopCount(QSoundEffect::Infinite);
-    stringsample8.setLoopCount(QSoundEffect::Infinite);
-
-    SweetArp.moveToThread(&m_thread);
-    stringsample1.moveToThread(&m_thread);
-    stringsample2.moveToThread(&m_thread);
-    stringsample7.moveToThread(&m_thread);
-    stringsample8.moveToThread(&m_thread);
-
     connect(this, SIGNAL(playGlow()), &Glow, SLOT(play()));
     connect(this, SIGNAL(playD3()), &D3, SLOT(play()));
     connect(this, SIGNAL(playfdiez()), &fdiez, SLOT(play()));
@@ -132,48 +97,10 @@ void soundplayer::init()
     connect(this, SIGNAL(playtone_Clowsh()), &tone_Clowsh, SLOT(play()));
     connect(this, SIGNAL(playtone_csh()), &tone_csh, SLOT(play()));
 
-    connect(this, SIGNAL(playSweetArp()), &SweetArp, SLOT(play()));
-    connect(this, SIGNAL(playstringsample1()), &stringsample1, SLOT(play()));
-    connect(this, SIGNAL(playstringsample2()), &stringsample2, SLOT(play()));
-    connect(this, SIGNAL(playstringsample7()), &stringsample7, SLOT(play()));
-    connect(this, SIGNAL(playstringsample8()), &stringsample8, SLOT(play()));
-
-    connect(this, SIGNAL(stopstringsample1()), &stringsample1, SLOT(stop()));
-    connect(this, SIGNAL(stopstringsample2()), &stringsample2, SLOT(stop()));
-    connect(this, SIGNAL(stopstringsample7()), &stringsample7, SLOT(stop()));
-    connect(this, SIGNAL(stopstringsample8()), &stringsample8, SLOT(stop()));
-
-    connect(this, SIGNAL(stopSweetArp()), &SweetArp, SLOT(stop()));
-
     connect(this, SIGNAL(stopThread()), &m_thread, SLOT(terminate()));
 
    // connect(this, SIGNAL(setvolume(int)), this, SLOT(setvolume(int)));    
     m_thread.start(); // QThread::exec() will be called for you, making the thread wait for events
-}
-
-bool soundplayer::sweetArpPlaying()
-{
-    return SweetArp.isPlaying();
-}
-
-bool soundplayer::stringsample1Playing()
-{
-    return stringsample1.isPlaying();
-}
-
-bool soundplayer::stringsample2Playing()
-{
-    return stringsample2.isPlaying();
-}
-
-bool soundplayer::stringsample7Playing()
-{
-    return stringsample7.isPlaying();
-}
-
-bool soundplayer::stringsample8Playing()
-{
-    return stringsample8.isPlaying();
 }
 
 soundplayer::soundplayer(QObject *parent) : QObject(parent)
@@ -206,9 +133,4 @@ soundplayer::soundplayer(QObject *parent) : QObject(parent)
     tone_fsh.setSource(QUrl::fromLocalFile(":/sounds/sounds/tone_fsh_.wav"));
     tone_Clowsh.setSource(QUrl::fromLocalFile(":/sounds/sounds/tone_Csh.wav"));
     tone_csh.setSource(QUrl::fromLocalFile(":/sounds/sounds/tone_csh_.wav"));    
-    SweetArp.setSource(QUrl::fromLocalFile(":/sounds/sounds/sweet-arp.wav"));    
-    stringsample1.setSource(QUrl::fromLocalFile(":/sounds/sounds/strings-sample-1.wav"));
-    stringsample2.setSource(QUrl::fromLocalFile(":/sounds/sounds/strings-sample-2.wav"));
-    stringsample7.setSource(QUrl::fromLocalFile(":/sounds/sounds/strings-sample-7.wav"));
-    stringsample8.setSource(QUrl::fromLocalFile(":/sounds/sounds/strings-sample-8.wav"));
 }
