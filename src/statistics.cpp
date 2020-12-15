@@ -118,7 +118,7 @@ void statistics::update_plotlines()
     ui->plot->graph(4)->setVisible(show_gamma);
     ui->plot->graph(5)->setVisible(show_hgamma);
     ui->plot_2->graph(0)->setVisible(show_att);
-    ui->plot_2->graph(0)->setVisible(show_medit);
+    ui->plot_2->graph(1)->setVisible(show_medit);
     ui->plot->replot();
     ui->plot_2->replot();
 }
@@ -606,7 +606,7 @@ void statistics::on_checkBox_6_clicked()
 
 void statistics::on_checkBox_7_clicked()
 {
-    show_att = !show_att;
+    show_att = !show_att;    
     update_plotlines();
 }
 
@@ -628,4 +628,9 @@ void statistics::on_checkBox_9_clicked()
             ui->plot->graph(i)->setData(xcoords, braindata[i+3]);    
 
     ui->plot->replot();
+}
+
+void statistics::on_pushButton_2_clicked()
+{
+    mww->stsecond->show();
 }

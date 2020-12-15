@@ -11,6 +11,7 @@
 #include "filters.h"
 
 class filters;
+class MainWindow;
 
 namespace Ui {
 class statistics;
@@ -37,6 +38,7 @@ public:
     QPieSlice* slice4; QPieSlice* slice5; QPieSlice* slice6;
     QChart *chart2; QBarSet *att; QBarSet *medit; QBarSeries *barseries;
     filters *plotsfilt;
+    MainWindow *mww;
 
     explicit statistics(QWidget *parent = 0);
     ~statistics();
@@ -76,6 +78,8 @@ private slots:
     void on_checkBox_8_clicked();
 
     void on_checkBox_9_clicked();
+
+    void on_pushButton_2_clicked();
 
 private:
     Ui::statistics *ui;

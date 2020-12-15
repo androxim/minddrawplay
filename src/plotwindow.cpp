@@ -66,6 +66,8 @@ plotwindow::plotwindow(QWidget *parent) :
     prev_att = curr_att = 0;        // previous and current values of attention (from EEG device)
     prev_medit = curr_medit = 0;    // previous and current values of meditation (from EEG device)
     prev_estatt = curr_estatt = 0;  // previous and current values of attention (from FFT relative power)
+    ogl_angle_change = 0.0;         // openGl rotation angle increment
+    ogl_scale = 1.0;                // openGL scale parameter
 
     simeeg = false; // simulated EEG flow    
     rawsignalabove = true; // flag for position of raw signal plot
@@ -131,7 +133,7 @@ plotwindow::plotwindow(QWidget *parent) :
     record_waves_tofile->connect(record_waves_tofile, SIGNAL(timeout()), this, SLOT(recordwaves_tofile_Update()));
     record_waves_tofile->setInterval(recordwaves_rate);    
 
-    mactivation_timeout = 20; // ms
+    mactivation_timeout = 40; // ms
     mental_activations = new QTimer(this); // timer for smoothing mental activity levels
     mental_activations->connect(mental_activations, SIGNAL(timeout()), this, SLOT(mental_activations_Update()));
     mental_activations->setInterval(mactivation_timeout);
@@ -326,7 +328,7 @@ void plotwindow::doplot() // configure ui elements
     ui->checkBox_14->setGeometry(1141,26,91,20);
     ui->checkBox_11->setGeometry(1241,26,181,20);
     ui->progressBar->setGeometry(700,26,236,20);
-    ui->horizontalSlider_2->setGeometry(700,26,160,20);
+    ui->horizontalSlider_2->setGeometry(700,26,172,20);
     ui->horizontalSlider_2->setValue(picchangeborder);
     ui->horizontalSlider_2->setVisible(false);
     ui->progressBar->setPalette(sp1);
@@ -410,10 +412,10 @@ void plotwindow::doplot() // configure ui elements
     ui->pushButton_4->setGeometry(1030,840,76,25);
     ui->pushButton_25->setGeometry(1150,810,120,25);
     ui->pushButton_6->setGeometry(1290,810,75,25);
-    ui->pushButton_23->setGeometry(1375,810,75,25);
-    ui->spinBox->setGeometry(1460,810,40,25);
+    ui->pushButton_23->setGeometry(1375,810,75,25);   
     ui->spinBox->setValue(wavessound_volume);
     ui->verticalSlider->setGeometry(1500,800,20,40);        
+    ui->verticalSlider->setVisible(false);
     ui->spinBox_7->setEnabled(false);
 
     ui->checkBox_6->setChecked(false);
@@ -423,6 +425,7 @@ void plotwindow::doplot() // configure ui elements
     ui->checkBox_5->setGeometry(1210,900,125,25);
 
     ui->checkBox->setGeometry(1435,840,125,25);
+    ui->spinBox->setGeometry(1460,825,40,18);
     ui->checkBox_16->setGeometry(1435,860,81,25);
     ui->checkBox_17->setGeometry(1435,880,81,25);
     ui->checkBox_18->setGeometry(1435,900,81,25);
@@ -609,13 +612,13 @@ bool plotwindow::eventFilter(QObject *target, QEvent *event)
     {
         // adjust interval length for sampling rate from EEG device or simulated EEG generator
         // scaling of ms values to 512 s.rate points, for example 500 ms - 256 points
-        if (mindwstart)
-            imlength=ui->spinBox_5->value()/1.953125;
-        else if (simeeg)
-        {
-            srfr=500;
-            imlength=ui->spinBox_5->value()/2;
-        }
+//        if (mindwstart)
+//            imlength=ui->spinBox_5->value()/1.953125;
+//        else if (simeeg)
+//        {
+//            srfr=500;
+//            imlength=ui->spinBox_5->value()/2;
+//        }
 
         QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
 
@@ -653,13 +656,7 @@ bool plotwindow::eventFilter(QObject *target, QEvent *event)
                 brainflow_on=true;
                 record_waves_tofile->start();
                 if (ui->checkBox_4->isChecked())
-                    musicmode_on=true;
-                alphasound.setVolume(0);
-                alphasound.play();
-                betasound.setVolume(0);
-                betasound.play();
-                gammasound.setVolume(0);
-                gammasound.play();
+                    musicmode_on=true;            
             }
         }        
     }
@@ -870,11 +867,17 @@ bool plotwindow::eventFilter(QObject *target, QEvent *event)
         if ((keyEvent->key()==Qt::Key_K) && (!filteringback))     // start / stop camera input
             camerainp_on_off();
 
-        if (keyEvent->key()==Qt::Key_M) // start emulation of neMehanika controls
+        if (keyEvent->key()==Qt::Key_H) // start emulation of neMehanika controls
         {
             neuro_neMehanika_camera->start();
             neuro_neMehanika_colors->start();
             brl->show_attentionborder();
+        }
+
+        if (keyEvent->key()==Qt::Key_M) // show main window
+        {
+            this->hide();
+            QApplication::setActiveWindow(mw);
         }
 
         // tones play by keys
@@ -934,6 +937,7 @@ bool plotwindow::eventFilter(QObject *target, QEvent *event)
             this->hide();
             paintf->show();
             paintf->setFocus();
+            QApplication::setActiveWindow(paintf);
         }
 
         if (keyEvent->key()==Qt::Key_CapsLock) // change raw signal plot position
@@ -1072,7 +1076,24 @@ void plotwindow::updatedata(int start) // update EEG data array with new interva
         eegdata[graphcount][start+i]=drawshift+arrc.amp0[buffercount-imlength+i];
 }
 
-void plotwindow::mental_activations_Update()
+void plotwindow::update_openglflow() //  update openGL flow parameters
+{
+    if (attent>95)
+        oglw->changeSpaceTexture();
+
+    ogl_angle_change = ((double)(100-attent)/100)*5;
+    if (ogl_angle_change==0)
+        ogl_angle_change = 0.1;
+
+    if ((attent<50) && (ogl_scale>0.4))
+        ogl_scale -= 0.03;
+    else if ((attent>50) && (ogl_scale<1.3))
+        ogl_scale += 0.03;
+
+    oglw->set_angle_scale_incs(ogl_angle_change,ogl_scale);
+}
+
+void plotwindow::mental_activations_Update()   // timer to update attention / meditation smoothly
 {
     if (abs(curr_att-prev_att)>0)
     {
@@ -1116,7 +1137,7 @@ void plotwindow::mental_activations_Update()
     if ((brl->attention_2nd) || (simeeg))    // update mental activity values on brainlevels form
         brl->updatelevels(prev_estatt,prev_medit);
     else
-        brl->updatelevels(prev_att,prev_medit);
+        brl->updatelevels(prev_att,prev_medit);  
 }
 
 void plotwindow::update_curr_attention(int t)
@@ -1129,31 +1150,34 @@ void plotwindow::set_backsounds_mode(int val)
 {
     if (val>50)
     {
-        alphasound.setVolume(attent);
-        ui->checkBox_16->setChecked(true);
+        playalphavibe = true;
+        ui->checkBox_16->setChecked(true);    
     }
     else
     {
+        playalphavibe = false;
         alphasound.setVolume(0);
         ui->checkBox_16->setChecked(false);
     }
     if (val>65)
     {
-        betasound.setVolume(attent);
-        ui->checkBox_17->setChecked(true);
+        playbetavibe = true;
+        ui->checkBox_17->setChecked(true);    
     }
     else
     {
+        playbetavibe = false;
         betasound.setVolume(0);
         ui->checkBox_17->setChecked(false);
     }
-    if (val>85)
+    if (val>80)
     {
-        gammasound.setVolume(attent);
-        ui->checkBox_18->setChecked(true);
+        playgammavibe = true;
+        ui->checkBox_18->setChecked(true);    
     }
     else
     {
+        playgammavibe = false;
         gammasound.setVolume(0);
         ui->checkBox_18->setChecked(false);
     }
@@ -1172,6 +1196,9 @@ void plotwindow::update_attention(int t)
     if ((!fixback) && (backimageloaded) && (t<picchangeborder))
         if (!canbackchange)
             canbackchange=true;
+
+    if (((filteringback) || (colorizeback) || (blurback)) && (!backimg.isNull()))
+        applyfilteronback();  // filtering background image
 
     // back pic change modulation
     if (!fixback)
@@ -1204,7 +1231,16 @@ void plotwindow::update_attention(int t)
 
     // waves background sound modulation
     if (waves_sound_modul)
-        set_backsounds_mode(attent);
+        set_backsounds_mode(attent);    
+    if (ui->checkBox_16->isChecked())
+        alphasound.setVolume(attent-10);
+    if (ui->checkBox_17->isChecked())
+        betasound.setVolume(attent-15);
+    if (ui->checkBox_18->isChecked())
+        gammasound.setVolume(attent-20);
+
+    // opengl flow modulation
+    update_openglflow();
 }
 
 void plotwindow::update_curr_meditation(int t)
@@ -1258,6 +1294,12 @@ void plotwindow::update_meditation(int t)
     // waves background sound modulation
     if (waves_sound_modul)
         set_backsounds_mode(meditt);
+    if (ui->checkBox_16->isChecked())
+        alphasound.setVolume(meditt-10);
+    if (ui->checkBox_17->isChecked())
+        betasound.setVolume(meditt-15);
+    if (ui->checkBox_18->isChecked())
+        gammasound.setVolume(meditt-20);
 }
 
 void plotwindow::radiobut1()    // switch on tankdrum1 tones from MindDraw window
@@ -1954,8 +1996,8 @@ void plotwindow::analyse_interval() // main function for processing intervals of
     if (brainflow_on)
         total_intervals++;    
 
-    if (((filteringback) || (colorizeback) || (blurback)) && (!backimg.isNull()))
-        applyfilteronback();  // filtering background image
+   // if (((filteringback) || (colorizeback) || (blurback)) && (!backimg.isNull()))
+    //    applyfilteronback();  // filtering background image
 
     if ((brl->attention_2nd) && (attention_modulation) && (switchtonesset_by_att)) // attention modulated switch of tones sets
     {
@@ -3510,7 +3552,10 @@ void plotwindow::on_checkBox_16_clicked()
 {
     playalphavibe = !playalphavibe;
     if (playalphavibe)
+    {
+       alphasound.setVolume(wavessound_volume);
        alphasound.play();
+    }
     else
        alphasound.stop();
 }
@@ -3519,7 +3564,10 @@ void plotwindow::on_checkBox_17_clicked()
 {
     playbetavibe = !playbetavibe;
     if (playbetavibe)
+    {
+        betasound.setVolume(wavessound_volume);
         betasound.play();
+    }
     else
         betasound.stop();
 }
@@ -3528,7 +3576,10 @@ void plotwindow::on_checkBox_18_clicked()
 {
     playgammavibe = !playgammavibe;
     if (playgammavibe)
+    {
+        gammasound.setVolume(wavessound_volume);
         gammasound.play();
+    }
     else
         gammasound.stop();
 }
@@ -3536,13 +3587,7 @@ void plotwindow::on_checkBox_18_clicked()
 void plotwindow::on_spinBox_valueChanged(int arg1)
 {
     wavessound_volume = arg1;
-    thetasound.setVolume(wavessound_volume);
-    if (!waves_sound_modul)
-    {
-        alphasound.setVolume(wavessound_volume);
-        betasound.setVolume(wavessound_volume);
-        gammasound.setVolume(wavessound_volume);
-    }
+    thetasound.setVolume(wavessound_volume);   
 }
 
 void plotwindow::on_checkBox_19_clicked()
@@ -3550,8 +3595,11 @@ void plotwindow::on_checkBox_19_clicked()
     waves_sound_modul = !waves_sound_modul;
     if (waves_sound_modul)
     {
-        alphasound.play();
+        alphasound.setVolume(0);
+        alphasound.play();        
+        betasound.setVolume(0);
         betasound.play();
+        gammasound.setVolume(0);
         gammasound.play();
         ui->checkBox_16->setEnabled(false);
         ui->checkBox_17->setEnabled(false);
@@ -3563,8 +3611,11 @@ void plotwindow::on_checkBox_19_clicked()
     else
     {
         alphasound.stop();
+        playalphavibe = false;
         betasound.stop();
+        playbetavibe = false;
         gammasound.stop();
+        playgammavibe = false;
         ui->checkBox_16->setChecked(false);
         ui->checkBox_17->setChecked(false);
         ui->checkBox_18->setChecked(false);

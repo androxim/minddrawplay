@@ -16,6 +16,7 @@
 #include "ocvcontrols.h"
 #include "brainlevels.h"
 #include "statistics.h"
+#include "openglwin.h"
 
 class plotwindow;
 class appconnect;
@@ -26,6 +27,7 @@ class rightpanel;
 class ocvcontrols;
 class brainlevels;
 class statistics;
+class openglwin;
 
 using namespace std;
 
@@ -62,8 +64,9 @@ public:
     QTimer* picfilt; 
     QTimer* simulateEEG;
     QTimer* dreamflow_timer;
+    QTimer* focuseddflow_timer;
     QTimer* streamflows;
-    QTimer* puzzleflow;
+    QTimer* puzzleflow;    
     QTimer* keyprocess;
     QTime time_take;
 
@@ -80,6 +83,8 @@ public:
     brainlevels *br_levels;
     appconnect *connectWin;
     statistics *statsWin;
+    statistics *stsecond;
+    openglwin *openglw;
 
     explicit MainWindow(QWidget *parent = 0);      
     void printdata(QString str);
@@ -156,6 +161,7 @@ private slots:
     void mindwtUpdate();
     void simulateEEGUpdate();
     void dreamflow_Update();
+    void focuseddflow_Update();
     void streamflows_Update();
     void puzzleflow_Update();
     void keys_processing();
@@ -182,6 +188,8 @@ private slots:
     void on_pushButton_8_clicked();
 
     void on_pushButton_9_clicked();
+
+    void on_pushButton_10_clicked();
 
 private:
     Ui::MainWindow *ui; 

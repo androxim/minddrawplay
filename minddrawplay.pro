@@ -10,7 +10,7 @@ TARGET = MindDrawPlay
 
 TEMPLATE = app
 
-CONFIG += c++11 \
+CONFIG += c++13 \
           resources_big
 
 QMAKE_CXXFLAGS_RELEASE += -mavx
@@ -18,7 +18,7 @@ QMAKE_CXXFLAGS_RELEASE += -mavx
 SOURCES += src\main.cpp\
            src\mainwindow.cpp \
            src\qcustomplot.cpp \
-           src\plotwindow.cpp \
+    src\plotwindow.cpp \
     src\sockstream.cpp \
     src\appconnect.cpp \    
     src\settings.cpp \
@@ -32,7 +32,9 @@ SOURCES += src\main.cpp\
     src\filters.cpp \
     src\myitem.cpp \
     src\brainlevels.cpp \
-	src\statistics.cpp \
+    src\statistics.cpp \
+    src\objloader.cpp \
+    src\openglwin.cpp \
     oscpack\IpEndpointName.cpp \
     oscpack\NetworkingUtils.cpp \
     oscpack\UdpSocket.cpp \
@@ -57,6 +59,8 @@ HEADERS  += include\mainwindow.h \
     include\myitem.h \
     include\brainlevels.h \
     include\statistics.h \
+    include\objloader.h \
+    include\openglwin.h \
     oscpack\IpEndpointName.h \
     oscpack\NetworkingUtils.h \
     oscpack\OscOutboundPacketStream.h \
@@ -67,7 +71,7 @@ HEADERS  += include\mainwindow.h \
 
 FORMS    += ui\mainwindow.ui \
             ui\plotwindow.ui \
-    ui\settings.ui \
+            ui\settings.ui \
     ui\paintform.ui \
     ui\rawsignal.ui \
     ui\leftpanel.ui \
@@ -77,7 +81,7 @@ FORMS    += ui\mainwindow.ui \
     ui\statistics.ui
 
 LIBS += -lwsock32 -lws2_32 -lwinmm -mthreads -L$$PWD/./ -lthinkgear \
-        -LC:\SFML-2.5.1\build\lib -lsfml-audio
+        -LC:\SFML-2.5.1\build\lib -lsfml-audio -lopengl32 -lglu32
 
 INCLUDEPATH += C:\opencv\build\include \
                $$PWD/include/. \

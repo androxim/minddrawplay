@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     MainWindow w;
 
-    w.setFixedSize(648,363);
+    w.setFixedSize(631,340);
     w.setWindowTitle("MindDrawPlay");
 
     w.show();

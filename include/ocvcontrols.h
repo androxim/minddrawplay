@@ -28,7 +28,7 @@ public:
     bool formshown = true, camerainp = false, attent_modul = true;
     bool drawbrushcontour = true; bool drops_by_click_mode = false;
     bool circle_brush = true; bool histFeaturesReady = false; bool opencvstart = false;
-    bool multi_img_dflow = false; bool multi_img_by_att = false;
+    bool multi_img_dflow = false; bool multi_img_by_att = false; bool focuseddreamflow = false;
     int picwidth = 2000, picheight = 1125; bool color_overlay_flow = false;
     int currfilterarea = 250, currfilterrate = 12, currfilttype = 5, totalfilts = 6;
 
@@ -50,8 +50,9 @@ public:
     bool changepic_bytime = false; int changepic_interval = 3; QTimer* pichngT;        // mixer params
     QPoint seed; int x_left, x_right, y_top, y_bottom, drops_interval = 50;            // mixer params
     bool dropsmode = true; QTimer* dropsT; int dropsgrow_step = 24; Scalar wcolor;     // mixer params
-    int firstdrop_size = 50; bool plotdroprect = true; bool drops_by_att = false;      // mixer params
-    bool poly_by_att = true; int pointsinpoly = 3; bool drops_from_mousepos = false;   // mixer params
+    int firstdrop_size = 50; bool plotdroprect = true; bool drops_by_att = false;         // mixer params
+    bool poly_by_att = true; int pointsinpoly = 3; int focuseddreamflowrate = 5;       // mixer params
+    bool drops_from_mousepos = false; int fdfarea = 200; bool fdfarea_byatt = false;   // mixer params
 
     bool attmodul_area = false; bool attent_modulated_dreams = false;    // attention modulated filter area and rate of dreamflow
     bool hueonly = false; bool transp_by_att = false;                    // hue only, without overlay; transparency by attention    
@@ -59,7 +60,7 @@ public:
     int flowdirection = 0; Mat randpic; int allngb = 30, ngbarea = 20; // area of neighbours for nearest / farest pic
     // 0: "random" - next pic is randomly from all, 1: "similar" - from N nearest, -1: "opposite" - from N farest
 
-    bool showmenu = true; char l_str[50];  // attention label parameters
+    bool showmenu = false; char l_str[50];  // attention label parameters
     char l_menu_item1[50], l_menu_item2[50], l_menu_item3[50], l_menu_item4[50];
     int l_posx = 1500, l_posy = 80, lfont_scale = 4, lfont_size = 5, lw = 484, lh = 80;
     int l_menu_posx = 30, l_menu_posy = 50, l_menu_fontsize = 3, l_menu_fontscale = 3, lmenuw = 625, lmenuh = 180;
@@ -77,6 +78,7 @@ public:
     void setcameracheckbox(bool fl);
     void blocktabs(int i);
     void setfilterarea(int t);
+    void setfdfarea(int t);
     explicit ocvcontrols(QWidget *parent = 0);
     ~ocvcontrols();
 
@@ -225,6 +227,14 @@ private slots:
     void on_horizontalSlider_2_valueChanged(int value);
 
     void on_horizontalSlider_4_valueChanged(int value);
+
+    void on_checkBox_25_clicked();
+
+    void on_spinBox_23_valueChanged(int arg1);
+
+    void on_checkBox_26_clicked();
+
+    void on_spinBox_26_valueChanged(int arg1);
 
 private:
     Ui::ocvcontrols *ui;

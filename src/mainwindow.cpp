@@ -81,12 +81,12 @@ bool mwconnected = false;
 bool rawplotshort = true;
 bool simulated_eeg = false;
 
-int elem1 = 255;  // HUE variable
-int elem2 = 255;  // Saturation
-int elem3 = 255;  // Value
-int elem4 = 50;   // Attention
-int elem5 = 50;   // Overlay
-int elem6 = 80;   // Border for change of pictures
+int hue_elem = 255;  // HUE variable
+int satur_elem = 255;  // Saturation
+int value_elem = 255;  // Value
+int atten_elem = 50;   // Attention
+int overlay_elem = 50;   // Overlay
+int border_elem = 80;   // Border for change of pictures
 
 VideoCapture cam;
 vector<vector<float>> hist_features; // vector of histogramm features for all pics
@@ -152,23 +152,23 @@ MainWindow::MainWindow(QWidget *parent) :
     paintw->setFixedSize(1560,970);    
     plotw->paintf = paintw;
 
-    rs = new rawsignal();           // raw signal form
+    rs = new rawsignal();                // raw signal plot form
     rs->setGeometry(0,0,1600,70);
     rs->move(158,0);
     // rs->starting();
     plotw->rws=rs;
 
-    leftpw = new leftpanel();
+    leftpw = new leftpanel();            // lefp panel for pics choice (main pic)
     leftpw->mww = this;
     leftpw->setFixedSize(148,1030);
     leftpw->move(QPoint(0,0));
 
-    rightpw = new rightpanel();
+    rightpw = new rightpanel();          // right panel for pics choice (overlay pic)
     rightpw->mww = this;
     rightpw->setFixedSize(148,1030);
     rightpw->move(QPoint(1769,0));
 
-    ocvform = new ocvcontrols();    // openCV filters controls form
+    ocvform = new ocvcontrols();         // openCV controls form
     ocvform->mww = this;
     ocvform->setFixedSize(1171,130);
     ocvform->move(QPoint(373,900));
@@ -176,7 +176,7 @@ MainWindow::MainWindow(QWidget *parent) :
     plotw->ocvf = ocvform;
     paintw->ocvfm = ocvform;
 
-    br_levels = new brainlevels();
+    br_levels = new brainlevels();      // mental activity levels form
     br_levels->setFixedSize(701,40);
     br_levels->mww = this;
     br_levels->plw = plotw;
@@ -187,6 +187,16 @@ MainWindow::MainWindow(QWidget *parent) :
     statsWin->setWindowTitle("MindDrawPlay | Statistics");
     statsWin->setFixedSize(1113,685);
     statsWin->recordrate = (double)plotw->recordwaves_rate/1000;
+    statsWin->mww = this;
+    stsecond = new statistics();
+    stsecond->setWindowTitle("MindDrawPlay | Statistics");
+    stsecond->setFixedSize(1113,685);
+    stsecond->recordrate = (double)plotw->recordwaves_rate/1000;
+
+    openglw = new openglwin();
+    openglw->mww = this;
+    openglw->setWindowTitle("MindDrawPlay | MindOGL");
+    plotw->oglw = openglw;
 
     loadFolderpath();
     plotw->folderpath = folderpath;
@@ -235,7 +245,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     mindwt = new QTimer(this);  // timer for processing data from MindWave device
     mindwt->connect(mindwt, SIGNAL(timeout()), this, SLOT(mindwtUpdate()));
-    mindwt->setInterval(0);
+    mindwt->setInterval(1);
 
     // ==== set of variables for simulated EEG data mode (in development) ====
     srfr = 500; // sampling rate
@@ -266,6 +276,10 @@ MainWindow::MainWindow(QWidget *parent) :
     dreamflow_timer = new QTimer(this);     // timer for dreamflow mode, when new picture appears by fragments
     dreamflow_timer->connect(dreamflow_timer, SIGNAL(timeout()), this, SLOT(dreamflow_Update()));
     dreamflow_timer->setInterval(ocvform->dreamflowrate);
+
+    focuseddflow_timer = new QTimer(this);     // timer for focused dreamflow mode, when overlay pic is changing
+    focuseddflow_timer->connect(focuseddflow_timer, SIGNAL(timeout()), this, SLOT(focuseddflow_Update()));
+    focuseddflow_timer->setInterval(ocvform->focuseddreamflowrate*1000);
 
     puzzleflow = new QTimer(this); // timer for puzzle gathering flow
     puzzleflow->connect(puzzleflow, SIGNAL(timeout()), this, SLOT(puzzleflow_Update()));
@@ -448,9 +462,9 @@ void Processing() // processing of HUE, Saturation, Value changes
 {
     cvtColor(src,img,COLOR_RGB2HSV);
 
-    int hue = elem1 - 255;
-    int saturation = elem2 - 255;
-    int value = elem3 - 255;
+    int hue = hue_elem - 255;
+    int saturation = satur_elem - 255;
+    int value = value_elem - 255;
 
     for(int y=0; y<img.cols; y++)
     {
@@ -524,7 +538,7 @@ void Processing() // processing of HUE, Saturation, Value changes
 
 void ProcessingMix() // processing of overlay changes, alphaval - transparency
 {
-    alphaval = (double) elem5 / 100;    
+    alphaval = (double) overlay_elem / 100;
     if ((estattention) || (simulated_eeg))  // if MindWave connected and attention values are streaming
     {               
         if (ocvform->color_overlay_flow)
@@ -606,7 +620,7 @@ void smoothtransp(Rect srcDstRect, bool indreamflow)
                 if (ocvform->circle_brush)
                 {
                     if (!ocvform->dropsmode)
-                        circle(mask_image, Point(mask_image.rows / 2, mask_image.cols / 2), ocvform->currfilterarea/2, CV_RGB(255, 255, 255),-1,LINE_AA);
+                        circle(mask_image, Point(mask_image.rows / 2, mask_image.cols / 2), mask_image.rows/2, CV_RGB(255, 255, 255),-1,LINE_AA);
                     else
                         circle(mask_image, Point(mask_image.rows / 2, mask_image.cols / 2), ocvform->drflow_area/2, CV_RGB(255, 255, 255),-1,LINE_AA);
                 }
@@ -615,7 +629,7 @@ void smoothtransp(Rect srcDstRect, bool indreamflow)
                 fillpolygon(mask_image);
         }
         else
-            circle(mask_image, Point(mask_image.rows / 2, mask_image.cols / 2), ocvform->currfilterarea/2, CV_RGB(255, 255, 255),-1,LINE_AA);
+            circle(mask_image, Point(mask_image.rows / 2, mask_image.cols / 2), mask_image.rows / 2, CV_RGB(255, 255, 255),-1,LINE_AA);
 
         blob.copyTo(dst(srcDstRect),mask_image);
     }
@@ -625,45 +639,64 @@ void smoothtransp(Rect srcDstRect, bool indreamflow)
 
 void onMouse( int event, int x, int y, int flags, void* )   // Mouse clicks and moves processing
 {    
-    if ((!ocvform->color_overlay_flow) && (event == EVENT_MOUSEWHEEL) && (y<dst.rows-ocvform->currfilterarea/2) && (x<dst.cols-ocvform->currfilterarea/2) && (y>ocvform->currfilterarea/2) && (x>ocvform->currfilterarea/2))
+    int margin;
+    if (!ocvform->focuseddreamflow)
+        margin = ocvform->currfilterarea;
+    else
+        margin = ocvform->fdfarea;
+
+    // change of brush areas for dream flow and focused dreamflow
+    if ((!ocvform->color_overlay_flow) && (event == EVENT_MOUSEWHEEL) && (y<dst.rows-margin/2) && (x<dst.cols-margin/2) && (y>margin/2) && (x>margin/2))
     {
         if (getMouseWheelDelta(flags) > 0)
         {
-            if (ocvform->currfilterarea<790)
-                ocvform->setfilterarea(ocvform->currfilterarea+10);
+            if (margin<790)
+            {
+                if (!ocvform->focuseddreamflow)
+                    ocvform->setfilterarea(ocvform->currfilterarea+10);
+                else
+                    ocvform->setfdfarea(ocvform->fdfarea+10);
+            }
         }
         else
         {
-            if (ocvform->currfilterarea>50)
-                ocvform->setfilterarea(ocvform->currfilterarea-10);
+            if (margin>50)
+            {
+                if (!ocvform->focuseddreamflow)
+                    ocvform->setfilterarea(ocvform->currfilterarea-10);
+                else
+                    ocvform->setfdfarea(ocvform->fdfarea-10);
+            }
         }
     }
 
-    if ((!ocvform->color_overlay_flow) && (event == EVENT_MOUSEMOVE) && (y<dst.rows-ocvform->currfilterarea/2) && (x<dst.cols-ocvform->currfilterarea/2) && (y>ocvform->currfilterarea/2) && (x>ocvform->currfilterarea/2))
+    if ((!ocvform->color_overlay_flow) && (event == EVENT_MOUSEMOVE) && (y<dst.rows-margin/2) && (x<dst.cols-margin/2) && (y>margin/2) && (x>margin/2))
     {
         // draw brush contour
         if (ocvform->drawbrushcontour)
         {
             dst0.release();
             dst0 = dst.clone();
-            if (ocvform->circle_brush)
-                circle(dst0, Point(x, y), ocvform->currfilterarea/2, CV_RGB(255, 255, 255),0,LINE_AA);
+            if (ocvform->circle_brush)                            
+                circle(dst0, Point(x, y), margin/2, CV_RGB(255, 255, 255),0,LINE_AA);
             else
-                rectangle(dst0, Rect(x-ocvform->currfilterarea/2, y-ocvform->currfilterarea/2, ocvform->currfilterarea, ocvform->currfilterarea), CV_RGB(255, 255, 255),0,LINE_AA);
+                rectangle(dst0, Rect(x-margin/2, y-margin/2, margin, margin), CV_RGB(255, 255, 255),0,LINE_AA);
             imshow("MindOCV", dst0);
         }
     }
-    if ((!ocvform->color_overlay_flow) && (event == EVENT_MOUSEMOVE) && (y<dst.rows-ocvform->currfilterarea/2) && (x<dst.cols-ocvform->currfilterarea/2) && (y>ocvform->currfilterarea/2) && (x>ocvform->currfilterarea/2))
+
+    if ((!ocvform->color_overlay_flow) && (event == EVENT_MOUSEMOVE) && (y<dst.rows-margin/2) && (x<dst.cols-margin/2) && (y>margin/2) && (x>margin/2))
     {
         ocvform->currmousepos.setX(x);
         ocvform->currmousepos.setY(y);        
     }
-    if ((!ocvform->color_overlay_flow) && (event == EVENT_MOUSEMOVE) && ((flags ==  EVENT_FLAG_LBUTTON) || (keepfiltering)) && (y<dst.rows-ocvform->currfilterarea/2) && (x<dst.cols-ocvform->currfilterarea/2) && (y>ocvform->currfilterarea/2) && (x>ocvform->currfilterarea/2))
+
+    if ((!ocvform->color_overlay_flow) && (event == EVENT_MOUSEMOVE) && ((flags ==  EVENT_FLAG_LBUTTON) || (keepfiltering)) && (y<dst.rows-margin/2) && (x<dst.cols-margin/2) && (y>margin/2) && (x>margin/2))
     {      
-        curr_iter++; // determines how often with mouse moves will be doing filtering
+        curr_iter++; // determines how often with mouse moves and click pressed will be applied brush
         if (curr_iter >= ocvform->currfilterrate)
         {
-            Rect srcDstRect(x-ocvform->currfilterarea/2, y-ocvform->currfilterarea/2, ocvform->currfilterarea, ocvform->currfilterarea);
+            Rect srcDstRect(x-margin/2, y-margin/2, margin, margin);
             dstt = dst(srcDstRect); // dst - full resulting overlay pic of main (src) and overlay (srccopy)
 
             applyfilt(ocvform->currfilttype,srcDstRect);           
@@ -674,8 +707,8 @@ void onMouse( int event, int x, int y, int flags, void* )   // Mouse clicks and 
             {
                 if (ocvform->circle_brush)
                 {
-                    Mat mask_image(dstt.size(), CV_8U, Scalar(0)); // mask to have only circle of region
-                    circle(mask_image, Point(mask_image.rows / 2, mask_image.cols / 2), ocvform->currfilterarea/2, CV_RGB(255, 255, 255),-1,LINE_AA);
+                    Mat mask_image(Size(margin,margin), CV_8U, Scalar(0)); // mask to have only circle of region
+                    circle(mask_image, Point(mask_image.rows / 2, mask_image.cols / 2), margin/2, CV_RGB(255, 255, 255),-1,LINE_AA);
                     dstt.copyTo(dst(srcDstRect),mask_image);
                 }
                 else
@@ -689,9 +722,10 @@ void onMouse( int event, int x, int y, int flags, void* )   // Mouse clicks and 
             curr_iter=0;
         }
     }
-    if ((!ocvform->color_overlay_flow) && (event == EVENT_LBUTTONDOWN)  && (y<dst.rows-ocvform->currfilterarea/2) && (x<dst.cols-ocvform->currfilterarea/2) && (y>ocvform->currfilterarea/2) && (x>ocvform->currfilterarea/2))
+
+    if ((!ocvform->color_overlay_flow) && (event == EVENT_LBUTTONDOWN)  && (y<dst.rows-margin/2) && (x<dst.cols-margin/2) && (y>margin/2) && (x>margin/2))
     {
-        Rect srcDstRect(x-ocvform->currfilterarea/2, y-ocvform->currfilterarea/2, ocvform->currfilterarea, ocvform->currfilterarea);
+        Rect srcDstRect(x-margin/2, y-margin/2, margin, margin);
         dstt = dst(srcDstRect); // dst - full resulting overlay pic of main (src) and overlay (srccopy)
 
         if ((ocvform->currfilttype==5) && (ocvform->changerandpic_byclick))
@@ -707,8 +741,8 @@ void onMouse( int event, int x, int y, int flags, void* )   // Mouse clicks and 
         {
             if (ocvform->circle_brush)
             {
-                Mat mask_image(dstt.size(), CV_8U, Scalar(0)); // mask to have only circle of region
-                circle(mask_image, Point(mask_image.rows / 2, mask_image.cols / 2), ocvform->currfilterarea/2, CV_RGB(255, 255, 255),-1,LINE_AA);
+                Mat mask_image(Size(margin,margin), CV_8U, Scalar(0)); // mask to have only circle of region
+                circle(mask_image, Point(mask_image.rows / 2, mask_image.cols / 2), margin/2, CV_RGB(255, 255, 255),-1,LINE_AA);
                 dstt.copyTo(dst(srcDstRect),mask_image);
             }
             else
@@ -719,9 +753,10 @@ void onMouse( int event, int x, int y, int flags, void* )   // Mouse clicks and 
 
         imshow("MindOCV", dst);
     }
+
     // starting dreamflow drops by middle mouse down
     if ((!ocvform->color_overlay_flow) && (event == EVENT_MBUTTONDOWN) && (!ocvform->dreamflow) && (!ocvform->drops_by_click_mode)
-        && (y<dst.rows-ocvform->currfilterarea/2) && (x<dst.cols-ocvform->currfilterarea/2) && (y>ocvform->currfilterarea/2) && (x>ocvform->currfilterarea/2))
+        && (y<dst.rows-margin/2) && (x<dst.cols-margin/2) && (y>margin/2) && (x>margin/2))
     {
         ocvform->drops_by_click_mode = true;
         ocvform->plotdroprect = false;
@@ -739,6 +774,12 @@ void onMouse( int event, int x, int y, int flags, void* )   // Mouse clicks and 
     {
        ocvform->start_stop_dreamflow(false);
        ocvform->drops_by_click_mode = false;
+    }
+    else
+    if ((event == EVENT_MBUTTONDOWN) && (ocvform->multi_img_dflow))
+    {
+        // reset multi-dreamflow buffer: update pics array in buffer
+        ocvform->mww->init_img_set();
     }
     else
     if ((event == EVENT_MBUTTONDOWN) && (ocvform->color_overlay_flow))
@@ -763,9 +804,8 @@ void onMouse( int event, int x, int y, int flags, void* )   // Mouse clicks and 
         if (ocvform->showmenu)
             drawcontrolmenu(dst,2);
     } else
-    if ((event == EVENT_RBUTTONDOWN) && (ocvform->color_overlay_flow))
+    if (event == EVENT_RBUTTONDOWN)
     {
-        // random choice of overlay pic and updates of corresponded vectors for left and right pictures
         prevoverpic = curroverpic;
         curroverpic = riconsarr[qrand() % (imglist.length()-2)];;
         lchanged=false;
@@ -777,14 +817,18 @@ void onMouse( int event, int x, int y, int flags, void* )   // Mouse clicks and 
         QString ocvpic=folderpath+"/"+imglist.at(curroverpic);
         srccopy = imread(ocvpic.toStdString());
         cv::resize(srccopy, srccopy, cv::Size(ocvform->picwidth,ocvform->picheight), 0, 0, cv::INTER_LINEAR);
-        if (!ocvform->hueonly)
+        if (ocvform->color_overlay_flow)
         {
-            addWeighted(src, alphaval, srccopy, 1 - alphaval, 0, dst);
-            imshow("MindOCV", dst);
+            if (!ocvform->hueonly)
+            {
+                addWeighted(src, alphaval, srccopy, 1 - alphaval, 0, dst);
+                imshow("MindOCV", dst);
+            }
+            if (ocvform->showmenu)
+                drawcontrolmenu(dst,2);
         }
-        if (ocvform->showmenu)
-            drawcontrolmenu(dst,2);
-    } else
+    }
+    else    
     if (event == EVENT_LBUTTONDBLCLK)
     {
         // fullscreen mode activation
@@ -1048,15 +1092,15 @@ void MainWindow::usingcam(bool fl)
 
 void MainWindow::processingcolor(int hue_val)
 {
-    elem1 = hue_val;
-    ocvform->updatelevels(elem1,elem5,elem4,elem6);
+    hue_elem = hue_val;
+    ocvform->updatelevels(hue_elem,overlay_elem,atten_elem,border_elem);
     Processing();
 }
 
 void MainWindow::processingoverlay(int overlay_val)
 {
-    elem5 = overlay_val;
-    ocvform->updatelevels(elem1,elem5,elem4,elem6);
+    overlay_elem = overlay_val;
+    ocvform->updatelevels(hue_elem,overlay_elem,atten_elem,border_elem);
     ProcessingMix();
 }
 
@@ -1186,6 +1230,22 @@ void MainWindow::set_dreamflow_interval(int t)  // set dreamflow time interval
     dreamflow_timer->setInterval(t);
 }
 
+void MainWindow::focuseddflow_Update() // focused dreamflow timer: change of overlay pic
+{
+    // random choice of overlay pic and updates of corresponded vectors for left and right pictures
+    prevoverpic = curroverpic;
+    curroverpic = riconsarr[qrand() % (imglist.length()-2)];;
+    lchanged=false;
+    rchanged=true;
+    define_riconsarr();
+    defineiconsarr();
+    rightpw->fillpics();
+    leftpw->fillpics();
+    QString ocvpic=folderpath+"/"+imglist.at(curroverpic);
+    srccopy = imread(ocvpic.toStdString());
+    cv::resize(srccopy, srccopy, cv::Size(ocvform->picwidth,ocvform->picheight), 0, 0, cv::INTER_LINEAR);
+}
+
 void MainWindow::dreamflow_Update() // timer for dreamflow mode, when new pic appears by random fragment over old
 {
     int x, y;
@@ -1206,7 +1266,7 @@ void MainWindow::dreamflow_Update() // timer for dreamflow mode, when new pic ap
     {
         // define area inside current expanding window
         if (ocvform->drops_by_att)
-            ocvform->drflow_area = (((ocvform->x_right-ocvform->x_left)/2-5)*elem4)/100+3;
+            ocvform->drflow_area = (((ocvform->x_right-ocvform->x_left)/2-5)*atten_elem)/100+3;
         else
             ocvform->drflow_area = qrand()%((ocvform->x_right-ocvform->x_left)/2-5)+3;
 
@@ -1229,7 +1289,7 @@ void MainWindow::dreamflow_Update() // timer for dreamflow mode, when new pic ap
         menu_area = dst(Rect(ocvform->l_menu_posx-5,ocvform->l_menu_posy-30,ocvform->lmenuw,ocvform->lmenuh)).clone();       
         drawcontrolmenu(dst,2);
         drawcontrolmenu(dream0,2);
-    }
+    }    
 
     imshow("MindOCV", dst);
 }
@@ -1399,6 +1459,7 @@ void MainWindow::on_pushButton_clicked() // close the App
         }        
     }
     plotw->cameraoff();
+    openglw->close();
     cv::destroyAllWindows();
     QApplication::quit();
 }
@@ -1486,8 +1547,8 @@ void MainWindow::setsourceimgd(QImage qp) // set openCV main image from QImage (
 
 void MainWindow::setattent(int i)
 {
-    elem4=i;  
-    ocvform->updatelevels(elem1,elem5,elem4,elem6);
+    atten_elem=i;
+    ocvform->updatelevels(hue_elem,overlay_elem,atten_elem,border_elem);
     // opencvinterval = 25;// + (100 - elem4)/2;
     // picfilt->setInterval(opencvinterval);
 
@@ -1496,10 +1557,10 @@ void MainWindow::setattent(int i)
         if (ocvform->corrcells_by_att)
         {
             puzzleflow->stop();
-            ocvform->corr_cell_part = (double)elem4/90;
-            if (elem4<10)
+            ocvform->corr_cell_part = (double)atten_elem/90;
+            if (atten_elem<10)
                 ocvform->corr_cell_part = 0.1;
-            if (elem4>ocvform->changepuzzleborder)
+            if (atten_elem>ocvform->changepuzzleborder)
                 ocvform->corr_cell_part = 1;
             int m = (int)ocvform->cellnums*ocvform->corr_cell_part;
             for (int t = 0; t < m; t++)
@@ -1507,7 +1568,7 @@ void MainWindow::setattent(int i)
             puzzleflow->start();
             ocvform->updateformvals();
 
-            if (elem4>ocvform->changepuzzleborder)
+            if (atten_elem>ocvform->changepuzzleborder)
             {
                 imshow("MindOCV", dst);
                 if (canchangepuzzle)
@@ -1531,14 +1592,14 @@ void MainWindow::setattent(int i)
         }
         if (ocvform->puzzlerate_by_att)
         {
-            ocvform->puzzleflowrate = 100 + elem4*2.5;
+            ocvform->puzzleflowrate = 100 + atten_elem*2.5;
             puzzleflow->setInterval(ocvform->puzzleflowrate);
             ocvform->updateformvals();
         }
         if (ocvform->cellsize_by_att)
         {
             puzzleflow->stop();
-            ocvform->cell_size = round((double)(100 + elem4*2)/10)*10;
+            ocvform->cell_size = round((double)(100 + atten_elem*2)/10)*10;
             ocvform->cols = ocvform->picwidth / ocvform->cell_size;
             ocvform->rows = ocvform->picheight / ocvform->cell_size;
             ocvform->cellnums = ocvform->cols * ocvform->rows;
@@ -1550,15 +1611,25 @@ void MainWindow::setattent(int i)
 
     if ((ocvform->attmodul_area) && (!ocvform->color_overlay_flow))
     {
-        // attention modulated filter area with minimum area value, only not activeflow mode
-        if (elem4<20)
-            elem4=20;
-        ocvform->currfilterarea=elem4*5;
-        ocvform->updateformvals(); // updating values on openCV filter control form
+        // attention modulated filter area, only not color-overlay flow mode
+        if (atten_elem<20)
+            atten_elem=20;
+        ocvform->currfilterarea=atten_elem*5;
+        ocvform->updateformvals(); // updating values on control form
     }
+
+    if ((ocvform->fdfarea_byatt) && (!ocvform->color_overlay_flow))
+    {
+        // attention modulated focused dream flow area
+        if (atten_elem<20)
+            atten_elem=20;
+        ocvform->fdfarea = atten_elem*5;
+        ocvform->updateformvals();
+    }
+
     if ((!ocvform->color_overlay_flow) && (ocvform->currfilttype==5) && (ocvform->changebyattention))
     {
-        if ((canchangepic) && (elem4>elem6))
+        if ((canchangepic) && (atten_elem>border_elem))
         {
             if (!ocvform->multi_img_dflow)
                 ocvform->changerandpic();
@@ -1583,47 +1654,48 @@ void MainWindow::setattent(int i)
             }
             canchangepic = false;
         } else
-        if ((!canchangepic) && (elem4<elem6))
+        if ((!canchangepic) && (atten_elem<border_elem))
             canchangepic = true;
     }
+
     if ((!ocvform->color_overlay_flow) && (ocvform->currfilttype==5) && (ocvform->dreamflow))
     {
         if (ocvform->attent_modulated_dreams)
         {
-            ocvform->dreamflowrate=105-elem4;
+            ocvform->dreamflowrate=105-atten_elem;
             dreamflow_timer->setInterval(ocvform->dreamflowrate);            
         }
         if (ocvform->drops_by_att)
         {
-            ocvform->drops_interval=120-elem4; // 30+elem4/2;
+            ocvform->drops_interval=120-atten_elem; // 30+elem4/2;
             ocvform->dropsT->setInterval(ocvform->drops_interval);            
         }
         if (ocvform->poly_by_att)        
-            ocvform->pointsinpoly = elem4 / 10 + 3;                    
+            ocvform->pointsinpoly = atten_elem / 10 + 3;
 
         if (ocvform->directionswitch_by_att)
         {
-            if (elem4>elem6)
+            if (atten_elem>border_elem)
                 ocvform->flowdirection=1;
             else
                 ocvform->flowdirection=-1;            
         }
         if (ocvform->multi_img_by_att)
-            ocvform->multi_set_size = (100-elem4)/10 + 1;
+            ocvform->multi_set_size = (100-atten_elem)/10 + 1;
 
         ocvform->updateformvals();
     }
     if ((!ocvform->color_overlay_flow) && (ocvform->currfilttype==5) && (ocvform->transp_by_att))
     {
-        ocvform->transp = 100 - elem4/2;
+        ocvform->transp = 100 - atten_elem/2;
         ocvform->updateformvals();
     }  
 }
 
 void MainWindow::setoverlay(int i)
 {
-    elem5=i;
-    setattent(elem5);   
+    overlay_elem=i;
+    setattent(overlay_elem);
     if (!ocvform->hueonly)
         ProcessingMix();
     checkoverlay();
@@ -1631,8 +1703,8 @@ void MainWindow::setoverlay(int i)
 
 void MainWindow::setborder(int i)
 {
-    elem6=i;
-    ocvform->updatelevels(elem1,elem5,elem4,elem6);
+    border_elem=i;
+    ocvform->updatelevels(hue_elem,overlay_elem,atten_elem,border_elem);
 }
 
 QImage MainWindow::grabopcvpic()
@@ -1723,7 +1795,7 @@ void MainWindow::startopencv() // MindOCV initialization function
         plotw->opencvstart=true;
         if (plotw->start)
             plotw->enablehue();
-        ocvform->updatelevels(elem1,elem5,elem4,elem6);
+        ocvform->updatelevels(hue_elem,overlay_elem,atten_elem,border_elem);
 
         keyprocess->start();
     }
@@ -1762,7 +1834,7 @@ void MainWindow::init_img_set()  // init set of images for dreamflow in multi-im
 void MainWindow::checkoverlay()
 {
     // check if overlay should happen - if attention > border and it's new overcome of border
-    if ((elem5>elem6) && (canchangepic))
+    if ((overlay_elem>border_elem) && (canchangepic))
     {
         if (!storymode)
         {
@@ -1831,7 +1903,7 @@ void MainWindow::checkoverlay()
         }
         canchangepic=false;
     }
-    if ((elem5<elem6) && (!canchangepic))
+    if ((overlay_elem<border_elem) && (!canchangepic))
         canchangepic=true;
 }
 
@@ -2021,7 +2093,7 @@ void MainWindow::mindwtUpdate() // processing data from MindWave device
                         }
                         else
                             setattent(mw_medit);
-                        curoverl=elem4;
+                        curoverl=atten_elem;
                     }
                 }              
                 // cout<<"Attention value: "<<mw_atten<<endl;
@@ -2149,7 +2221,7 @@ void MainWindow::simulateEEGUpdate() // simulated EEG data (in development)
             else
                 setattent(plotw->meditt);
 
-            curoverl=elem4;
+            curoverl=atten_elem;
             if (canchangehue)
             {
                 curhue=100+estattt*4;
@@ -2313,7 +2385,8 @@ void MainWindow::stop_all_flows()  // stop all flows
         ocvform->start_stop_dreamflow(false);
     if (ocvform->puzzleflow_on)
         ocvform->start_stop_puzzleflow(false);
-    drawcontrolmenu(dst,0);
+    if (ocvform->showmenu)
+        drawcontrolmenu(dst,0);
     ocvform->drawbrushcontour = true;
     ocvform->currfilttype = ocvform->totalfilts-1;
     ocvform->updateformvals();
@@ -2324,7 +2397,7 @@ void MainWindow::keys_processing()      // processing keys pressing
 {
     char key = cv::waitKey(5) % 256;
     if (key == 't') // test stuff button    
-    {                
+    {
       //  neurostyle();
     }
     else if (key == 'w')      // swap main and overlay pics
@@ -2388,7 +2461,8 @@ void MainWindow::keys_processing()      // processing keys pressing
         picfilt->start();
         keepfiltering = false;
         ocvform->setcameracheckbox(true);
-        drawcontrolmenu(dst,1);
+        if (ocvform->showmenu)
+            drawcontrolmenu(dst,1);
         imshow("MindOCV", dst);
         ocvform->blocktabs(1);
     }
@@ -2396,7 +2470,8 @@ void MainWindow::keys_processing()      // processing keys pressing
     {
         stop_all_flows();
         picfilt->stop();
-        drawcontrolmenu(dst,2);
+        if (ocvform->showmenu)
+            drawcontrolmenu(dst,2);
         ocvform->drawbrushcontour = false;
         ocvform->updateformvals();
         ocvform->start_stop_dreamflow(true);
@@ -2406,6 +2481,8 @@ void MainWindow::keys_processing()      // processing keys pressing
     {
         stop_all_flows();
         picfilt->stop();
+        if (ocvform->showmenu)
+            drawcontrolmenu(dst,3);
         ocvform->drawbrushcontour = false;
         ocvform->updateformvals();
         ocvform->start_stop_puzzleflow(true);
@@ -2463,18 +2540,15 @@ void MainWindow::keys_processing()      // processing keys pressing
     {
         ocvform->transp++;
         ocvform->updateformvals();
-    }
-    else if ((key == 'm') && (!ocvform->color_overlay_flow)) // change brush type: circle / box
-    {
-        ocvform->circle_brush = !ocvform->circle_brush;
-        ocvform->updateformvals();
-    }
+    }    
     else if (key == 'u')
     {
         ocvform->hueonly=!ocvform->hueonly;
         ocvform->updateformvals();
     }
-    else if ((key == 'f') && (!ocvform->color_overlay_flow)) // start / stop timer for pics change
+    else if (key == 'h')                   // story mode: main pic is fixed, overlay pic change by attention > border
+        storymode=!storymode;
+    else if ((key == 'g') && (!ocvform->color_overlay_flow)) // start / stop timer for pics change
     {
         ocvform->changepic_bytime=!ocvform->changepic_bytime;
         if (ocvform->changepic_bytime)
@@ -2482,11 +2556,19 @@ void MainWindow::keys_processing()      // processing keys pressing
         else
             ocvform->pichngT->stop();
         ocvform->updateformvals();
+    }    
+    else if (key == 'f')                   // start / stop timer for focused dreamflow
+    {        
+        if (!focuseddflow_timer->isActive())
+            focuseddflow_timer->start();
+        else
+            focuseddflow_timer->stop();
     }
-    else if (key == 'g')                   // switch flow direction by attention > border
-        ocvform->directionswitch_by_att=!ocvform->directionswitch_by_att;
-    else if (key == 'h')                   // story mode: main pic is fixed, overlay pic change by attention > border
-        storymode=!storymode;
+    else if ((key == 'd') && (!ocvform->color_overlay_flow)) // turn on / off multi-dreamflow
+    {
+        ocvform->multi_img_dflow = !ocvform->multi_img_dflow;
+        ocvform->updateformvals();
+    }
     else if (key == 'r')                   // extend / shorten raw plot form
     {
         if (rawplotshort)
@@ -2503,10 +2585,14 @@ void MainWindow::keys_processing()      // processing keys pressing
         }
         rs->changefsize(!rawplotshort);
     }
-    else if (key=='l')
+    else if (key=='l')  // show brain levels form
     {
         br_levels->show();
         set_showlevelscheckbox(true);
+    }
+    else if (key=='m')  // show main window
+    {
+        QApplication::setActiveWindow(this);
     }
 }
 
@@ -2523,8 +2609,8 @@ void MainWindow::picfiltUpdate() // function for MindOCV hue-overlay flow update
                 prevhue-=2;
             else
                 prevhue+=2;
-            elem1=prevhue;
-            processingcolor(elem1);
+            hue_elem=prevhue;
+            processingcolor(hue_elem);
         }
 
         // change of overlay values until previous ~ new one, then can change previous overlay
@@ -2537,8 +2623,8 @@ void MainWindow::picfiltUpdate() // function for MindOCV hue-overlay flow update
                 prevoverl-=2;
             else
                 prevoverl+=2;
-            elem5=prevoverl;
-            processingoverlay(elem5);
+            overlay_elem=prevoverl;
+            processingoverlay(overlay_elem);
         }
 
         checkoverlay(); // check if should change pictures        
@@ -2766,5 +2852,14 @@ void MainWindow::on_pushButton_9_clicked()
     statsWin->update_filenames();
     if (statsWin->recordsfound)
         statsWin->update_plots(0,0);
+    stsecond->update_filenames();
+    if (stsecond->recordsfound)
+        stsecond->update_plots(0,0);
     statsWin->show();
+}
+
+void MainWindow::on_pushButton_10_clicked()
+{
+    openglw->startflow(25);
+    openglw->show();
 }

@@ -16,7 +16,7 @@ ocvcontrols::ocvcontrols(QWidget *parent) :
     pichngT = new QTimer(this);     // timer for auto dreamflow mode, when new picture appears by fragments
     pichngT->connect(pichngT,SIGNAL(timeout()), this, SLOT(randpicchange_Update()));
     pichngT->setInterval(changepic_interval*1000);
-    ui->spinBox_14->setValue(changepic_interval);
+    ui->spinBox_14->setValue(changepic_interval);   
 
     dropsT = new QTimer(this);     // timer for expanding window in dreamflow mode
     dropsT->connect(dropsT,SIGNAL(timeout()), this, SLOT(windowsize_Update()));
@@ -79,14 +79,18 @@ void ocvcontrols::updateformvals()
     ui->spinBox_18->setValue(cell_size);
     ui->spinBox_19->setValue(puzzleflowrate);
     ui->spinBox_20->setValue(corr_cell_part*100);
-    ui->spinBox_21->setValue(changepuzzleborder);
+    ui->spinBox_21->setValue(changepuzzleborder);    
+    ui->spinBox_26->setValue(fdfarea);
     ui->lineEdit->setText(QString::number(cols));
     ui->lineEdit_2->setText(QString::number(rows));
     ui->checkBox_14->setChecked(plotdroprect);
     ui->checkBox_15->setChecked(drops_from_mousepos);
     ui->checkBox_16->setChecked(drawbrushcontour);
     ui->checkBox_17->setChecked(camerainp);
+    ui->checkBox_18->setChecked(multi_img_dflow);
+    ui->checkBox_19->setEnabled(multi_img_dflow);
     ui->checkBox_23->setChecked(puzzle_edges);
+    ui->checkBox_25->setChecked(focuseddreamflow);
     ui->checkBox_9->setChecked(changepic_bytime);
     ui->checkBox_10->setChecked(dropsmode);
     if (circle_brush)
@@ -209,6 +213,12 @@ void ocvcontrols::setfilterarea(int t)
 {
     currfilterarea = t;
     ui->spinBox->setValue(t);
+}
+
+void ocvcontrols::setfdfarea(int t)
+{
+    fdfarea = t;
+    ui->spinBox_26->setValue(t);
 }
 
 void ocvcontrols::on_spinBox_valueChanged(int arg1)
@@ -439,6 +449,9 @@ void ocvcontrols::on_checkBox_5_clicked()
         ui->checkBox_8->setEnabled(true);
         ui->checkBox_10->setEnabled(true);
         ui->checkBox_12->setEnabled(true);
+        drawbrushcontour = false;
+        ui->checkBox_16->setChecked(false);
+        ui->checkBox_16->setEnabled(false);
         ui->checkBox_18->setEnabled(true);
     }
     else
@@ -457,6 +470,7 @@ void ocvcontrols::on_checkBox_5_clicked()
             ui->checkBox_15->setEnabled(false);
             ui->checkBox_18->setEnabled(false);
         }
+        ui->checkBox_16->setEnabled(true);
         mww->stop_all_flows();
     }       
 }
@@ -770,4 +784,47 @@ void ocvcontrols::on_horizontalSlider_2_valueChanged(int value)
 void ocvcontrols::on_horizontalSlider_4_valueChanged(int value)
 {
     mww->setborder(value);
+}
+
+void ocvcontrols::on_checkBox_25_clicked()
+{
+    focuseddreamflow = !focuseddreamflow;
+    if (focuseddreamflow)
+    {
+        ui->radioButton_4->setEnabled(false);
+        ui->radioButton_6->setEnabled(false);
+        plotdroprect = false;
+        ui->checkBox_14->setChecked(false);
+        mixtype = 2;
+        updateformvals();
+        // mww->focuseddflow_timer->start();
+    }
+    else
+    {
+        ui->radioButton_4->setEnabled(true);
+        ui->radioButton_6->setEnabled(true);
+        mixtype = 3;
+        updateformvals();
+        // mww->focuseddflow_timer->stop();
+    }
+}
+
+void ocvcontrols::on_spinBox_23_valueChanged(int arg1)
+{
+    focuseddreamflowrate = arg1*1000;
+    mww->focuseddflow_timer->setInterval(focuseddreamflowrate);
+}
+
+void ocvcontrols::on_checkBox_26_clicked()
+{
+    fdfarea_byatt = !fdfarea_byatt;
+    if (fdfarea_byatt)
+        ui->spinBox_26->setStyleSheet("QSpinBox { background-color: yellow; }");
+    else
+        ui->spinBox_26->setStyleSheet("QSpinBox { background-color: white; }");
+}
+
+void ocvcontrols::on_spinBox_26_valueChanged(int arg1)
+{
+    fdfarea = arg1;
 }

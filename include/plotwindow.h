@@ -47,6 +47,7 @@ class paintform;
 class ocvcontrols;
 class filters;
 class brainlevels;
+class openglwin;
 
 class plotwindow : public QWidget
 {
@@ -64,6 +65,7 @@ public:
     appconnect* appcn;      // pointer on AppConnect object (BCI2000)
     filters* filtercl;      // pointer on object with standard signal filters
     brainlevels* brl;       // pointer on BrainLevels window object
+    openglwin* oglw;        // pointer on OpenGL window object
 
     soundplayer* splayer; // sound player objects with sound samples associated with own thread
     QStringList strLst2; QStringListModel *strLstM2;  // list of playing tones
@@ -89,6 +91,7 @@ public:
     QVector<int> delta_vals, theta_vals, alpha_vals, beta_vals, gamma_vals;
 
     double** rawdata; int* indexes; int* tvals; int* tonedelays;
+    int prev_att, curr_att, prev_estatt, curr_estatt, prev_medit, curr_medit, mactivation_timeout;
     int srfr, numst, imlength, stlength, drawshift, graphcount, scaletimeout, wavessound_volume;
     int stepsPerPress, tonenumbers, maxtones, chorddelay, mxttimeout, curmodval, nums_waves_values;
     int counter, stims, recparts, chnums, sampleblock, sourcech, picchangeborder;
@@ -101,8 +104,8 @@ public:
     int pushshift, psleep, camera_interval;
     int lcutoff, hcutoff, butterord;    
     int buffercount, nemehanika_bord;
-    int tonesets_border1, tonesets_border2;
-    int prev_att, curr_att, prev_estatt, curr_estatt, prev_medit, curr_medit, mactivation_timeout;
+    int tonesets_border1, tonesets_border2;    
+    float ogl_angle_change, ogl_scale;
 
     bool adaptivenumparts, backimageloaded, canbackchange, opencvstart;
     bool filteringback, blurback, hidebutt, attention_interval, fixback, colorizeback;
@@ -197,6 +200,7 @@ public:
     void update_curr_attention(int t);
     void update_meditation(int t);
     void update_curr_meditation(int t);
+    void update_openglflow();
 
     void radiobut1();
     void radiobut2();

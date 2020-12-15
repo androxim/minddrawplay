@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>648</width>
-    <height>349</height>
+    <width>631</width>
+    <height>343</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,11 +20,16 @@
    <widget class="QPushButton" name="pushButton">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>240</y>
-      <width>141</width>
-      <height>31</height>
+      <x>60</x>
+      <y>220</y>
+      <width>81</width>
+      <height>41</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>9</pointsize>
+     </font>
     </property>
     <property name="text">
      <string>Exit</string>
@@ -33,11 +38,16 @@
    <widget class="QPushButton" name="pushButton_3">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>120</y>
-      <width>141</width>
-      <height>31</height>
+      <x>210</x>
+      <y>190</y>
+      <width>81</width>
+      <height>81</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
     </property>
     <property name="text">
      <string>MindPlay</string>
@@ -73,7 +83,7 @@
     <property name="geometry">
      <rect>
       <x>210</x>
-      <y>10</y>
+      <y>0</y>
       <width>121</width>
       <height>21</height>
      </rect>
@@ -85,11 +95,16 @@
    <widget class="QPushButton" name="pushButton_4">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>160</y>
-      <width>141</width>
-      <height>31</height>
+      <x>310</x>
+      <y>190</y>
+      <width>81</width>
+      <height>81</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
     </property>
     <property name="text">
      <string>MindDraw</string>
@@ -99,7 +114,7 @@
     <property name="geometry">
      <rect>
       <x>30</x>
-      <y>300</y>
+      <y>330</y>
       <width>551</width>
       <height>16</height>
      </rect>
@@ -118,9 +133,9 @@
    <widget class="QLabel" name="label_3">
     <property name="geometry">
      <rect>
-      <x>500</x>
-      <y>40</y>
-      <width>91</width>
+      <x>530</x>
+      <y>20</y>
+      <width>81</width>
       <height>16</height>
      </rect>
     </property>
@@ -134,8 +149,13 @@
       <x>30</x>
       <y>40</y>
       <width>141</width>
-      <height>31</height>
+      <height>41</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>9</pointsize>
+     </font>
     </property>
     <property name="text">
      <string>Connect to EEG device </string>
@@ -145,9 +165,9 @@
     <property name="geometry">
      <rect>
       <x>200</x>
-      <y>60</y>
-      <width>411</width>
-      <height>181</height>
+      <y>40</y>
+      <width>401</width>
+      <height>101</height>
      </rect>
     </property>
    </widget>
@@ -157,11 +177,16 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>200</y>
-      <width>141</width>
-      <height>31</height>
+      <x>410</x>
+      <y>190</y>
+      <width>81</width>
+      <height>81</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
     </property>
     <property name="text">
      <string>MindOCV</string>
@@ -177,10 +202,15 @@
     <property name="geometry">
      <rect>
       <x>210</x>
-      <y>260</y>
+      <y>154</y>
       <width>71</width>
       <height>16</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>9</pointsize>
+     </font>
     </property>
     <property name="text">
      <string>PICS folder:</string>
@@ -190,7 +220,7 @@
     <property name="geometry">
      <rect>
       <x>290</x>
-      <y>258</y>
+      <y>152</y>
       <width>211</width>
       <height>22</height>
      </rect>
@@ -200,8 +230,8 @@
     <property name="geometry">
      <rect>
       <x>520</x>
-      <y>256</y>
-      <width>93</width>
+      <y>150</y>
+      <width>81</width>
       <height>24</height>
      </rect>
     </property>
@@ -216,7 +246,7 @@
     <property name="geometry">
      <rect>
       <x>210</x>
-      <y>35</y>
+      <y>20</y>
       <width>121</width>
       <height>20</height>
      </rect>
@@ -231,8 +261,8 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>340</x>
-      <y>35</y>
+      <x>360</x>
+      <y>20</y>
       <width>141</width>
       <height>20</height>
      </rect>
@@ -245,10 +275,15 @@
     <property name="geometry">
      <rect>
       <x>30</x>
-      <y>80</y>
+      <y>90</y>
       <width>141</width>
-      <height>31</height>
+      <height>41</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>9</pointsize>
+     </font>
     </property>
     <property name="text">
      <string>Start Waves Generator</string>
@@ -257,14 +292,37 @@
    <widget class="QPushButton" name="pushButton_9">
     <property name="geometry">
      <rect>
-      <x>500</x>
-      <y>7</y>
-      <width>106</width>
-      <height>25</height>
+      <x>60</x>
+      <y>160</y>
+      <width>81</width>
+      <height>41</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>9</pointsize>
+     </font>
     </property>
     <property name="text">
      <string>Statistics</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_10">
+    <property name="geometry">
+     <rect>
+      <x>510</x>
+      <y>190</y>
+      <width>81</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>MindOGL</string>
     </property>
    </widget>
   </widget>
@@ -273,8 +331,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>648</width>
-     <height>26</height>
+     <width>631</width>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuMenu">

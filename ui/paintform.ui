@@ -638,7 +638,7 @@
    <property name="font">
     <font>
      <family>Narkisim</family>
-     <pointsize>25</pointsize>
+     <pointsize>18</pointsize>
      <weight>75</weight>
      <bold>true</bold>
     </font>
@@ -1333,7 +1333,7 @@
   <customwidget>
    <class>QCustomPlot</class>
    <extends>QWidget</extends>
-   <header location="global">qcustomplot.h</header>
+   <header>qcustomplot.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

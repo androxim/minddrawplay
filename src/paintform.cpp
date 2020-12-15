@@ -166,7 +166,7 @@ void paintform::configure_ui() // configure ui elements
     ui->pushButton->setGeometry(780,865,70,20);
     ui->pushButton_11->setGeometry(780,885,70,20);
     ui->label_4->setGeometry(855,920,120,20);
-    ui->label_5->setGeometry(950,910,70,50);
+    ui->label_5->setGeometry(950,910,60,50);
     ui->pushButton_4->setGeometry(860,865,50,24);
     ui->label_8->setGeometry(920,865,50,20);
     ui->spinBox_7->setGeometry(970,865,50,20);
@@ -1928,13 +1928,20 @@ bool paintform::eventFilter(QObject *target, QEvent *event)  // processing key /
 {
     QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
 
-    if (event->type() == QEvent::KeyPress)      // switch to MindPlay window
+    if (event->type() == QEvent::KeyPress)   // switch to MindPlay window
     {
         if (keyEvent->key() == Qt::Key_Tab)
         {
             this->hide();
             pw->show();
             pw->setFocus();
+            QApplication::setActiveWindow(pw);
+        }
+
+        if (keyEvent->key()==Qt::Key_M) // show main window
+        {
+            //this->hide();
+            QApplication::setActiveWindow(mww);
         }
     }
 
