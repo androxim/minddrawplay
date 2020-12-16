@@ -51,7 +51,7 @@ public:
     int numsamples, numfrsamples, lenofinterval, laststop, pointsfor_estattention;
     int eegsize, pensize, temppensize, prevpict, prevpuzzle, moveItemInterval;
     int timepics, picsforchange, mainindex, polycount, gamethroughborder, y0border;
-    double thet, bet, avgv, estattn;
+    double thet, alph, bet, avgv, estattn, estmedit;
 
     bool music_adaptive_bord, firstpuzzle, spacedflow, collectiveflow, grabmindplayflow;
     bool game_findsame, flowmode, puzzlegrabed, canpuzzlechange, backloaded, showestatt;

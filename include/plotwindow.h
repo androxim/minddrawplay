@@ -116,7 +116,7 @@ public:
     bool paintfstart, rawsignalabove, camerainp, oscstreaming, savewavestofile;
     bool switchtonesset_by_att, playthetavibe, playalphavibe, playbetavibe, playgammavibe;
 
-    QString tank1[10] = {"b","B","g","G","d","D","E","C","f#","a"};
+    QString tank1[10] = {"b", "D#", "c#", "F#", "f", "F", "G#", "A#", "d#", "f#" };
     QString tank2[10] = {"c#","C#","b","B","f#","F#","g#","G#","d#","D#"};
     QString space[8] = {"F4","F3","D3","E4","D4","C4","A3","A4"};
 
@@ -176,16 +176,16 @@ public:
     void pushenter();
     void delay(int temp);
 
-    void play_Glow();
-    void play_fdiez();
-    void play_Clow();
-    void play_a();
-    void play_Elow();
-    void play_d();
-    void play_Dlow();
-    void play_b();
-    void play_Blow();
-    void play_g();
+    void play_tone1();
+    void play_tone2();
+    void play_tone3();
+    void play_tone4();
+    void play_tone5();
+    void play_tone6();
+    void play_tone7();
+    void play_tone8();
+    void play_tone9();
+    void play_tone10();
     void tonenumbers_increase();
     void cleanbuttons();
     void settonesvolume();

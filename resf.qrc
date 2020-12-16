@@ -8,16 +8,6 @@
         <file>sounds/E4_.wav</file>
         <file>sounds/F3_.wav</file>
         <file>sounds/F4_.wav</file>
-        <file>sounds/tank_a_.wav</file>
-        <file>sounds/tank_b_.wav</file>
-        <file>sounds/tank_Blow_.wav</file>
-        <file>sounds/tank_Clow_.wav</file>
-        <file>sounds/tank_d_.wav</file>
-        <file>sounds/tank_Dlow_.wav</file>
-        <file>sounds/tank_Elow_.wav</file>
-        <file>sounds/tank_fdiez_.wav</file>
-        <file>sounds/tank_g_.wav</file>
-        <file>sounds/tank_Glow_.wav</file>
         <file>sounds/tone_B.wav</file>
         <file>sounds/tone_b_.wav</file>
         <file>sounds/tone_Csh.wav</file>
@@ -32,16 +22,26 @@
         <file>sounds/strings-sample-2.wav</file>
         <file>sounds/strings-sample-7.wav</file>
         <file>sounds/strings-sample-8.wav</file>
+        <file>sounds/tank_Asharp.wav</file>
+        <file>sounds/tank_bhigh.wav</file>
+        <file>sounds/tank_c_highsharp.wav</file>
+        <file>sounds/tank_d_highsharp.wav</file>
+        <file>sounds/tank_Dsharp.wav</file>
+        <file>sounds/tank_F.wav</file>
+        <file>sounds/tank_f_high.wav</file>
+        <file>sounds/tank_f_highsharp.wav</file>
+        <file>sounds/tank_Fsharp.wav</file>
+        <file>sounds/tank_Gsharp.wav</file>
     </qresource>
     <qresource prefix="/pics">
         <file>pics/empty.jpg</file>
-        <file>pics/oriongmaj.jpg</file>
         <file>pics/spacedmin.jpg</file>
         <file>pics/zodiac0.jpg</file>
         <file>pics/mainback.jpg</file>
         <file>pics/bricks.jpg</file>
         <file>pics/psytexture.jpg</file>
         <file>pics/globetexture.jpg</file>
+        <file>pics/zodiac1.jpg</file>
     </qresource>
     <qresource prefix="/objs">
         <file>objs/monkey.obj</file>

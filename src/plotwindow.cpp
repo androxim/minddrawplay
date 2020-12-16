@@ -610,16 +610,6 @@ bool plotwindow::eventFilter(QObject *target, QEvent *event)
 {
     if ((target == ui->widget) && (event->type() == QEvent::MouseButtonPress))
     {
-        // adjust interval length for sampling rate from EEG device or simulated EEG generator
-        // scaling of ms values to 512 s.rate points, for example 500 ms - 256 points
-//        if (mindwstart)
-//            imlength=ui->spinBox_5->value()/1.953125;
-//        else if (simeeg)
-//        {
-//            srfr=500;
-//            imlength=ui->spinBox_5->value()/2;
-//        }
-
         QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
 
         if (mouseEvent->button() == Qt::LeftButton)     // setfocus on plot
@@ -884,52 +874,52 @@ bool plotwindow::eventFilter(QObject *target, QEvent *event)
         if (keyEvent->key()==Qt::Key_B)
         {
             cleanbuttons();
-            play_fdiez();
+            play_tone2();
         }
         if (keyEvent->key()==Qt::Key_C)
         {
             cleanbuttons();
-            play_Elow();
+            play_tone5();
         }
         if (keyEvent->key()==Qt::Key_F)
         {
             cleanbuttons();
-            play_Blow();
+            play_tone9();
         }
         if (keyEvent->key()==Qt::Key_E)
         {
             cleanbuttons();
-            play_b();
+            play_tone8();
         }
         if (keyEvent->key()==Qt::Key_V)
         {
             cleanbuttons();
-            play_Clow();
+            play_tone3();
         }
         if (keyEvent->key()==Qt::Key_D)
         {
             cleanbuttons();
-            play_Dlow();
+            play_tone7();
         }
         if (keyEvent->key()==Qt::Key_X)
         {
             cleanbuttons();
-            play_d();
+            play_tone6();
         }
         if (keyEvent->key()==Qt::Key_G)
         {
             cleanbuttons();
-            play_Glow();
+            play_tone1();
         }
         if (keyEvent->key()==Qt::Key_T)
         {
             cleanbuttons();
-            play_g();
+            play_tone10();
         }
         if (keyEvent->key()==Qt::Key_Space)
         {
             cleanbuttons();
-            play_a();
+            play_tone4();
         }
 
         if (keyEvent->key()==Qt::Key_Tab) // switch to MindDraw window
@@ -1435,90 +1425,90 @@ void plotwindow::settonesvolume() // set tones volume for soundplayer
 }
 
 // playing tones from soundplayer
-void plotwindow::play_Glow()
+void plotwindow::play_tone1()
 {
     ui->pushButton_7->setDown(true);
     if (spacemode)
         emit splayer->playD3();
     else if (tank1mode)    
-        emit splayer->playGlow();
+        emit splayer->play_Fsharp();
     else
         emit splayer->playtone_Dlowsh();
 }
 
-void plotwindow::play_fdiez()
+void plotwindow::play_tone2()
 {
     ui->pushButton_8->setDown(true);
     if (spacemode)
         emit splayer->playA3();
     else if (tank1mode)
-        emit splayer->playfdiez();
+        emit splayer->play_d_highsharp();
     else
         emit splayer->playtone_dsh();
 }
 
-void plotwindow::play_Clow()
+void plotwindow::play_tone3()
 {
     ui->pushButton_9->setDown(true);
     if (spacemode)
         emit splayer->playC4();
     else if (tank1mode)
-        emit splayer->playClow();
+        emit splayer->play_Asharp();
     else
         emit splayer->playtone_Glowsh();
 
 }
 
-void plotwindow::play_a()
+void plotwindow::play_tone4()
 {
     ui->pushButton_10->setDown(true);
     if (spacemode)
         emit splayer->playA4();
     else if (tank1mode)
-        emit splayer->playatone();
+        emit splayer->play_f_highsharp();
     else
         emit splayer->playtone_gsh();
 }
 
-void plotwindow::play_Elow()
+void plotwindow::play_tone5()
 {
     ui->pushButton_11->setDown(true);
     if (spacemode)
         emit splayer->playD4();
     else if (tank1mode)
-        emit splayer->playElow();
+        emit splayer->play_Gsharp();
     else
         emit splayer->playtone_Flowsh();
 }
 
-void plotwindow::play_d()
+void plotwindow::play_tone6()
 {
     ui->pushButton_12->setDown(true);
     if (spacemode)
         emit splayer->playE4();
     else if (tank1mode)
-        emit splayer->playdtone();
+        emit splayer->play_f_high();
     else
         emit splayer->playtone_fsh();
 }
 
-void plotwindow::play_Dlow()
+void plotwindow::play_tone7()
 {
     ui->pushButton_13->setDown(true);
     if (spacemode)
         emit splayer->playF3();
     else if (tank1mode)
-        emit splayer->playDlow();
+        emit splayer->play_F();
     else
         emit splayer->playtone_Clowsh();
 }
 
-void plotwindow::play_b()
+void plotwindow::play_tone8()
 {    
     if (tank1mode)            
     {
         ui->pushButton_14->setDown(true);
-        emit splayer->playbtone();
+        emit splayer->play_bhigh();
     }
     else if (tank2mode)
     {
@@ -1527,23 +1517,23 @@ void plotwindow::play_b()
     }
 }
 
-void plotwindow::play_Blow()
+void plotwindow::play_tone9()
 {
     ui->pushButton_15->setDown(true);
     if (spacemode)
         emit splayer->playF4();
     else if (tank1mode)
-        emit splayer->playBlow();
+        emit splayer->play_Dsharp();
     else    
         emit splayer->playtone_Blow();
 }
 
-void plotwindow::play_g()
+void plotwindow::play_tone10()
 {
     if (tank1mode)
     {
         ui->pushButton_16->setDown(true); 
-        emit splayer->playgtone();
+        emit splayer->play_c_highsharp();
     } else
     if (tank2mode)
     {
@@ -1630,13 +1620,13 @@ void plotwindow::tn2Update()
 {
     if (tonenumbers<maxtones)
     {
-        if ((delta<meandelta-tvals[1]) && (!tones.contains("B")) && (!tones.contains("F4")))
+        if ((delta<meandelta-tvals[1]) && (!tones.contains("D#")) && (!tones.contains("B")) && (!tones.contains("F4")))
         {
             tonenumbers_increase();
             if (tonenumbers<=maxtones)
             {
                 if (tank1mode)
-                    tones+="B ";
+                    tones+="D# ";
                 else if (tank2mode)
                     tones+="B ";
                 else
@@ -1652,13 +1642,13 @@ void plotwindow::tn3Update()
 {
     if (tonenumbers<maxtones)
     {
-        if ((theta>meantheta+tvals[2]) && (!spacemode) && (!tones.contains("g")) && (!tones.contains("b")))
+        if ((theta>meantheta+tvals[2]) && (!spacemode) && (!tones.contains("c#")) && (!tones.contains("b")))
         {
             tonenumbers_increase();
             if (tonenumbers<=maxtones)
             {
                 if (tank1mode)
-                    tones+="g ";
+                    tones+="c# ";
                 else if (tank2mode)
                     tones+="b ";
             }
@@ -1672,13 +1662,13 @@ void plotwindow::tn4Update()
 {
     if (tonenumbers<maxtones)
     {
-        if ((theta<meantheta-tvals[3]) && (!tones.contains("G")) && (!tones.contains("D#")) && (!tones.contains("D3")))
+        if ((theta<meantheta-tvals[3]) && (!tones.contains("F#")) && (!tones.contains("D#")) && (!tones.contains("D3")))
         {
             tonenumbers_increase();
             if (tonenumbers<=maxtones)
             {
                 if (tank1mode)
-                    tones+="G ";
+                    tones+="F# ";
                 else if (tank2mode)
                     tones+="D# ";
                 else
@@ -1694,13 +1684,13 @@ void plotwindow::tn5Update()
 {
     if (tonenumbers<maxtones)
     {
-        if ((alpha>meanalpha+tvals[4]) && (!tones.contains("d")) && (!tones.contains("f#")) && (!tones.contains("E4")))
+        if ((alpha>meanalpha+tvals[4]) && (!tones.contains("f")) && (!tones.contains("f#")) && (!tones.contains("E4")))
         {
             tonenumbers_increase();
             if (tonenumbers<=maxtones)
             {
                 if (tank1mode)
-                    tones+="d ";
+                    tones+="f ";
                 else if (tank2mode)
                     tones+="f# ";
                 else
@@ -1716,13 +1706,13 @@ void plotwindow::tn6Update()
 {
     if (tonenumbers<maxtones)
     {
-        if ((alpha<meanalpha-tvals[5]) && (!tones.contains("D")) && (!tones.contains("C#")) && (!tones.contains("F3")))
+        if ((alpha<meanalpha-tvals[5]) && (!tones.contains("F")) && (!tones.contains("C#")) && (!tones.contains("F3")))
         {
             tonenumbers_increase();
             if (tonenumbers<=maxtones)
             {
                 if (tank1mode)
-                    tones+="D ";
+                    tones+="F ";
                 else if (tank2mode)
                     tones+="C# ";
                 else
@@ -1738,14 +1728,12 @@ void plotwindow::tn7Update()
 {
     if (tonenumbers<maxtones)
     {
-        if ((beta>meanbeta+tvals[6]) && (!tones.contains("f#")) && (!tones.contains("d#")) && (!tones.contains("A3")))
+        if ((beta>meanbeta+tvals[6]) && (!tones.contains("d#")) && (!tones.contains("A3")))
         {
             tonenumbers_increase();
             if (tonenumbers<=maxtones)
             {
-                if (tank1mode)
-                    tones+="f# ";
-                else if (tank2mode)
+                if ((tank1mode) || (tank2mode))
                     tones+="d# ";
                 else
                     tones+="A3 ";
@@ -1760,13 +1748,13 @@ void plotwindow::tn8Update()
 {
     if (tonenumbers<maxtones)
     {
-        if ((gamma<meangamma-tvals[7]) && (!tones.contains("E")) && (!tones.contains("F#")) && (!tones.contains("D4")))
+        if ((gamma<meangamma-tvals[7]) && (!tones.contains("G#")) && (!tones.contains("F#")) && (!tones.contains("D4")))
         {
             tonenumbers_increase();
             if (tonenumbers<=maxtones)
             {
                 if (tank1mode)
-                    tones+="E ";
+                    tones+="G# ";
                 else if (tank2mode)
                     tones+="F# ";
                 else
@@ -1782,13 +1770,13 @@ void plotwindow::tn9Update()
 {
     if (tonenumbers<maxtones)
     {
-        if ((gamma>meangamma+tvals[8]) && (!tones.contains("C")) && (!tones.contains("G#")) && (!tones.contains("C4")))
+        if ((gamma>meangamma+tvals[8]) && (!tones.contains("A#")) && (!tones.contains("G#")) && (!tones.contains("C4")))
         {
             tonenumbers_increase();
             if (tonenumbers<=maxtones)
             {
                 if (tank1mode)
-                    tones+="C ";
+                    tones+="A# ";
                 else if (tank2mode)
                     tones+="G# ";
                 else
@@ -1804,13 +1792,13 @@ void plotwindow::tn10Update()
 {
     if (tonenumbers<maxtones)
     {
-        if ((hgamma>meangamma+tvals[9]) && (!tones.contains("a")) && (!tones.contains("g#")) && (!tones.contains("A4")))
+        if ((hgamma>meangamma+tvals[9]) && (!tones.contains("f#")) && (!tones.contains("g#")) && (!tones.contains("A4")))
         {
             tonenumbers_increase();
             if (tonenumbers<=maxtones)
             {
                 if (tank1mode)
-                    tones+="a ";
+                    tones+="f# ";
                 else if (tank2mode)
                     tones+="g# ";
                 else
@@ -1843,7 +1831,7 @@ void plotwindow::playtones() // process determined tones and play
 
 void plotwindow::randomtone() // random tone
 {        
-    // tank1: b B g G d D E C f# a
+    // tank1: b D# c# F# f F G# A# d# f#
     // tank2: c# C# b B f# F# g# G# d# D#
     // space: F4 F3 D3 E4 D4 C4 A3 A4
     QString st;
@@ -2024,7 +2012,7 @@ void plotwindow::analyse_interval() // main function for processing intervals of
 
     if (simeeg) // update attention and meditation values for simulated data
     {
-        curr_medit = 100 * (double)alpha / beta; // emulate meditation estimation for simulated data
+        curr_medit = paintf->estmedit; // emulate meditation estimation for simulated data
         paintf->updatemeditation(curr_medit);
         paintf->updateattentionplot(curr_estatt);
     }
@@ -2298,70 +2286,70 @@ void plotwindow::playtank1(QString tonesset) // playing of tankdrum1 (Gmaj) tone
 {
     if (tonesset.contains("b"))
     {
-        play_b();
+        play_tone8();
         delay(tonedelays[0]);
         if (chorddelay>0)
             delay(chorddelay);
     }
-    if (tonesset.contains("B"))
+    if (tonesset.contains("D#"))
     {
-        play_Blow();
+        play_tone9();
         delay(tonedelays[1]);
         if (chorddelay>0)
             delay(chorddelay);
     }
-    if (tonesset.contains("g"))
+    if (tonesset.contains("c#"))
     {
-        play_g();
+        play_tone10();
         delay(tonedelays[2]);
         if (chorddelay>0)
             delay(chorddelay);
     }
-    if (tonesset.contains("G"))
+    if (tonesset.contains("F#"))
     {
-        play_Glow();
+        play_tone1();
         delay(tonedelays[3]);
         if (chorddelay>0)
             delay(chorddelay);
     }
-    if (tonesset.contains("d"))
+    if (tonesset.contains("f") && (!tonesset.contains("f#")))
     {
-        play_d();
+        play_tone6();
         delay(tonedelays[4]);
         if (chorddelay>0)
             delay(chorddelay);
     }
-    if (tonesset.contains("D"))
+    if (tonesset.contains("F") && (!tonesset.contains("F#")))
     {
-        play_Dlow();
+        play_tone7();
         delay(tonedelays[5]);
+        if (chorddelay>0)
+            delay(chorddelay);
+    }
+    if (tonesset.contains("d#"))
+    {
+        play_tone2();
+        delay(tonedelays[6]);
+        if (chorddelay>0)
+            delay(chorddelay);
+    }
+    if (tonesset.contains("G#"))
+    {
+        play_tone5();
+        delay(tonedelays[7]);
+        if (chorddelay>0)
+            delay(chorddelay);
+    }
+    if (tonesset.contains("A#"))
+    {
+        play_tone3();
+        delay(tonedelays[8]);
         if (chorddelay>0)
             delay(chorddelay);
     }
     if (tonesset.contains("f#"))
     {
-        play_fdiez();
-        delay(tonedelays[6]);
-        if (chorddelay>0)
-            delay(chorddelay);
-    }
-    if (tonesset.contains("E"))
-    {
-        play_Elow();
-        delay(tonedelays[7]);
-        if (chorddelay>0)
-            delay(chorddelay);
-    }
-    if (tonesset.contains("C"))
-    {
-        play_Clow();
-        delay(tonedelays[8]);
-        if (chorddelay>0)
-            delay(chorddelay);
-    }
-    if (tonesset.contains("a"))
-    {
-        play_a();
+        play_tone4();
         delay(tonedelays[9]);
         if (chorddelay>0)
             delay(chorddelay);
@@ -2372,70 +2360,70 @@ void plotwindow::playtank2(QString tonesset) // playing of tankdrum2 (Bmaj) tone
 {
     if (tonesset.contains("c#"))
     {
-        play_b();
+        play_tone8();
         delay(tonedelays[0]);
         if (chorddelay>0)
             delay(chorddelay);
     }
     if (tonesset.contains("B"))
     {
-        play_Blow();
+        play_tone9();
         delay(tonedelays[1]);
         if (chorddelay>0)
             delay(chorddelay);
     }
     if (tonesset.contains("b"))
     {
-        play_g();
+        play_tone10();
         delay(tonedelays[2]);
         if (chorddelay>0)
             delay(chorddelay);
     }
     if (tonesset.contains("D#"))
     {
-        play_Glow();
+        play_tone1();
         delay(tonedelays[3]);
         if (chorddelay>0)
             delay(chorddelay);
     }
     if (tonesset.contains("f#"))
     {
-        play_d();
+        play_tone6();
         delay(tonedelays[4]);
         if (chorddelay>0)
             delay(chorddelay);
     }
     if (tonesset.contains("C#"))
     {
-        play_Dlow();
+        play_tone7();
         delay(tonedelays[5]);
         if (chorddelay>0)
             delay(chorddelay);
     }
     if (tonesset.contains("d"))
     {
-        play_fdiez();
+        play_tone2();
         delay(tonedelays[6]);
         if (chorddelay>0)
             delay(chorddelay);
     }
     if (tonesset.contains("F#"))
     {
-        play_Elow();
+        play_tone5();
         delay(tonedelays[7]);
         if (chorddelay>0)
             delay(chorddelay);
     }
     if (tonesset.contains("G#"))
     {
-        play_Clow();
+        play_tone3();
         delay(tonedelays[8]);
         if (chorddelay>0)
             delay(chorddelay);
     }
     if (tonesset.contains("g#"))
     {
-        play_a();
+        play_tone4();
         delay(tonedelays[9]);
         if (chorddelay>0)
             delay(chorddelay);
@@ -2446,56 +2434,56 @@ void plotwindow::playspace(QString tonesset) // playing of space drum Dmin tones
 {    
     if (tonesset.contains("F4"))
     {
-        play_Blow();
+        play_tone9();
         delay(tonedelays[1]);
         if (chorddelay>0)
             delay(chorddelay);
     }
     if (tonesset.contains("D3"))
     {
-        play_Glow();
+        play_tone1();
         delay(tonedelays[3]);
         if (chorddelay>0)
             delay(chorddelay);
     }
     if (tonesset.contains("E4"))
     {
-        play_d();
+        play_tone6();
         delay(tonedelays[4]);
         if (chorddelay>0)
             delay(chorddelay);
     }
     if (tonesset.contains("F3"))
     {
-        play_Dlow();
+        play_tone7();
         delay(tonedelays[5]);
         if (chorddelay>0)
             delay(chorddelay);
     }
     if (tonesset.contains("A3"))
     {
-        play_fdiez();
+        play_tone2();
         delay(tonedelays[6]);
         if (chorddelay>0)
             delay(chorddelay);
     }
     if (tonesset.contains("D4"))
     {
-        play_Elow();
+        play_tone5();
         delay(tonedelays[7]);
         if (chorddelay>0)
             delay(chorddelay);
     }
     if (tonesset.contains("C4"))
     {
-        play_Clow();
+        play_tone3();
         delay(tonedelays[8]);
         if (chorddelay>0)
             delay(chorddelay);
     }
     if (tonesset.contains("A4"))
     {
-        play_a();
+        play_tone4();
         delay(tonedelays[9]);
         if (chorddelay>0)
             delay(chorddelay);
@@ -2751,52 +2739,52 @@ void plotwindow::on_pushButton_6_clicked()  // load random back image
 
 void plotwindow::on_pushButton_16_clicked()
 {
-    play_g();
+    play_tone10();
 }
 
 void plotwindow::on_pushButton_15_clicked()
 {
-    play_Blow();
+    play_tone9();
 }
 
 void plotwindow::on_pushButton_14_clicked()
 {
-    play_b();
+    play_tone8();
 }
 
 void plotwindow::on_pushButton_13_clicked()
 {
-    play_Dlow();
+    play_tone7();
 }
 
 void plotwindow::on_pushButton_12_clicked()
 {
-    play_d();
+    play_tone6();
 }
 
 void plotwindow::on_pushButton_11_clicked()
 {
-    play_Elow();
+    play_tone5();
 }
 
 void plotwindow::on_pushButton_10_clicked()
 {
-    play_a();
+    play_tone4();
 }
 
 void plotwindow::on_pushButton_9_clicked()
 {
-    play_Clow();
+    play_tone3();
 }
 
 void plotwindow::on_pushButton_8_clicked()
 {
-    play_fdiez();
+    play_tone2();
 }
 
 void plotwindow::on_pushButton_7_clicked()
 {
-    play_Glow();
+    play_tone1();
 }
 
 void plotwindow::on_checkBox_5_clicked()    // hide buttons
@@ -2840,7 +2828,7 @@ void plotwindow::on_checkBox_6_clicked() // hide / show background image, white 
     else if (backimageloaded)
         backimg.load(currpicfilename);
     else if ((!backimageloaded) && (tank1mode))
-        backimg.load(":/pics/pics/oriongmaj.jpg");
+        backimg.load(":/pics/pics/zodiac1.jpg");
     else if ((!backimageloaded) && (tank2mode))
         backimg.load(":/pics/pics/zodiac0.jpg");
     else if (!backimageloaded)
@@ -3147,30 +3135,29 @@ void plotwindow::on_horizontalSlider_3_valueChanged(int value)
 void plotwindow::on_radioButton_clicked() // tankdrum1 (Gmaj) mode
 {
     spacemode=false;  tank1mode=true; tank2mode=false;
- //   if (mw->psstart)
     paintf->setsoundtype(0);
     ui->label->setVisible(true);
     ui->label_4->setVisible(true);
     ui->label->setText("b");
-    ui->label_4->setText("g");
-    ui->label_2->setText("B");
-    ui->label_3->setText("G");
-    ui->label_8->setText("d");
-    ui->label_5->setText("D");
-    ui->label_14->setText("f#");
-    ui->label_13->setText("E");
-    ui->label_16->setText("C");
-    ui->label_15->setText("a");
-    ui->pushButton_7->setText("G");
-    ui->pushButton_8->setText("f#");
-    ui->pushButton_9->setText("C");
-    ui->pushButton_10->setText("a");
-    ui->pushButton_11->setText("E");
-    ui->pushButton_12->setText("d");
-    ui->pushButton_13->setText("D");
+    ui->label_4->setText("c#");
+    ui->label_2->setText("D#");
+    ui->label_3->setText("F#");
+    ui->label_8->setText("f");
+    ui->label_5->setText("F");
+    ui->label_14->setText("d#");
+    ui->label_13->setText("G#");
+    ui->label_16->setText("A#");
+    ui->label_15->setText("f#");
+    ui->pushButton_7->setText("F#");
+    ui->pushButton_8->setText("d#");
+    ui->pushButton_9->setText("A#");
+    ui->pushButton_10->setText("f#");
+    ui->pushButton_11->setText("G#");
+    ui->pushButton_12->setText("f");
+    ui->pushButton_13->setText("F");
     ui->pushButton_14->setText("b");
-    ui->pushButton_15->setText("B");
-    ui->pushButton_16->setText("g");
+    ui->pushButton_15->setText("D#");
+    ui->pushButton_16->setText("c#");
     ui->spinBox_2->setVisible(true);
     ui->spinBox_4->setVisible(true);
     ui->spinBox_6->setVisible(true);
@@ -3191,7 +3178,7 @@ void plotwindow::on_radioButton_clicked() // tankdrum1 (Gmaj) mode
         ui->widget->yAxis->grid()->setVisible(true);
     } else if (!backimageloaded)
     {
-        backimg.load(":/pics/pics/oriongmaj.jpg");
+        backimg.load(":/pics/pics/zodiac1.jpg");
         ui->widget->setBackground(backimg,true,Qt::IgnoreAspectRatio);
         if (!camerainp)
             ui->widget->replot();
@@ -3202,9 +3189,7 @@ void plotwindow::on_radioButton_clicked() // tankdrum1 (Gmaj) mode
 
 
 void plotwindow::on_radioButton_2_clicked()  // tankdrum2 (Bmaj) mode
-{
-    //   B G  C  E  D  g f# a  d  b
-    //   B D# G# F# C# b d# g# f# c#
+{ 
     spacemode=false; tank1mode=false; tank2mode=true;
     if (brainflow_on)
         paintf->setsoundtype(1);
@@ -3262,7 +3247,6 @@ void plotwindow::on_radioButton_2_clicked()  // tankdrum2 (Bmaj) mode
 void plotwindow::on_radioButton_3_clicked() // spacedrum Dmin mode
 {
     spacemode=true; tank1mode=false; tank2mode=false;
-   // if (mw->psstart)
     paintf->setsoundtype(2);
     ui->label->setVisible(false);
     ui->label_4->setVisible(false);

@@ -18,24 +18,15 @@ public:
 
 signals:
 
-    void playGlow();
     void playD3();
-    void playfdiez();
     void playA3();
-    void playClow();
     void playC4();
-    void playatone();
-    void playA4();
-    void playElow();
-    void playD4();
-    void playdtone();
+    void playA4();  
+    void playD4(); 
     void playE4();
-    void playDlow();
-    void playF3();
-    void playbtone();
-    void playBlow();
+    void playF3(); 
     void playF4();
-    void playgtone();
+
     void playtone_Blow();
     void playtone_b();
     void playtone_Dlowsh();
@@ -47,29 +38,32 @@ signals:
     void playtone_Clowsh();
     void playtone_csh();
 
+    void play_Asharp();
+    void play_bhigh();
+    void play_c_highsharp();
+    void play_d_highsharp();
+    void play_Dsharp();
+    void play_F();
+    void play_f_high();
+    void play_f_highsharp();
+    void play_Fsharp();
+    void play_Gsharp();
+
     void stopThread();
 
 private:
 
-    QThread m_thread;
-    QSoundEffect Glow;
-    QSoundEffect D3;
-    QSoundEffect fdiez;
-    QSoundEffect A3;
-    QSoundEffect Clow;
-    QSoundEffect C4;
-    QSoundEffect atone;
-    QSoundEffect A4;
-    QSoundEffect Elow;
+    QThread m_thread;    
+
+    QSoundEffect D3;    
+    QSoundEffect A3;    
+    QSoundEffect C4;    
+    QSoundEffect A4;    
     QSoundEffect D4;
-    QSoundEffect dtone;
-    QSoundEffect E4;
-    QSoundEffect Dlow;
-    QSoundEffect F3;
-    QSoundEffect btone;
-    QSoundEffect Blow;
-    QSoundEffect F4;
-    QSoundEffect gtone;
+    QSoundEffect E4;    
+    QSoundEffect F3;        
+    QSoundEffect F4;    
+
     QSoundEffect tone_Blow;
     QSoundEffect tone_b;
     QSoundEffect tone_Dlowsh;
@@ -79,8 +73,18 @@ private:
     QSoundEffect tone_Flowsh;
     QSoundEffect tone_fsh;
     QSoundEffect tone_Clowsh;
-    QSoundEffect tone_csh;    
+    QSoundEffect tone_csh;
 
+    QSoundEffect tank_Asharp;
+    QSoundEffect tank_bhigh;
+    QSoundEffect tank_c_highsharp;
+    QSoundEffect tank_d_highsharp;
+    QSoundEffect tank_Dsharp;
+    QSoundEffect tank_F;
+    QSoundEffect tank_f_high;
+    QSoundEffect tank_f_highsharp;
+    QSoundEffect tank_Fsharp;
+    QSoundEffect tank_Gsharp;
 };
 
 #endif

@@ -251,7 +251,7 @@ MainWindow::MainWindow(QWidget *parent) :
     srfr = 500; // sampling rate
     deltaphs = 4; thetaphs = 8; alphaphs = 0; betaphs = 7; gammaphs = 8;
     deltafr = 3; thetafr = 5; alphafr = 9; betafr = 21; gammafr=33; hgammafr=44;
-    zdeltaamp = 5; zthetaamp = 12; zalphaamp = 16; zbetaamp = 30; zgammaamp = 17; zhgammaamp = 12;
+    zdeltaamp = 5; zthetaamp = 18; zalphaamp = 21; zbetaamp = 20; zgammaamp = 17; zhgammaamp = 12;
     currentel = 0; currentsimdata = 0;
     simulateEEG = new QTimer(this);
     simulateEEG->connect(simulateEEG,SIGNAL(timeout()), this, SLOT(simulateEEGUpdate()));
@@ -2039,7 +2039,8 @@ void MainWindow::mindwaveconnect() // function to connect to MindWave device
         rs->show();
         ui->checkBox_2->setChecked(true);
         on_checkBox_2_clicked();
-        mwconnected=true;
+        mwconnected=true;        
+        printdata("Use RightMouse click - start/pause brain waves flow in MindPlay");
     }
     else
         printdata("Connection with MindWave could not be established! :(");
@@ -2193,15 +2194,15 @@ void MainWindow::simulateEEGUpdate() // simulated EEG data (in development)
     deltaamp = zdeltaamp + dist(gen)*10;
     thetaamp = zthetaamp + dist(gen)*24;
     alphaamp = zalphaamp + dist(gen)*26;
-    betaamp = zbetaamp + dist(gen)*25;
+    betaamp = zbetaamp + dist(gen)*20;
     gammaamp = zgammaamp + dist(gen)*20;
     hgammaamp = zhgammaamp + dist(gen)*8;
     if (currentel%250==0)       // change phase and base amplitude each 1/2 sec
     {
         zdeltaamp = 2 + qrand() % 10;
         zthetaamp = 8 + qrand() % 26;
-        zalphaamp = 9 + qrand() % 16;
-        zbetaamp = 8 + qrand() % 25;
+        zalphaamp = 9 + qrand() % 21;
+        zbetaamp = 8 + qrand() % 20;
         zgammaamp = 10 + qrand() % 10;
         zhgammaamp = 8 + qrand() % 10;
         deltaphs = qrand() % 20;
@@ -2845,6 +2846,7 @@ void MainWindow::on_pushButton_8_clicked()
     on_checkBox_2_clicked();    
     simulateEEG->start();
     plotw->mental_activations->start();
+    printdata("Use RightMouse click - start/pause brain waves flow in MindPlay");
 }
 
 void MainWindow::on_pushButton_9_clicked()

@@ -774,8 +774,8 @@ void paintform::updatefreqarrs(double deltat, double thetat, double alphat, doub
     gamma_arr[numfrsamples]=gammat;
     hgamma_arr[numfrsamples]=hgammat;
 
-    thet=0;
-    bet=0;
+    // temp variables to sum waves expression and estimate attention and meditation
+    thet=0; alph=0; bet=0;
 
     if (pw->imlength>=256)
         pointsfor_estattention = 5;     // estimation based on last [ >= 2.5] sec
@@ -783,20 +783,29 @@ void paintform::updatefreqarrs(double deltat, double thetat, double alphat, doub
         pointsfor_estattention = 10;    // estimation based on last [ >= 1.4] sec
 
     if (numfrsamples<pointsfor_estattention)
+    {
         estattn=(1-thetat/betat)*100;
+        estmedit=(alphat/betat)*100;
+    }
     else
     {
         for (int i=0; i<pointsfor_estattention; i++)
         {
             thet+=theta_arr[numfrsamples-i];
             bet+=beta_arr[numfrsamples-i];
+            alph+=alpha_arr[numfrsamples-i];
         }
         thet/=pointsfor_estattention;
         bet/=pointsfor_estattention;
+        alph/=pointsfor_estattention;
         estattn=((1-thet/bet)-0.4)/0.4*100;
+        estmedit=100 * alph / bet;
     }
     if (estattn<5) estattn=5;
     if (estattn>100) estattn=100;
+    if (estmedit<5) estmedit=5;
+    if (estmedit>100) estmedit=100;
+
     estatt_arr[numfrsamples]=estattn;       
     fxc[numfrsamples]=numfrsamples;
 

@@ -1212,7 +1212,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>tank Gmaj</string>
+    <string>tank D#min</string>
    </property>
   </widget>
   <widget class="QRadioButton" name="radioButton_2">
