@@ -68,6 +68,7 @@ plotwindow::plotwindow(QWidget *parent) :
     prev_estatt = curr_estatt = 0;  // previous and current values of attention (from FFT relative power)
     ogl_angle_change = 0.0;         // openGl rotation angle increment
     ogl_scale = 1.0;                // openGL scale parameter
+    opengltextchangebord = 80;      // border for change of opengl textures by attention
 
     simeeg = false; // simulated EEG flow    
     rawsignalabove = true; // flag for position of raw signal plot
@@ -99,6 +100,7 @@ plotwindow::plotwindow(QWidget *parent) :
     playbetavibe = false;       // play sound sample for beta wave expression, stringsample7
     playgammavibe = false;      // play sound sample for gamma wave expression, stringsample2
     waves_sound_modul = false;  // waves background sound modulation by attention / meditation
+    canchangeopengltexture = true; // flag to prevent constant change of opengl textures when attention > border
 
     strLstM2 = new QStringListModel();      // list of determined tones
     strLstM2->setStringList(strLst2);
@@ -981,7 +983,7 @@ void plotwindow::camerainp_on_off() // turn on-off camera input
 {
     if (!camerainp)
     {
-        camera.open(0);
+        camera.open(1);
         camerainp = true;
         camerainput->start();
     }
@@ -1068,19 +1070,28 @@ void plotwindow::updatedata(int start) // update EEG data array with new interva
 
 void plotwindow::update_openglflow() //  update openGL flow parameters
 {
-    if (attent>95)
+    if ((attent>opengltextchangebord) && (canchangeopengltexture))
+    {
         oglw->changeSpaceTexture();
+        canchangeopengltexture = false;
+    }
+    else
+    if ((attent<opengltextchangebord) && (!canchangeopengltexture))
+        canchangeopengltexture = true;
 
     ogl_angle_change = ((double)(100-attent)/100)*5;
     if (ogl_angle_change==0)
         ogl_angle_change = 0.1;
 
     if ((attent<50) && (ogl_scale>0.4))
-        ogl_scale -= 0.03;
-    else if ((attent>50) && (ogl_scale<1.3))
-        ogl_scale += 0.03;
+        ogl_scale -= 0.02;
+    else if ((attent>50) && (ogl_scale<1.2))
+        ogl_scale += 0.02;
 
     oglw->set_angle_scale_incs(ogl_angle_change,ogl_scale);
+
+    if (oglw->transp_by_att)
+        oglw->set_window_transp((double)attent/100);
 }
 
 void plotwindow::mental_activations_Update()   // timer to update attention / meditation smoothly
@@ -1127,7 +1138,11 @@ void plotwindow::mental_activations_Update()   // timer to update attention / me
     if ((brl->attention_2nd) || (simeeg))    // update mental activity values on brainlevels form
         brl->updatelevels(prev_estatt,prev_medit);
     else
-        brl->updatelevels(prev_att,prev_medit);  
+        brl->updatelevels(prev_att,prev_medit);
+
+    // update attention and meditation in MindDraw window
+    paintf->update_attention_val(attent);
+    paintf->update_meditation_val(meditt);
 }
 
 void plotwindow::update_curr_attention(int t)
@@ -1240,7 +1255,7 @@ void plotwindow::update_curr_meditation(int t)
 
 // updated meditation value, check conditions on volume, back image and tones change
 void plotwindow::update_meditation(int t)
-{    
+{
     // tones volume modulation
     if ((attention_volume) && (t>minvolumebord))
         on_horizontalSlider_3_valueChanged(t);
@@ -1251,6 +1266,9 @@ void plotwindow::update_meditation(int t)
     if ((!fixback) && (backimageloaded) && (t<picchangeborder))
         if (!canbackchange)
             canbackchange=true;
+
+    if (((filteringback) || (colorizeback) || (blurback)) && (!backimg.isNull()))
+        applyfilteronback();  // filtering background image
 
     // back pic change modulation
     if (!fixback)
@@ -1290,6 +1308,20 @@ void plotwindow::update_meditation(int t)
         betasound.setVolume(meditt-15);
     if (ui->checkBox_18->isChecked())
         gammasound.setVolume(meditt-20);
+}
+
+void plotwindow::set_mactivity_mode(bool attent) // switch mental activity mode from MindDraw window
+{
+    if (attent)
+    {
+        on_comboBox_currentIndexChanged(0);
+        ui->comboBox->setCurrentIndex(0);
+    }
+    else
+    {
+        on_comboBox_currentIndexChanged(2);
+        ui->comboBox->setCurrentIndex(2);
+    }
 }
 
 void plotwindow::radiobut1()    // switch on tankdrum1 tones from MindDraw window
@@ -1984,9 +2016,6 @@ void plotwindow::analyse_interval() // main function for processing intervals of
     if (brainflow_on)
         total_intervals++;    
 
-   // if (((filteringback) || (colorizeback) || (blurback)) && (!backimg.isNull()))
-    //    applyfilteronback();  // filtering background image
-
     if ((brl->attention_2nd) && (attention_modulation) && (switchtonesset_by_att)) // attention modulated switch of tones sets
     {
         if (paintf->getestattval()<tonesets_border1)
@@ -2010,12 +2039,8 @@ void plotwindow::analyse_interval() // main function for processing intervals of
 
     curr_estatt = paintf->getestattval(); // update current estimated attention value
 
-    if (simeeg) // update attention and meditation values for simulated data
-    {
-        curr_medit = paintf->estmedit; // emulate meditation estimation for simulated data
-        paintf->updatemeditation(curr_medit);
-        paintf->updateattentionplot(curr_estatt);
-    }
+    if (simeeg) // meditation value for simulated data    
+        curr_medit = paintf->estmedit;        
 
     if ((paintfstart) && (paintf->bfiltmode) && (!paintf->game_findsame) && (!paintf->flowmode))
     {
@@ -3334,8 +3359,7 @@ void plotwindow::on_comboBox_currentIndexChanged(int index) // attention / medit
         ui->checkBox_19->setText("by attention");
         ui->comboBox_2->setItemText(1,"by attention");
         brl->settonesbordervisible(switchtonesset_by_att,true);
-       // ui->label_23->setVisible(true);
-       // ui->label_24->setVisible(false);
+        paintf->set_mactivity_mode(true);
     }
     else
     {
@@ -3346,8 +3370,7 @@ void plotwindow::on_comboBox_currentIndexChanged(int index) // attention / medit
         ui->checkBox_19->setText("by meditation");
         ui->comboBox_2->setItemText(1,"by meditation");
         brl->settonesbordervisible(switchtonesset_by_att,false);
-       // ui->label_23->setVisible(false);
-       // ui->label_24->setVisible(true);
+        paintf->set_mactivity_mode(false);
     }
 }
 

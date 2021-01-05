@@ -2039,7 +2039,8 @@ void MainWindow::mindwaveconnect() // function to connect to MindWave device
         rs->show();
         ui->checkBox_2->setChecked(true);
         on_checkBox_2_clicked();
-        mwconnected=true;        
+        mwconnected=true;
+        printdata("");
         printdata("Use RightMouse click - start/pause brain waves flow in MindPlay");
     }
     else
@@ -2083,6 +2084,7 @@ void MainWindow::mindwtUpdate() // processing data from MindWave device
                 if (paintw_started)
                 {
                     paintw->updateattentionplot(mw_atten);
+                    paintw->updateattention(plotw->attent);
                     if (opencvstart)
                     {
                         if (ocvform->attent_modul)
@@ -2108,10 +2110,7 @@ void MainWindow::mindwtUpdate() // processing data from MindWave device
                 if (plotw->start)
                     plotw->update_curr_meditation(mw_medit);
                 if (paintw_started)
-                {
-                    paintw->updatemeditation(mw_medit);
-                //    paintw->updateplots(false);
-                }
+                    paintw->updatemeditation(plotw->meditt);
                 // cout<<"Meditation value: "<<mw_medit<<endl;
             }
         }
@@ -2229,6 +2228,9 @@ void MainWindow::simulateEEGUpdate() // simulated EEG data (in development)
                 canchangehue=false;
             }
         }
+        paintw->updateattentionplot(plotw->curr_estatt);
+        paintw->updateattention(plotw->attent);
+        paintw->updatemeditation(plotw->meditt);
     }
     currentel++;
     currentsimdata = deltaamp*sin(deltafr*2*M_PI/srfr*(currentel+deltaphs)) + thetaamp*sin(thetafr*2*M_PI/srfr*(currentel+thetaphs)) + alphaamp*sin(alphafr*2*M_PI/srfr*(currentel+alphaphs)) + betaamp*sin(betafr*2*M_PI/srfr*(currentel+betaphs)) + gammaamp*sin(gammafr*2*M_PI/srfr*(currentel+gammaphs)) + hgammaamp*sin(hgammafr*2*M_PI/srfr*(currentel+gammaphs)) + noise;
@@ -2236,8 +2238,8 @@ void MainWindow::simulateEEGUpdate() // simulated EEG data (in development)
     rs->updatesignal(currentsimdata);
     if (plotw->start)
         plotw->getandprocess_eeg_data(currentsimdata);
-    if (paintw_started)
-        paintw->scene->getdata(currentsimdata/4);
+    if (paintw_started)    
+        paintw->scene->getdata(currentsimdata/4);            
 }
 
 void MainWindow::swap_main_overlay() // swap main and overlay pics
@@ -2522,7 +2524,7 @@ void MainWindow::keys_processing()      // processing keys pressing
     {
         if (!ocvform->camerainp)
         {
-            cam.open(0);           
+            cam.open(0);
             ocvform->camerainp = true;
             ocvform->updateformvals();
         } else
@@ -2843,9 +2845,10 @@ void MainWindow::on_pushButton_8_clicked()
     printdata("Waves Generator mode is activated!");
     ui->checkBox->setEnabled(true);
     ui->checkBox_2->setChecked(true);
-    on_checkBox_2_clicked();    
+    on_checkBox_2_clicked();
     simulateEEG->start();
     plotw->mental_activations->start();
+    printdata("");
     printdata("Use RightMouse click - start/pause brain waves flow in MindPlay");
 }
 

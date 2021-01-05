@@ -768,28 +768,6 @@
     <string>contours mode</string>
    </property>
   </widget>
-  <widget class="QSlider" name="verticalSlider">
-   <property name="geometry">
-    <rect>
-     <x>500</x>
-     <y>650</y>
-     <width>20</width>
-     <height>91</height>
-    </rect>
-   </property>
-   <property name="maximum">
-    <number>100</number>
-   </property>
-   <property name="value">
-    <number>77</number>
-   </property>
-   <property name="tracking">
-    <bool>false</bool>
-   </property>
-   <property name="orientation">
-    <enum>Qt::Vertical</enum>
-   </property>
-  </widget>
   <widget class="QRadioButton" name="radioButton_6">
    <property name="geometry">
     <rect>
@@ -1299,7 +1277,6 @@
   <zorder>checkBox_12</zorder>
   <zorder>checkBox_13</zorder>
   <zorder>checkBox_14</zorder>
-  <zorder>verticalSlider</zorder>
   <zorder>radioButton_6</zorder>
   <zorder>checkBox_15</zorder>
   <zorder>spinBox_5</zorder>
@@ -1339,22 +1316,6 @@
  </customwidgets>
  <resources/>
  <connections>
-  <connection>
-   <sender>verticalSlider</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>progressBar</receiver>
-   <slot>setValue(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>496</x>
-     <y>673</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>412</x>
-     <y>695</y>
-    </hint>
-   </hints>
-  </connection>
   <connection>
    <sender>horizontalSlider_2</sender>
    <signal>sliderMoved(int)</signal>

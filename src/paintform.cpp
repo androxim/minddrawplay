@@ -173,8 +173,6 @@ void paintform::configure_ui() // configure ui elements
     ui->pushButton_12->setGeometry(940,891,80,24);
     ui->pushButton_9->setGeometry(860,891,80,24);
     ui->checkBox_8->setEnabled(false);
-    ui->verticalSlider->setGeometry(1038,820,20,150);        
-    ui->verticalSlider->setVisible(false);
 
     ui->checkBox_10->setGeometry(1070,900,130,20);
     ui->checkBox_6->setGeometry(1070,920,221,20);
@@ -249,6 +247,7 @@ void paintform::configure_ui() // configure ui elements
     ui->checkBox_13->setGeometry(197,27,111,20);
     ui->checkBox_23->setGeometry(312,27,111,20);
     ui->checkBox_17->setGeometry(433,27,141,20);
+   // ui->checkBox_17->setVisible(false); // puzzle gathering
 
     ui->checkBox_9->setGeometry(950,26,81,20);
     ui->checkBox_20->setGeometry(1046,26,81,20);
@@ -268,7 +267,7 @@ void paintform::configure_ui() // configure ui elements
     ui->checkBox_13->setEnabled(false);
     ui->checkBox_11->setEnabled(false);
 
-    ui->horizontalSlider_2->setGeometry(700,26,160,20);
+    ui->horizontalSlider_2->setGeometry(702,26,168,20);
     ui->horizontalSlider_2->setValue(80);
     ui->horizontalSlider_2->setVisible(false);
 
@@ -809,11 +808,9 @@ void paintform::updatefreqarrs(double deltat, double thetat, double alphat, doub
     estatt_arr[numfrsamples]=estattn;       
     fxc[numfrsamples]=numfrsamples;
 
-    // pw->update_attention(estattn); // if use estimated attention for MindPlay
-
     if (game_findsame)
     {
-        ui->verticalSlider->setValue((int)estattn);
+        ui->progressBar->setValue((int)estattn);
         ui->label_5->setText(QString::number((int)estattn)+"%");
         ui->label_23->setText("ATTENTION: "+QString::number((int)estattn)+"%");
     }
@@ -893,6 +890,47 @@ void paintform::initpics() // make puzzles from images
     imageScaling->setFuture(QtConcurrent::mapped(imglist, rescale));
 }
 
+void paintform::set_mactivity_mode(bool attent) // set mental activity mode from MindPlay window
+{
+    if (attent)
+    {
+        ui->radioButton_5->setStyleSheet("QRadioButton { color : black; }");
+        ui->progressBar->setPalette(sp1);
+        attent_modulaion=true;
+        if (!game_findsame)
+        {
+            QPen qpt_att = ui->widget->graph(0)->pen();
+            qpt_att.setWidth(3);
+            ui->widget->graph(0)->setPen(qpt_att);
+            QPen qpt_med = ui->widget->graph(1)->pen();
+            qpt_med.setWidth(1);
+            ui->widget->graph(1)->setPen(qpt_med);
+        }
+
+        ui->comboBox_3->setCurrentIndex(0);
+        ui->radioButton_4->setChecked(true);
+    }
+    else
+    {
+        ui->radioButton_4->setStyleSheet("QRadioButton { color : black; }");
+        ui->progressBar->setPalette(sp2);
+        attent_modulaion=false;
+
+        if (!game_findsame)
+        {
+            QPen qpt_att = ui->widget->graph(0)->pen();
+            qpt_att.setWidth(1);
+            ui->widget->graph(0)->setPen(qpt_att);
+            QPen qpt_med = ui->widget->graph(1)->pen();
+            qpt_med.setWidth(3);
+            ui->widget->graph(1)->setPen(qpt_med);
+        }
+
+        ui->comboBox_3->setCurrentIndex(1);
+        ui->radioButton_5->setChecked(true);
+    }
+}
+
 void paintform::updateattentionplot(int t) // update attention (values from EEG device) array and plot
 {
     if (numsamples>7200) // shift of the plot after 2 hours to zero point (avoid limit on array length)
@@ -913,111 +951,115 @@ void paintform::updateattentionplot(int t) // update attention (values from EEG 
     ui->widget->graph(2)->setData(xc, border_arr);
 
     ui->widget->replot();  
+}
 
-    updateattention(t);
+void paintform::update_attention_val(int t) // update attention progress bar
+{
+    if ((!game_findsame) && (attent_modulaion))
+    {
+        ui->progressBar->setValue(t);
+        ui->label_5->setText(QString::number(t)+"%");
+        ui->label_23->setText("ATTENTION: "+QString::number(t)+"%");
+    }
 }
 
 void paintform::updateattention(int t) // update attention dependent variables
 {
     scene->attentt=t;
 
-    if (attent_modulaion)
+    scene->drawrate=80-t;       // contour mode drawing rate
+    if (scene->drawrate<5)
+        scene->drawrate=5;
+    scene->tim->setInterval(scene->drawrate);
+
+    if ((bfiltmode) || (!canpuzzlechange))
     {
-        scene->drawrate=80-t;       // contour mode drawing rate
-        if (scene->drawrate<5)
-            scene->drawrate=5;
-        scene->tim->setInterval(scene->drawrate);        
+        setdflowtime(t);
+        setflowspace(t);
+    }
 
-        if ((bfiltmode) || (!canpuzzlechange))
+    if ((numsamples-laststop>lenofinterval) && (music_adaptive_bord))
+    // adaptive border for music activation
+    {
+        avgv = 0;
+        for (int i = numsamples-lenofinterval; i<numsamples; i++)
+            avgv+=attent_arr[i];
+        avgv/=lenofinterval;
+        if (avgv<95)
+            soundborderlevel=avgv;
+        else
+            soundborderlevel=99;
+        laststop=numsamples;
+        ui->verticalSlider_2->setValue(soundborderlevel);
+        ui->spinBox_5->setValue(soundborderlevel);
+    }
+
+    if (musicactiv)
+    {
+        if (t>soundborderlevel)
         {
-            setdflowtime(t);
-            setflowspace(t);
+            pw->brainflow_on=true;
+            pw->musicmode_on=true;
+            mypen = ui->widget->graph(2)->pen();
+            mypen.setWidth(3);
+            ui->widget->graph(2)->setPen(mypen);
+        } else
+        {
+            mypen.setWidth(1);
+            ui->widget->graph(2)->setPen(mypen);
+            ui->widget->graph(2)->pen().setWidth(1);
+            pw->brainflow_on=false;
+            pw->musicmode_on=false;
         }
+    }
 
-        if ((numsamples-laststop>lenofinterval) && (music_adaptive_bord))
-        // adaptive border for music activation
-        {
-            avgv = 0;
-            for (int i = numsamples-lenofinterval; i<numsamples; i++)
-                avgv+=attent_arr[i];
-            avgv/=lenofinterval;
-            if (avgv<95)
-                soundborderlevel=avgv;
-            else
-                soundborderlevel=99;
-            laststop=numsamples;
-            ui->verticalSlider_2->setValue(soundborderlevel);
-            ui->spinBox_5->setValue(soundborderlevel);
-        }
+    ui->label_23->setStyleSheet("QLabel { color : red; }");
+    ui->radioButton_4->setStyleSheet("QRadioButton { color : red; }");
 
-        if (musicactiv)
+    if (game_gothrough)
+    {
+        if (t<gamethroughborder)
         {
-            if (t>soundborderlevel)
+            if (!movingItem->hitborder)
             {
-                pw->brainflow_on=true;
-                pw->musicmode_on=true;
-                mypen = ui->widget->graph(2)->pen();
-                mypen.setWidth(3);
-                ui->widget->graph(2)->setPen(mypen);
-            } else
-            {
-                mypen.setWidth(1);
-                ui->widget->graph(2)->setPen(mypen);
-                ui->widget->graph(2)->pen().setWidth(1);
-                pw->brainflow_on=false;
-                pw->musicmode_on=false;
-            }
-        }
-
-        ui->label_23->setStyleSheet("QLabel { color : red; }");
-        ui->radioButton_4->setStyleSheet("QRadioButton { color : red; }");
-
-        if (!game_findsame)
-        {
-            ui->verticalSlider->setValue(t);
-            ui->label_5->setText(QString::number(t)+"%");
-            ui->label_23->setText("ATTENTION: "+QString::number(t)+"%");
-        }
-
-        if (game_gothrough)
-        {
-            if (t<gamethroughborder)
-            {
-                if (!movingItem->hitborder)
-                {
-                    movingItem->cantgo=true;
-                    movingItem->update();
-                }
-                else
-                    movingItem->godown=true;
+                movingItem->cantgo=true;
+                movingItem->update();
             }
             else
-            {
-                movingItem->cantgo=false;
-                movingItem->godown=false;
-            }
-            moveItemInterval=110-t;
-            moveItemTimer->setInterval(moveItemInterval);
-            updateborderlines((double)(130-t)/100);
+                movingItem->godown=true;
         }
-
-        // canchangeback - flag to prevent constant change of back image when attention / meditation > border:
-        // change only when it becomes > border after it was less
-        if ((!fixedmain) && (!flowmode) && (!game_findsame) && (t<borderpicchange))
-            if (!canchangeback)
-                canchangeback = true;
-
-        // change of back image randomly by attention / meditation > border
-        if ((!fixedmain) && (!flowmode) && (!game_findsame) && (t>borderpicchange) && (canchangeback))
+        else
         {
-            on_pushButton_6_clicked();
-            canchangeback = false;
+            movingItem->cantgo=false;
+            movingItem->godown=false;
         }
+        moveItemInterval=110-t;
+        moveItemTimer->setInterval(moveItemInterval);
+        updateborderlines((double)(130-t)/100);
+    }
 
-     }
+    // canchangeback - flag to prevent constant change of back image when attention / meditation > border:
+    // change only when it becomes > border after it was less
+    if ((!fixedmain) && (!flowmode) && (!game_findsame) && (t<borderpicchange))
+        if (!canchangeback)
+            canchangeback = true;
 
-  //  scene->clear();
- //   scene->drawpolygon(scene->attentt/10,700,400,scene->meditt,0.5);
+    // change of back image randomly by attention / meditation > border
+    if ((!fixedmain) && (!flowmode) && (!game_findsame) && (t>borderpicchange) && (canchangeback))
+    {
+        on_pushButton_6_clicked();
+        canchangeback = false;
+    }
+
+}
+
+void paintform::update_meditation_val(int t)
+{
+    if ((!game_findsame) && (!attent_modulaion))
+    {
+        ui->label_5->setText(QString::number(t)+"%");
+        ui->progressBar->setValue(t);
+    }
 }
 
 void paintform::updatemeditation(int t) // update meditation array, plot and dependent variables
@@ -1028,9 +1070,7 @@ void paintform::updatemeditation(int t) // update meditation array, plot and dep
     ui->widget->graph(1)->setData(xc, medit_arr);
 
     if (!attent_modulaion)
-    {  
-       ui->verticalSlider->setValue(t);
-
+    {        
        if ((bfiltmode) || (!canpuzzlechange))
        {
            setdflowtime(t);
@@ -1949,7 +1989,7 @@ bool paintform::eventFilter(QObject *target, QEvent *event)  // processing key /
 
         if (keyEvent->key()==Qt::Key_M) // show main window
         {
-            //this->hide();
+            this->hide();
             QApplication::setActiveWindow(mww);
         }
     }
@@ -3397,10 +3437,8 @@ void paintform::on_checkBox_10_clicked()    // changing pics in puzzles
 void paintform::on_radioButton_4_clicked()  // attention modulation
 {
     ui->radioButton_5->setStyleSheet("QRadioButton { color : black; }");
-   // ui->label_24->setVisible(false);
-   // ui->label_23->setVisible(true);
     ui->progressBar->setPalette(sp1);
-    pw->attention_modulation=true;
+    pw->set_mactivity_mode(true);
     attent_modulaion=true;
 
     if (!game_findsame)
@@ -3419,10 +3457,8 @@ void paintform::on_radioButton_4_clicked()  // attention modulation
 void paintform::on_radioButton_5_clicked()  // meditation modulation
 {
     ui->radioButton_4->setStyleSheet("QRadioButton { color : black; }");
-   // ui->label_23->setVisible(false);
-   // ui->label_24->setVisible(true);
     ui->progressBar->setPalette(sp2);
-    pw->attention_modulation=false;
+    pw->set_mactivity_mode(false);
     attent_modulaion=false;
 
     if (!game_findsame)
@@ -3826,4 +3862,3 @@ void paintform::update_penamp(int p)
 {
     ui->spinBox->setValue(p);
 }
-

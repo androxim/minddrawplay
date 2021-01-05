@@ -105,9 +105,9 @@ public:
     int lcutoff, hcutoff, butterord;    
     int buffercount, nemehanika_bord;
     int tonesets_border1, tonesets_border2;    
-    float ogl_angle_change, ogl_scale;
+    float ogl_angle_change, ogl_scale, opengltextchangebord;
 
-    bool adaptivenumparts, backimageloaded, canbackchange, opencvstart;
+    bool adaptivenumparts, backimageloaded, canbackchange, opencvstart, canchangeopengltexture;
     bool filteringback, blurback, hidebutt, attention_interval, fixback, colorizeback;
     bool attention_modulation, start, brainflow_on, estimation, updatewavesplot;
     bool usefiltering, musicmode_on, flowblinking, scalechange, adaptivepicsborder;
@@ -195,7 +195,7 @@ public:
     void write_recfile_head();
     void cameraoff();
 
-
+    void set_mactivity_mode(bool attent);
     void update_attention(int t);
     void update_curr_attention(int t);
     void update_meditation(int t);

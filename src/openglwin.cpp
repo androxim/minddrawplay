@@ -7,10 +7,20 @@
 openglwin::openglwin(QWidget *parent) : QOpenGLWidget(parent)
 {
     resize(1024,720);
-    wintransplevel = 0.95;
+
+    angle = 0;                  // rotation angle for textures
+    scale = 1;                  // scale of object
+    wintransplevel = 0.95;      // transparency of window
+    angleinc = 0.3f;            // increment for rotation of textures
+    scaleinc = 0.05f;           // increment for scale changes
+
     setWindowOpacity(wintransplevel);
+
     paintTimer = new QTimer(this);
-    connect(paintTimer, SIGNAL(timeout()), this, SLOT(repaint()));    
+    connect(paintTimer, SIGNAL(timeout()), this, SLOT(repaint()));
+
+    hideobj = false;            // hide object
+    transp_by_att = false;      // transparency of window by attention
 }
 
 void openglwin::startflow(int t)
@@ -23,6 +33,12 @@ void openglwin::set_angle_scale_incs(float angle_t, float scale_t)
     angleinc = angle_t;
     if (!hideobj)
         scale = scale_t;
+}
+
+void openglwin::set_window_transp(float val)
+{
+    wintransplevel = val;
+    setWindowOpacity(wintransplevel);
 }
 
 void openglwin::initTexture(uint index, QImage &texture1)
@@ -94,6 +110,9 @@ void openglwin::keyPressEvent(QKeyEvent *event)
         scale -= scaleinc;
        // qDebug()<<scale;
     }
+    if (event->key()==Qt::Key_C)
+        transp_by_att = !transp_by_att;
+
 
     if (event->key()==Qt::Key_H)
     {

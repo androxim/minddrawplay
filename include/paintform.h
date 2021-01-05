@@ -94,6 +94,7 @@ public:
     void updateattention(int t);
     void updateattentionplot(int t);
     void updatemeditation(int t);
+    void set_mactivity_mode(bool attent);
     void setpicfolder(QString fpath);
     void randompics();
     void initpics();
@@ -137,6 +138,8 @@ public:
     void updatepuzzles();
     void update_penamp(int p);
     void turn_music_checkbox(bool fl);
+    void update_attention_val(int t);
+    void update_meditation_val(int t);
 
     ~paintform();
 
