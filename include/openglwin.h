@@ -17,7 +17,6 @@ class openglwin : public QOpenGLWidget
 {
     Q_OBJECT
 
-    QTimer* paintTimer;
     GLubyte texture_count = 0;  // current texture number
     GLubyte model_count = 0;    // current model number
     GLuint model[3];            // number of display list for current model
@@ -30,16 +29,18 @@ class openglwin : public QOpenGLWidget
     void initTexture(uint index, QImage &texture1);
     int loadObject(const QString &filename);
     virtual void keyPressEvent(QKeyEvent *event);
+    void closeEvent(QCloseEvent *event);
 
 public:
 
     explicit openglwin(QWidget *parent = 0);
 
+    QTimer* paintTimer;
     MainWindow* mww;
 
     float angleinc, scaleinc, wintransplevel;
 
-    bool hideobj, transp_by_att;
+    bool hideobj, transp_by_att, pitch_by_att;
 
     void set_angle_scale_incs(float angle_t, float scale_t);
     void set_window_transp(float val);

@@ -102,6 +102,10 @@ plotwindow::plotwindow(QWidget *parent) :
     waves_sound_modul = false;  // waves background sound modulation by attention / meditation
     canchangeopengltexture = true; // flag to prevent constant change of opengl textures when attention > border
 
+    // colors for labels changes in brain waves expression condition check
+    label_activecolor1 = "QLabel {color: red; }";
+    label_activecolor2 = "QLabel {color: blue; }";
+
     strLstM2 = new QStringListModel();      // list of determined tones
     strLstM2->setStringList(strLst2);
 
@@ -1068,6 +1072,14 @@ void plotwindow::updatedata(int start) // update EEG data array with new interva
         eegdata[graphcount][start+i]=drawshift+arrc.amp0[buffercount-imlength+i];
 }
 
+void plotwindow::setbacksoundpitch(float t) // set pitch for background sounds
+{
+    thetasound.setPitch(t);
+    alphasound.setPitch(t);
+    betasound.setPitch(t);
+    gammasound.setPitch(t);
+}
+
 void plotwindow::update_openglflow() //  update openGL flow parameters
 {
     if ((attent>opengltextchangebord) && (canchangeopengltexture))
@@ -1191,6 +1203,15 @@ void plotwindow::set_backsounds_mode(int val)
 // updated attention value, check conditions on volume, back image and tones change
 void plotwindow::update_attention(int t)
 {
+    // background sound pitch modulation for MindOGL window
+    if ((oglw->paintTimer->isActive()) && (oglw->pitch_by_att))
+    {
+        thetasound.setPitch(1+(float)(100-t)/200);
+        alphasound.setPitch(1+(float)(100-t)/200);
+        betasound.setPitch(1+(float)(100-t)/200);
+        gammasound.setPitch(1+(float)(100-t)/200);
+    }
+
     // tones volume modulation
     if ((attention_volume) && (t>minvolumebord))
         on_horizontalSlider_3_valueChanged(t);
@@ -1636,7 +1657,8 @@ void plotwindow::tn1Update()
         {
             tonenumbers_increase();
             if (tonenumbers<=maxtones)
-            {
+            {                
+                ui->label_11->setStyleSheet(label_activecolor1);
                 if (tank1mode)
                     tones+="b ";
                 else if (tank2mode)
@@ -1657,6 +1679,7 @@ void plotwindow::tn2Update()
             tonenumbers_increase();
             if (tonenumbers<=maxtones)
             {
+                ui->label_11->setStyleSheet(label_activecolor2);
                 if (tank1mode)
                     tones+="D# ";
                 else if (tank2mode)
@@ -1679,6 +1702,7 @@ void plotwindow::tn3Update()
             tonenumbers_increase();
             if (tonenumbers<=maxtones)
             {
+                ui->label_26->setStyleSheet(label_activecolor1);
                 if (tank1mode)
                     tones+="c# ";
                 else if (tank2mode)
@@ -1699,6 +1723,7 @@ void plotwindow::tn4Update()
             tonenumbers_increase();
             if (tonenumbers<=maxtones)
             {
+                ui->label_26->setStyleSheet(label_activecolor2);
                 if (tank1mode)
                     tones+="F# ";
                 else if (tank2mode)
@@ -1721,6 +1746,7 @@ void plotwindow::tn5Update()
             tonenumbers_increase();
             if (tonenumbers<=maxtones)
             {
+                ui->label_27->setStyleSheet(label_activecolor1);
                 if (tank1mode)
                     tones+="f ";
                 else if (tank2mode)
@@ -1743,6 +1769,7 @@ void plotwindow::tn6Update()
             tonenumbers_increase();
             if (tonenumbers<=maxtones)
             {
+                ui->label_27->setStyleSheet(label_activecolor2);
                 if (tank1mode)
                     tones+="F ";
                 else if (tank2mode)
@@ -1765,6 +1792,7 @@ void plotwindow::tn7Update()
             tonenumbers_increase();
             if (tonenumbers<=maxtones)
             {
+                ui->label_28->setStyleSheet(label_activecolor1);
                 if ((tank1mode) || (tank2mode))
                     tones+="d# ";
                 else
@@ -1785,6 +1813,7 @@ void plotwindow::tn8Update()
             tonenumbers_increase();
             if (tonenumbers<=maxtones)
             {
+                ui->label_28->setStyleSheet(label_activecolor2);
                 if (tank1mode)
                     tones+="G# ";
                 else if (tank2mode)
@@ -1807,6 +1836,7 @@ void plotwindow::tn9Update()
             tonenumbers_increase();
             if (tonenumbers<=maxtones)
             {
+                ui->label_29->setStyleSheet(label_activecolor1);
                 if (tank1mode)
                     tones+="A# ";
                 else if (tank2mode)
@@ -1829,6 +1859,7 @@ void plotwindow::tn10Update()
             tonenumbers_increase();
             if (tonenumbers<=maxtones)
             {
+                ui->label_29->setStyleSheet(label_activecolor2);
                 if (tank1mode)
                     tones+="f# ";
                 else if (tank2mode)
@@ -2007,11 +2038,22 @@ void plotwindow::recordwaves_tofile_Update() // timer for recording data to file
         savewaves();
 }
 
+void plotwindow::reset_labels_colors() // set label colors of waves expression to default color
+{
+    ui->label_11->setStyleSheet("QLabel { color: black; }");
+    ui->label_26->setStyleSheet("QLabel { color: black; }");
+    ui->label_27->setStyleSheet("QLabel { color: black; }");
+    ui->label_28->setStyleSheet("QLabel { color: black; }");
+    ui->label_29->setStyleSheet("QLabel { color: black; }");
+}
+
 void plotwindow::analyse_interval() // main function for processing intervals of EEG data
 {  
     determine_brainwaves_expression();
 
     update_waves_meanvalues();   
+
+    reset_labels_colors();
 
     if (brainflow_on)
         total_intervals++;    
@@ -2212,25 +2254,25 @@ void plotwindow::setrandomscale()
 // random scale (deviation parameters which determines how often which tone plays)
 {
     if (tvals[0]>0)
-        tvals[0] = 3 + qrand() % 5; // > mdelta + []
+        tvals[0] = 2 + qrand() % 5; // > mdelta + []
     if (tvals[1]>0)
-        tvals[1] = 3 + qrand() % 5; // < mdelta - []
+        tvals[1] = 2 + qrand() % 5; // < mdelta - []
     if (tvals[2]>0)
-        tvals[2] = 4 + qrand() % 5; // > mtheta + []
+        tvals[2] = 3 + qrand() % 5; // > mtheta + []
     if (tvals[3]>0)
-        tvals[3] = 4 + qrand() % 5; // < mtheta - []
+        tvals[3] = 3 + qrand() % 5; // < mtheta - []
     if (tvals[4]>0)
-        tvals[4] = 4 + qrand() % 5; // > malpha + []
+        tvals[4] = 3 + qrand() % 5; // > malpha + []
     if (tvals[5]>0)
-        tvals[5] = 4 + qrand() % 5; // < malpha - []
+        tvals[5] = 3 + qrand() % 5; // < malpha - []
     if (tvals[6]>0)
-        tvals[6] = 5 + qrand() % 6; // > mbeta + []
+        tvals[6] = 4 + qrand() % 6; // > mbeta + []
     if (tvals[7]>0)
-        tvals[7] = 5 + qrand() % 6; // < mbeta - []
+        tvals[7] = 4 + qrand() % 6; // < mbeta - []
     if (tvals[8]>0)
-        tvals[8] = 5 + qrand() % 6; // > gamma + []
+        tvals[8] = 4 + qrand() % 6; // > gamma + []
     if (tvals[9]>0)
-        tvals[9] = 5 + qrand() % 6; // < gamma + []
+        tvals[9] = 4 + qrand() % 6; // < gamma + []
     ui->spinBox_2->setValue(tvals[0]);
     ui->spinBox_3->setValue(tvals[1]);
     ui->spinBox_4->setValue(tvals[2]);

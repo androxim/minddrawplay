@@ -60,7 +60,7 @@ public:
     int flowdirection = 0; Mat randpic; int allngb = 30, ngbarea = 20; // area of neighbours for nearest / farest pic
     // 0: "random" - next pic is randomly from all, 1: "similar" - from N nearest, -1: "opposite" - from N farest
 
-    bool showmenu = false; char l_str[50];  // attention label parameters
+    bool showmenu = true; char l_str[50];  // attention label parameters
     char l_menu_item1[50], l_menu_item2[50], l_menu_item3[50], l_menu_item4[50];
     int l_posx = 1500, l_posy = 80, lfont_scale = 4, lfont_size = 5, lw = 484, lh = 80;
     int l_menu_posx = 30, l_menu_posy = 50, l_menu_fontsize = 3, l_menu_fontscale = 3, lmenuw = 625, lmenuh = 180;

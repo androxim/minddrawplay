@@ -8,10 +8,10 @@ openglwin::openglwin(QWidget *parent) : QOpenGLWidget(parent)
 {
     resize(1024,720);
 
-    angle = 0;                  // rotation angle for textures
+    angle = 0;                  // rotation angle
     scale = 1;                  // scale of object
     wintransplevel = 0.95;      // transparency of window
-    angleinc = 0.3f;            // increment for rotation of textures
+    angleinc = 0.3f;            // increment for rotation
     scaleinc = 0.05f;           // increment for scale changes
 
     setWindowOpacity(wintransplevel);
@@ -21,6 +21,7 @@ openglwin::openglwin(QWidget *parent) : QOpenGLWidget(parent)
 
     hideobj = false;            // hide object
     transp_by_att = false;      // transparency of window by attention
+    pitch_by_att = false;       // pitch control of background sounds by attention
 }
 
 void openglwin::startflow(int t)
@@ -129,6 +130,9 @@ void openglwin::keyPressEvent(QKeyEvent *event)
     if (event->key()==Qt::Key_Space)
         changeSpaceTexture();
 
+    if (event->key()==Qt::Key_P)
+        pitch_by_att = !pitch_by_att;
+
     if ((event->key()==Qt::Key_Z) && (wintransplevel>0.05))
     {
         wintransplevel -= 0.05;
@@ -140,6 +144,12 @@ void openglwin::keyPressEvent(QKeyEvent *event)
         wintransplevel += 0.05;
         setWindowOpacity(wintransplevel);
     }
+}
+
+void openglwin::closeEvent(QCloseEvent *event)
+{
+    paintTimer->stop();
+    mww->plotw->setbacksoundpitch(1.0f);
 }
 
 void openglwin::initLight()

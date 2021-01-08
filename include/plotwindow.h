@@ -69,7 +69,7 @@ public:
 
     soundplayer* splayer; // sound player objects with sound samples associated with own thread
     QStringList strLst2; QStringListModel *strLstM2;  // list of playing tones
-    QString tones, lasttones, currpicfilename;
+    QString tones, lasttones, currpicfilename, label_activecolor1, label_activecolor2;
     QString recfilename, start_sessiom_time, st_stylesheet;
     ostringstream streamrec;
     QFile recordFile;
@@ -194,6 +194,7 @@ public:
     void savewaves();
     void write_recfile_head();
     void cameraoff();
+    void setbacksoundpitch(float t);
 
     void set_mactivity_mode(bool attent);
     void update_attention(int t);
@@ -208,6 +209,7 @@ public:
     void enable_num_intervals(bool fl);
     void enablehue();
     void turn_music_checkbox(bool fl);
+    void reset_labels_colors();
 
     QImage applyEffectToImage(QImage src, QGraphicsEffect *effect, int extent);
     void applyfilteronback();
